@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch: # Actions 탭에서 수동 실행("Run workflow" 버튼)
 
 jobs:
   # ─────────────── 백엔드 (pytest) ───────────────
