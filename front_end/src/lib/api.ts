@@ -34,7 +34,9 @@ async function apiGet<T>(path: string, revalidate = 60): Promise<T> {
 
 /* ---------------- Posts ---------------- */
 
-export async function getPosts(query: PostQuery = {}): Promise<Paginated<Post>> {
+export async function getPosts(
+  query: PostQuery = {},
+): Promise<Paginated<Post>> {
   const page = query.page ?? 1;
   const pageSize = query.pageSize ?? DEFAULT_PAGE_SIZE;
 

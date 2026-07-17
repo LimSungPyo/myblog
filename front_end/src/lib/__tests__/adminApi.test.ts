@@ -39,7 +39,11 @@ describe("adminApi 세션(쿠키)", () => {
   });
 
   it("login 성공 시 토큰·isAdmin 쿠키 저장", async () => {
-    mockFetch({ ok: true, status: 200, body: { accessToken: "tok", isAdmin: true } });
+    mockFetch({
+      ok: true,
+      status: 200,
+      body: { accessToken: "tok", isAdmin: true },
+    });
     const res = await login("admin", "pw");
     expect(res.isAdmin).toBe(true);
     expect(getToken()).toBe("tok");
@@ -58,7 +62,11 @@ describe("adminApi 세션(쿠키)", () => {
   });
 
   it("clearToken 후 미로그인 상태", async () => {
-    mockFetch({ ok: true, status: 201, body: { accessToken: "t", isAdmin: false } });
+    mockFetch({
+      ok: true,
+      status: 201,
+      body: { accessToken: "t", isAdmin: false },
+    });
     await signup("newbie", "pass");
     expect(isLoggedIn()).toBe(true);
     clearToken();

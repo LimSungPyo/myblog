@@ -6,9 +6,7 @@ from app.schemas.post import PostCreate, PostUpdate
 
 
 def _base_query():
-    return select(Post).options(
-        selectinload(Post.category), selectinload(Post.tags)
-    )
+    return select(Post).options(selectinload(Post.category), selectinload(Post.tags))
 
 
 def list_posts(
@@ -62,11 +60,7 @@ def increment_view(db: Session, post: Post) -> None:
 
 
 def all_published_slugs(db: Session) -> list[str]:
-    return list(
-        db.scalars(
-            select(Post.slug).where(Post.status == "published")
-        ).all()
-    )
+    return list(db.scalars(select(Post.slug).where(Post.status == "published")).all())
 
 
 def _apply_tags(db: Session, post: Post, tag_ids: list[int]) -> None:

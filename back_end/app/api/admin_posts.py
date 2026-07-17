@@ -24,7 +24,9 @@ def list_all_posts(db: Session = Depends(get_db)):
 def get_post(post_id: int, db: Session = Depends(get_db)):
     post = crud.get_by_id(db, post_id)
     if post is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
+        )
     return post
 
 
@@ -35,7 +37,9 @@ def create_post(
     _: User = Depends(get_current_admin),
 ):
     if crud.get_by_slug(db, payload.slug) is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 존재하는 슬러그입니다.")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="이미 존재하는 슬러그입니다."
+        )
     return crud.create_post(db, payload)
 
 
@@ -43,10 +47,14 @@ def create_post(
 def update_post(post_id: int, payload: PostUpdate, db: Session = Depends(get_db)):
     post = crud.get_by_id(db, post_id)
     if post is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
+        )
     existing = crud.get_by_slug(db, payload.slug)
     if existing is not None and existing.id != post_id:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 존재하는 슬러그입니다.")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="이미 존재하는 슬러그입니다."
+        )
     return crud.update_post(db, post, payload)
 
 
@@ -54,5 +62,7 @@ def update_post(post_id: int, payload: PostUpdate, db: Session = Depends(get_db)
 def delete_post(post_id: int, db: Session = Depends(get_db)):
     post = crud.get_by_id(db, post_id)
     if post is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
+        )
     crud.delete_post(db, post)

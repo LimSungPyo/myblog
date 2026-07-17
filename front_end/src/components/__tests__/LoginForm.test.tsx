@@ -43,7 +43,9 @@ describe("로그인 페이지 (역할별 리다이렉트)", () => {
   });
 
   it("로그인 실패 시 에러 메시지 표시", async () => {
-    login.mockRejectedValue(new Error("아이디 또는 비밀번호가 올바르지 않습니다."));
+    login.mockRejectedValue(
+      new Error("아이디 또는 비밀번호가 올바르지 않습니다."),
+    );
     render(<LoginPage />);
     await userEvent.type(screen.getByPlaceholderText("아이디"), "x");
     await userEvent.type(screen.getByPlaceholderText("비밀번호"), "y");

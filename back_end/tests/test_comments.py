@@ -3,7 +3,9 @@ from app.models import Comment
 
 def test_list_returns_approved_only(client, make_post, db_session):
     post = make_post(slug="a")
-    db_session.add(Comment(post_id=post.id, author_name="x", content="ok", approved=True))
+    db_session.add(
+        Comment(post_id=post.id, author_name="x", content="ok", approved=True)
+    )
     db_session.add(
         Comment(post_id=post.id, author_name="y", content="hidden", approved=False)
     )
@@ -25,7 +27,5 @@ def test_create_comment(client, make_post):
 
 
 def test_comment_on_missing_post_404(client):
-    r = client.post(
-        "/posts/none/comments", json={"authorName": "a", "content": "b"}
-    )
+    r = client.post("/posts/none/comments", json={"authorName": "a", "content": "b"})
     assert r.status_code == 404

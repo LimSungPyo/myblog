@@ -4,9 +4,7 @@ from app.models import User
 
 
 def test_signup_creates_regular_user(client, db_session):
-    r = client.post(
-        "/auth/signup", json={"username": "newbie", "password": "pass1234"}
-    )
+    r = client.post("/auth/signup", json={"username": "newbie", "password": "pass1234"})
     assert r.status_code == 201
     data = r.json()
     assert data["isAdmin"] is False
@@ -41,9 +39,7 @@ def test_signup_validation(client):
 
 
 def test_login_admin_returns_is_admin_true(client, admin_user):
-    r = client.post(
-        "/auth/login", json={"username": "admin", "password": "admin1234"}
-    )
+    r = client.post("/auth/login", json={"username": "admin", "password": "admin1234"})
     assert r.status_code == 200
     assert r.json()["isAdmin"] is True
 
@@ -57,9 +53,7 @@ def test_login_regular_returns_is_admin_false(client, regular_user):
 
 
 def test_login_wrong_password(client, admin_user):
-    r = client.post(
-        "/auth/login", json={"username": "admin", "password": "wrong"}
-    )
+    r = client.post("/auth/login", json={"username": "admin", "password": "wrong"})
     assert r.status_code == 401
 
 

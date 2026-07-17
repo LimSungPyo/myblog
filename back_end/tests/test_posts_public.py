@@ -18,7 +18,10 @@ def test_pagination(client, make_post):
 def test_filter_by_category(client, make_post, category):
     make_post(slug="a", category=category)
     make_post(slug="b")
-    slugs = [p["slug"] for p in client.get(f"/posts?category={category.slug}").json()["items"]]
+    slugs = [
+        p["slug"]
+        for p in client.get(f"/posts?category={category.slug}").json()["items"]
+    ]
     assert slugs == ["a"]
 
 

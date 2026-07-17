@@ -54,7 +54,8 @@ export const posts: Post[] = [
     id: 1,
     slug: "why-nextjs-for-blog",
     title: "블로그에 Next.js를 쓰는 이유",
-    excerpt: "SPA/CSR/SSR 차이를 정리하고, 왜 블로그에는 SSR이 유리한지 살펴봅니다.",
+    excerpt:
+      "SPA/CSR/SSR 차이를 정리하고, 왜 블로그에는 SSR이 유리한지 살펴봅니다.",
     content: body1,
     coverImage: null,
     category: categories[0],

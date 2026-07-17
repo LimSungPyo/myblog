@@ -36,6 +36,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
+      - run: ruff format --check . # 포맷 검사 (spotlessCheck 격)
+      - run: ruff check . # 린트
       - run: pytest --cov=app --cov-report=term-missing
 
   # ─────────────── 프론트 (vitest + build) ───────────────
@@ -52,6 +54,7 @@ jobs:
           cache: npm
           cache-dependency-path: front_end/package-lock.json
       - run: npm ci
+      - run: npm run format:check # 포맷 검사 (spotlessCheck 격)
       - run: npm run lint
       - run: npm run test
       - run: npm run build # 목 모드 빌드(백엔드 불필요)

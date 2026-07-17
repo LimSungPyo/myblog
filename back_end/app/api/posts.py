@@ -43,7 +43,9 @@ def list_slugs(db: Session = Depends(get_db)):
 def get_post(slug: str, db: Session = Depends(get_db)):
     post = crud.get_by_slug(db, slug)
     if post is None or post.status != "published":
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
+        )
     crud.increment_view(db, post)
     return post
 
@@ -52,7 +54,9 @@ def get_post(slug: str, db: Session = Depends(get_db)):
 def get_comments(slug: str, db: Session = Depends(get_db)):
     post = crud.get_by_slug(db, slug)
     if post is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
+        )
     return comments_crud.list_for_post(db, post.id)
 
 
@@ -64,5 +68,7 @@ def get_comments(slug: str, db: Session = Depends(get_db)):
 def create_comment(slug: str, payload: CommentCreate, db: Session = Depends(get_db)):
     post = crud.get_by_slug(db, slug)
     if post is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
+        )
     return comments_crud.create(db, post.id, payload)

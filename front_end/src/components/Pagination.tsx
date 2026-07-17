@@ -26,7 +26,10 @@ export default function Pagination({
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <nav className="mt-10 flex items-center justify-center gap-1" aria-label="페이지네이션">
+    <nav
+      className="mt-10 flex items-center justify-center gap-1"
+      aria-label="페이지네이션"
+    >
       {page > 1 && (
         <Link
           href={href(basePath, page - 1, extraQuery)}

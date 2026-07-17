@@ -6,7 +6,7 @@
     python -m app.seed
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 
@@ -20,7 +20,10 @@ def seed() -> None:
     db = SessionLocal()
     try:
         # --- 관리자 ---
-        if db.scalar(select(User).where(User.username == settings.ADMIN_USERNAME)) is None:
+        if (
+            db.scalar(select(User).where(User.username == settings.ADMIN_USERNAME))
+            is None
+        ):
             db.add(
                 User(
                     username=settings.ADMIN_USERNAME,
@@ -54,7 +57,7 @@ def seed() -> None:
         db.add_all(tags.values())
         db.flush()
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         posts = [
             Post(
                 slug="why-nextjs-for-blog",

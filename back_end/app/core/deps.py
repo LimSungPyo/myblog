@@ -27,7 +27,8 @@ def get_current_user(
     user = db.scalar(select(User).where(User.username == username))
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="사용자를 찾을 수 없습니다."
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="사용자를 찾을 수 없습니다.",
         )
     return user
 

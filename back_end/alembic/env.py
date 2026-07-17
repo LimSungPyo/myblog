@@ -1,13 +1,12 @@
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
-
-from app.core.config import settings
-from app.db.session import Base
 
 # app 모델을 import 해야 metadata에 테이블이 등록된다.
 import app.models  # noqa: F401,E402
+from alembic import context
+from app.core.config import settings
+from app.db.session import Base
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

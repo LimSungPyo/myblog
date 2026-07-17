@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     Column,
@@ -61,4 +61,4 @@ class Post(Base):
 
     def mark_published(self) -> None:
         if self.status == "published" and self.published_at is None:
-            self.published_at = datetime.now(timezone.utc)
+            self.published_at = datetime.now(UTC)

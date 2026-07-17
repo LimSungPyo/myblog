@@ -39,9 +39,7 @@ def test_no_token_unauthorized(client):
 
 def test_duplicate_slug_conflict(client, admin_headers, make_post):
     make_post(slug="dup")
-    r = client.post(
-        "/admin/posts", json=_payload(slug="dup"), headers=admin_headers
-    )
+    r = client.post("/admin/posts", json=_payload(slug="dup"), headers=admin_headers)
     assert r.status_code == 409
 
 
