@@ -1,0 +1,59 @@
+# ---- OS / editor ----
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# ---- 로컬 실행 스크립트 (개인 런처: 절대경로·사용자명 포함) ----
+start.command
+stop.command
+test.command
+# 실행 산출물 (로그/PID)
+.dev/
+
+# ---- 공개 불필요 문서/지침 (개인 메모·자동생성) ----
+TESTING.md
+DEPLOY.md
+front_end/AGENTS.md
+front_end/CLAUDE.md
+front_end/README.md
+
+# ---- Node / Next.js (front_end) ----
+node_modules/
+.next/
+out/
+build/
+dist/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# ---- 테스트 산출물 ----
+coverage/
+.vitest/
+playwright-report/
+test-results/
+.playwright/
+
+# ---- Env ----
+.env
+.env.*
+!.env.example
+
+# ---- Python / FastAPI (back_end) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ---- 로컬 DB 파일 (sqlite) ----
+*.db
+*.sqlite
+*.sqlite3

@@ -1,0 +1,25 @@
+# 로컬 개발용 PostgreSQL.
+#   docker compose up -d      # DB 시작
+#   docker compose down       # 중지 (데이터 유지)
+#   docker compose down -v    # 중지 + 데이터 삭제
+services:
+  db:
+    image: postgres:16
+    container_name: myblog-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: myblog
+    ports:
+      - "5432:5432"
+    volumes:
+      - myblog_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d myblog"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  myblog_pgdata:
