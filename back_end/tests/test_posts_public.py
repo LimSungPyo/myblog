@@ -39,11 +39,24 @@ def test_search_matches_title(client, make_post):
     assert slugs == ["a"]
 
 
-def test_detail_increments_view_count(client, make_post):
+def test_get_does_not_increment_view(client, make_post):
     make_post(slug="a", status="published")
     v1 = client.get("/posts/a").json()["viewCount"]
     v2 = client.get("/posts/a").json()["viewCount"]
-    assert v2 == v1 + 1
+    assert v2 == v1  # GET은 더 이상 조회수를 올리지 않음
+
+
+def test_view_endpoint_increments(client, make_post):
+    make_post(slug="a", status="published")
+    v1 = client.get("/posts/a").json()["viewCount"]
+    r = client.post("/posts/a/view")
+    assert r.status_code == 200
+    assert r.json()["viewCount"] == v1 + 1
+
+
+def test_view_endpoint_draft_404(client, make_post):
+    make_post(slug="d", status="draft")
+    assert client.post("/posts/d/view").status_code == 404
 
 
 def test_detail_draft_returns_404(client, make_post):

@@ -41,13 +41,26 @@ def list_slugs(db: Session = Depends(get_db)):
 
 @router.get("/posts/{slug}", response_model=PostOut)
 def get_post(slug: str, db: Session = Depends(get_db)):
+    # 조회수 증가는 여기서 하지 않는다(SSR 캐시로 정확도가 떨어짐).
+    # 실제 브라우저 방문은 POST /posts/{slug}/view 로 카운트한다.
+    post = crud.get_by_slug(db, slug)
+    if post is None or post.status != "published":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
+        )
+    return post
+
+
+@router.post("/posts/{slug}/view")
+def increment_post_view(slug: str, db: Session = Depends(get_db)):
+    """실제 방문 카운트용. 클라이언트가 상세 페이지 진입 시 1회 호출."""
     post = crud.get_by_slug(db, slug)
     if post is None or post.status != "published":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
         )
     crud.increment_view(db, post)
-    return post
+    return {"viewCount": post.view_count}
 
 
 @router.get("/posts/{slug}/comments", response_model=list[CommentOut])

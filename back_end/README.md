@@ -43,7 +43,8 @@ alembic upgrade head                          # 적용
 | POST | `/auth/login` | 로그인 → JWT + `isAdmin` | - |
 | GET | `/auth/me` | 현재 로그인 사용자 | Bearer |
 | GET | `/posts` | 목록 (page, pageSize, category, tag, q) | - |
-| GET | `/posts/{slug}` | 상세 (조회수 +1) | - |
+| GET | `/posts/{slug}` | 상세 (조회수 증가 안 함) | - |
+| POST | `/posts/{slug}/view` | 조회수 +1 (실제 방문 카운트) | - |
 | GET | `/posts/slugs` | 발행글 slug 목록(sitemap) | - |
 | GET | `/posts/{slug}/comments` | 댓글 목록 | - |
 | POST | `/posts/{slug}/comments` | 댓글 작성 | - |

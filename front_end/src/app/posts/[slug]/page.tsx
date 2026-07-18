@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/format";
 import { site } from "@/lib/site";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import CommentSection from "@/components/CommentSection";
+import ViewCounter from "@/components/ViewCounter";
 
 export async function generateMetadata({
   params,
@@ -58,7 +59,7 @@ export default async function PostPage({
             {formatDate(post.publishedAt ?? post.createdAt)}
           </time>
           <span>·</span>
-          <span>조회 {post.viewCount}</span>
+          <ViewCounter slug={post.slug} initial={post.viewCount} />
         </div>
         <h1 className="mt-3 text-3xl font-bold tracking-tight">{post.title}</h1>
         <div className="mt-3 flex flex-wrap gap-2">
