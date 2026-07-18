@@ -23,9 +23,17 @@ const useMock = !BASE;
 
 const DEFAULT_PAGE_SIZE = 6;
 
-async function apiGet<T>(path: string, revalidate = 60): Promise<T> {
+async function apiGet<T>(
+  path: string,
+  revalidate: number | "no-store" = 60,
+): Promise<T> {
+  // "no-store": 매 요청마다 백엔드에서 새로 읽음(캐시 안 함).
+  const cacheInit: RequestInit =
+    revalidate === "no-store"
+      ? { cache: "no-store" }
+      : { next: { revalidate } };
   const res = await fetch(`${BASE}${path}`, {
-    next: { revalidate },
+    ...cacheInit,
     headers: { "Content-Type": "application/json" },
   });
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`);
@@ -83,7 +91,8 @@ export async function getPosts(
 export async function getPost(slug: string): Promise<Post | null> {
   if (!useMock) {
     try {
-      return await apiGet<Post>(`/posts/${slug}`);
+      // 캐시 안 함 → 상세 페이지 진입 시 매번 최신 DB 값(조회수 등)을 읽음
+      return await apiGet<Post>(`/posts/${slug}`, "no-store");
     } catch {
       return null;
     }
