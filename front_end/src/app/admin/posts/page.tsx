@@ -45,7 +45,13 @@ export default function AdminPostsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">글 관리</h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/comments"
+            className="rounded-md border border-black/10 dark:border-white/20 px-3 py-1.5 text-sm"
+          >
+            댓글 관리
+          </Link>
           <Link
             href="/admin/posts/new"
             className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white dark:bg-white dark:text-black"

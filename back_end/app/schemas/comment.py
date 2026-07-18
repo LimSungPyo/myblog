@@ -16,3 +16,20 @@ class CommentOut(CamelModel):
     author_name: str
     content: str
     created_at: datetime
+
+
+class CommentAdminOut(CamelModel):
+    """관리자 목록용: 어느 글의 댓글인지 + 승인 여부 포함."""
+
+    id: int
+    post_id: int
+    post_title: str
+    post_slug: str
+    author_name: str
+    content: str
+    approved: bool
+    created_at: datetime
+
+
+class CommentModerate(CamelModel):
+    approved: bool

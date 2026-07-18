@@ -116,6 +116,17 @@ export interface PostInput {
   status: "draft" | "published";
 }
 
+export interface AdminComment {
+  id: number;
+  postId: number;
+  postTitle: string;
+  postSlug: string;
+  authorName: string;
+  content: string;
+  approved: boolean;
+  createdAt: string;
+}
+
 export const adminApi = {
   listPosts: () => authed<Post[]>("/admin/posts"),
   getPost: (id: number) => authed<Post>(`/admin/posts/${id}`),
@@ -131,4 +142,13 @@ export const adminApi = {
     }),
   deletePost: (id: number) =>
     authed<void>(`/admin/posts/${id}`, { method: "DELETE" }),
+
+  listComments: () => authed<AdminComment[]>("/admin/comments"),
+  moderateComment: (id: number, approved: boolean) =>
+    authed<AdminComment>(`/admin/comments/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ approved }),
+    }),
+  deleteComment: (id: number) =>
+    authed<void>(`/admin/comments/${id}`, { method: "DELETE" }),
 };
