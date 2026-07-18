@@ -23,11 +23,16 @@ const useMock = !BASE;
 
 const DEFAULT_PAGE_SIZE = 6;
 
+/**
+ * 캐시 정책 (correctness by default):
+ * - 기본은 "no-store"(매 요청마다 최신) → 변경이 즉시 반영, stale 버그 예방
+ * - 캐시는 "자주 안 바뀌고 잠깐 stale해도 되는" 데이터에만 revalidate 초를 명시적으로 지정
+ *   (예: 목록 60, 분류/슬러그 300)
+ */
 async function apiGet<T>(
   path: string,
-  revalidate: number | "no-store" = 60,
+  revalidate: number | "no-store" = "no-store",
 ): Promise<T> {
-  // "no-store": 매 요청마다 백엔드에서 새로 읽음(캐시 안 함).
   const cacheInit: RequestInit =
     revalidate === "no-store"
       ? { cache: "no-store" }
@@ -55,7 +60,8 @@ export async function getPosts(
     if (query.category) params.set("category", query.category);
     if (query.tag) params.set("tag", query.tag);
     if (query.q) params.set("q", query.q);
-    return apiGet<Paginated<Post>>(`/posts?${params.toString()}`);
+    // 목록은 캐시 OK (자주 안 바뀌고 잠깐 stale 허용)
+    return apiGet<Paginated<Post>>(`/posts?${params.toString()}`, 60);
   }
 
   // ---- mock ----
@@ -91,8 +97,8 @@ export async function getPosts(
 export async function getPost(slug: string): Promise<Post | null> {
   if (!useMock) {
     try {
-      // 캐시 안 함 → 상세 페이지 진입 시 매번 최신 DB 값(조회수 등)을 읽음
-      return await apiGet<Post>(`/posts/${slug}`, "no-store");
+      // 기본(no-store) → 상세 페이지 진입 시 매번 최신 DB 값(조회수 등)
+      return await apiGet<Post>(`/posts/${slug}`);
     } catch {
       return null;
     }
@@ -120,7 +126,8 @@ export async function getTags(): Promise<Tag[]> {
 /* ---------------- Comments ---------------- */
 
 export async function getComments(slug: string): Promise<Comment[]> {
-  if (!useMock) return apiGet<Comment[]>(`/posts/${slug}/comments`, 10);
+  // 기본(no-store) → 관리자의 숨김/삭제가 즉시 반영
+  if (!useMock) return apiGet<Comment[]>(`/posts/${slug}/comments`);
   const post = mockPosts.find((p) => p.slug === slug);
   if (!post) return [];
   return mockComments.filter((c) => c.postId === post.id);
