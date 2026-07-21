@@ -127,6 +127,23 @@ export interface AdminComment {
   createdAt: string;
 }
 
+export interface TopPost {
+  id: number;
+  title: string;
+  slug: string;
+  viewCount: number;
+}
+
+export interface AdminStats {
+  postCount: number;
+  publishedCount: number;
+  draftCount: number;
+  commentCount: number;
+  pendingCommentCount: number;
+  totalViews: number;
+  topPosts: TopPost[];
+}
+
 export const adminApi = {
   listPosts: () => authed<Post[]>("/admin/posts"),
   getPost: (id: number) => authed<Post>(`/admin/posts/${id}`),
@@ -142,6 +159,8 @@ export const adminApi = {
     }),
   deletePost: (id: number) =>
     authed<void>(`/admin/posts/${id}`, { method: "DELETE" }),
+
+  getStats: () => authed<AdminStats>("/admin/stats"),
 
   listComments: () => authed<AdminComment[]>("/admin/comments"),
   moderateComment: (id: number, approved: boolean) =>

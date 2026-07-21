@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { adminApi, clearToken } from "@/lib/adminApi";
+import { adminApi } from "@/lib/adminApi";
 import type { Post } from "@/lib/types";
 import { formatDate } from "@/lib/format";
 
 export default function AdminPostsPage() {
-  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,36 +33,16 @@ export default function AdminPostsPage() {
     load();
   }
 
-  function logout() {
-    clearToken();
-    router.push("/login");
-    router.refresh();
-  }
-
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">글 관리</h1>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin/comments"
-            className="rounded-md border border-black/10 dark:border-white/20 px-3 py-1.5 text-sm"
-          >
-            댓글 관리
-          </Link>
-          <Link
-            href="/admin/posts/new"
-            className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white dark:bg-white dark:text-black"
-          >
-            새 글
-          </Link>
-          <button
-            onClick={logout}
-            className="rounded-md border border-black/10 dark:border-white/20 px-3 py-1.5 text-sm"
-          >
-            로그아웃
-          </button>
-        </div>
+        <Link
+          href="/admin/posts/new"
+          className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white dark:bg-white dark:text-black"
+        >
+          새 글
+        </Link>
       </div>
 
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}

@@ -38,14 +38,7 @@ export default function AdminCommentsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">댓글 관리</h1>
-        <nav className="flex gap-3 text-sm">
-          <Link href="/admin/posts" className="hover:underline">
-            글 관리
-          </Link>
-        </nav>
-      </div>
+      <h1 className="mb-6 text-2xl font-bold">댓글 관리</h1>
 
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
       {loading ? (
