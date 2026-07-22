@@ -6,6 +6,7 @@ import "./globals.css";
 import { site } from "@/lib/site";
 import SearchBar from "@/components/SearchBar";
 import HeaderAuth from "@/components/HeaderAuth";
+import SiteNav from "@/components/SiteNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,18 +46,21 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <header className="border-b border-black/10 dark:border-white/10">
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4">
-            <Link href="/" className="text-lg font-bold tracking-tight">
-              {site.name}
-            </Link>
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:block">
-                <Suspense fallback={null}>
-                  <SearchBar />
-                </Suspense>
+          <div className="mx-auto max-w-3xl px-4">
+            <div className="flex items-center justify-between gap-4 py-4">
+              <Link href="/" className="text-lg font-bold tracking-tight">
+                {site.name}
+              </Link>
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:block">
+                  <Suspense fallback={null}>
+                    <SearchBar />
+                  </Suspense>
+                </div>
+                <HeaderAuth />
               </div>
-              <HeaderAuth />
             </div>
+            <SiteNav />
           </div>
         </header>
 
