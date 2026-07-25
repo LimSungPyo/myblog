@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { site, social } from "@/config/site";
 import { GithubIcon, NotionIcon, MailIcon } from "@/components/ui/icons";
 
@@ -13,12 +12,9 @@ export default function SiteFooter() {
     <footer className="border-t border-black/10 dark:border-white/10">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-6 text-sm text-neutral-500 sm:flex-row sm:justify-between">
         <div className="flex items-center gap-2">
-          <Image
-            src="/images/logo.png"
-            alt=""
-            width={64}
-            height={64}
-            className="h-6 w-auto dark:invert"
+          <span
+            aria-hidden
+            className="footer-logo-mark block h-6 w-[21px] shrink-0 bg-neutral-700 dark:bg-neutral-300"
           />
           <span className="font-medium text-neutral-700 dark:text-neutral-300">
             {site.name}

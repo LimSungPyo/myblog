@@ -39,6 +39,12 @@ body {
   }
 }
 
+/* 푸터 로고: ∞ 없는 컴퍼스를 마스크로 → 현재 글자색(bg-*)으로 틴트해 워드마크와 정확히 일치 */
+.footer-logo-mark {
+  -webkit-mask: url("/images/logo-hero.png") center / contain no-repeat;
+  mask: url("/images/logo-hero.png") center / contain no-repeat;
+}
+
 /* ---- 마크다운 본문 스타일 ---- */
 .prose-blog {
   line-height: 1.8;
