@@ -7,13 +7,13 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden">
       <Image
-        src="/images/logo.png"
+        src="/images/logo-hero.png"
         alt=""
-        width={640}
-        height={640}
+        width={945}
+        height={1097}
         priority
         aria-hidden
-        className="pointer-events-none absolute -right-4 top-1/2 hidden max-h-[420px] w-auto -translate-y-1/2 opacity-[0.05] dark:opacity-[0.09] dark:invert md:block"
+        className="pointer-events-none absolute right-4 top-[48px] hidden h-[480px] w-auto lg:block"
       />
 
       <div className="relative max-w-xl py-14 sm:py-20">

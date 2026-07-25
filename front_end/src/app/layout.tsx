@@ -48,7 +48,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <header className="border-b border-black/10 dark:border-white/10">
+        <header>
           <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3">
             <Link
               href="/"
@@ -56,14 +56,14 @@ export default function RootLayout({
               className="flex shrink-0 items-center gap-2"
             >
               <Image
-                src="/images/logo.png"
+                src="/images/logo-mark.png"
                 alt=""
-                width={80}
-                height={80}
+                width={540}
+                height={532}
                 priority
-                className="h-9 w-auto dark:invert"
+                className="h-12 w-auto dark:invert"
               />
-              <span className="text-lg font-bold tracking-tight">
+              <span className="text-xl font-bold tracking-tight">
                 {site.name}
               </span>
             </Link>
