@@ -1,4 +1,4 @@
-import type { Category, Comment, Post, Tag } from "./types";
+import type { Category, Comment, Post, Tag } from "@/types";
 
 export const categories: Category[] = [
   { id: 1, name: "개발", slug: "dev" },

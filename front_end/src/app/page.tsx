@@ -1,5 +1,5 @@
 import PostCard from "@/components/PostCard";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/ui/Pagination";
 import { getPosts } from "@/lib/api";
 
 export default async function Home({

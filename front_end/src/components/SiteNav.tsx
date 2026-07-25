@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { nav } from "@/lib/site";
+import { nav } from "@/config/site";
 
 export default function SiteNav() {
   const pathname = usePathname();

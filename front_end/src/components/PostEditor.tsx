@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import "@uiw/react-md-editor/markdown-editor.css";
 import { adminApi, type PostInput } from "@/lib/adminApi";
 import { slugify } from "@/lib/slug";
-import type { Category, Post, Tag } from "@/lib/types";
+import type { Category, Post, Tag } from "@/types";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 

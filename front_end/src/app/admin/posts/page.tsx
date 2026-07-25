@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { adminApi } from "@/lib/adminApi";
-import type { Post } from "@/lib/types";
+import type { Post } from "@/types";
 import { formatDate } from "@/lib/format";
 
 export default function AdminPostsPage() {

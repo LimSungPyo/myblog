@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getComments, getPost } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import { site } from "@/lib/site";
-import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { site } from "@/config/site";
+import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
 import CommentSection from "@/components/CommentSection";
 import ViewCounter from "@/components/ViewCounter";
 

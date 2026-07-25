@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PostCard from "@/components/PostCard";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/ui/Pagination";
 import { getCategories, getPosts } from "@/lib/api";
 
 export async function generateMetadata({

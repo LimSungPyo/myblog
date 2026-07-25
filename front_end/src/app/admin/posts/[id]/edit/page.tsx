@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import PostEditor from "@/components/PostEditor";
 import { adminApi } from "@/lib/adminApi";
-import type { Post } from "@/lib/types";
+import type { Post } from "@/types";
 
 export default function EditPostPage({
   params,

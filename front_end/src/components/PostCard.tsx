@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Post } from "@/lib/types";
+import type { Post } from "@/types";
 import { formatDate } from "@/lib/format";
 
 export default function PostCard({ post }: { post: Post }) {

@@ -5,7 +5,7 @@ import type {
   Post,
   PostQuery,
   Tag,
-} from "./types";
+} from "@/types";
 import {
   categories as mockCategories,
   comments as mockComments,

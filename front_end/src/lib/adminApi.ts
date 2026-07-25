@@ -1,6 +1,6 @@
 "use client";
 
-import type { Post } from "./types";
+import type { Post } from "@/types";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 const TOKEN_COOKIE = "auth_token";

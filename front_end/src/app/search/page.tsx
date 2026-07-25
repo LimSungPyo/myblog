@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PostCard from "@/components/PostCard";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/ui/Pagination";
 import SearchBar from "@/components/SearchBar";
 import { getPosts } from "@/lib/api";
 

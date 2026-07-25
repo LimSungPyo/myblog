@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import "./globals.css";
-import { site } from "@/lib/site";
+import { site } from "@/config/site";
 import SearchBar from "@/components/SearchBar";
 import HeaderAuth from "@/components/HeaderAuth";
 import SiteNav from "@/components/SiteNav";

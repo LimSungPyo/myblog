@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Comment } from "@/lib/types";
+import type { Comment } from "@/types";
 import { formatDate } from "@/lib/format";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
