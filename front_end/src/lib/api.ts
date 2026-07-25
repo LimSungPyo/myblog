@@ -60,8 +60,9 @@ export async function getPosts(
     if (query.category) params.set("category", query.category);
     if (query.tag) params.set("tag", query.tag);
     if (query.q) params.set("q", query.q);
-    // 목록은 캐시 OK (자주 안 바뀌고 잠깐 stale 허용)
-    return apiGet<Paginated<Post>>(`/posts?${params.toString()}`, 60);
+    // 기본(no-store) → 관리자의 글 삭제/발행이 홈·목록에 즉시 반영 (stale 방지).
+    // 이 fetch가 no-store라 홈/카테고리/태그/검색이 동적 렌더 → 클라이언트 네비게이션에도 최신.
+    return apiGet<Paginated<Post>>(`/posts?${params.toString()}`);
   }
 
   // ---- mock ----
