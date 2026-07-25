@@ -43,7 +43,7 @@ export default async function PostPage({
   const comments = await getComments(slug);
 
   return (
-    <article>
+    <article className="mx-auto max-w-3xl">
       <header className="mb-8">
         <div className="flex items-center gap-2 text-sm text-neutral-500">
           {post.category && (

@@ -8,6 +8,8 @@ import { site } from "@/config/site";
 import SearchBar from "@/components/SearchBar";
 import HeaderAuth from "@/components/HeaderAuth";
 import SiteNav from "@/components/SiteNav";
+import ThemeToggle from "@/components/ThemeToggle";
+import SiteFooter from "@/components/SiteFooter";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,39 +49,44 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <header className="border-b border-black/10 dark:border-white/10">
-          <div className="mx-auto flex max-w-5xl items-center gap-5 px-4 py-2">
-            <Link href="/" aria-label={site.name} className="shrink-0">
+          <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3">
+            <Link
+              href="/"
+              aria-label={site.name}
+              className="flex shrink-0 items-center gap-2"
+            >
               <Image
                 src="/images/logo.png"
-                alt={site.name}
-                width={128}
-                height={128}
+                alt=""
+                width={80}
+                height={80}
                 priority
-                className="h-16 w-auto sm:h-32 dark:invert"
+                className="h-9 w-auto dark:invert"
               />
+              <span className="text-lg font-bold tracking-tight">
+                {site.name}
+              </span>
             </Link>
-            <SiteNav />
-            <div className="ml-auto flex items-center gap-4">
-              <div className="hidden md:block">
+
+            <SiteNav className="hidden justify-self-center md:flex" />
+
+            <div className="flex items-center gap-2 justify-self-end">
+              <div className="hidden sm:block">
                 <Suspense fallback={null}>
                   <SearchBar />
                 </Suspense>
               </div>
+              <ThemeToggle />
               <HeaderAuth />
             </div>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
           {children}
         </main>
 
-        <footer className="border-t border-black/10 dark:border-white/10">
-          <div className="mx-auto max-w-3xl px-4 py-6 text-sm text-neutral-500">
-            © {new Date().getFullYear()} {site.name}. Built with Next.js &
-            FastAPI.
-          </div>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

@@ -31,7 +31,7 @@ export default async function TagPage({
   const { items, totalPages } = await getPosts({ tag: slug, page });
 
   return (
-    <div>
+    <div className="mx-auto max-w-3xl">
       <h1 className="mb-6 text-2xl font-bold tracking-tight">#{tag.name}</h1>
 
       {items.length === 0 ? (

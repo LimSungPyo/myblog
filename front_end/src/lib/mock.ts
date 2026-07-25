@@ -4,6 +4,7 @@ export const categories: Category[] = [
   { id: 1, name: "개발", slug: "dev" },
   { id: 2, name: "회고", slug: "retro" },
   { id: 3, name: "일상", slug: "life" },
+  { id: 4, name: "공부 기록", slug: "study" },
 ];
 
 export const tags: Tag[] = [

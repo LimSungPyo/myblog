@@ -44,6 +44,7 @@ def seed() -> None:
             "dev": Category(name="개발", slug="dev"),
             "retro": Category(name="회고", slug="retro"),
             "life": Category(name="일상", slug="life"),
+            "study": Category(name="공부 기록", slug="study"),
         }
         db.add_all(cats.values())
 

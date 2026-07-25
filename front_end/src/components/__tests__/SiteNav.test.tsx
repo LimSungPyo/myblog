@@ -13,7 +13,14 @@ describe("SiteNav", () => {
 
   it("모든 메뉴를 렌더한다", () => {
     render(<SiteNav />);
-    for (const label of ["소개", "개발", "일상", "방명록"]) {
+    for (const label of [
+      "소개",
+      "개발",
+      "공부 기록",
+      "일상",
+      "미니게임",
+      "방명록",
+    ]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
   });

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function GuestbookPage() {
   return (
-    <div>
+    <div className="mx-auto max-w-3xl">
       <h1 className="mb-4 text-3xl font-bold tracking-tight">방명록</h1>
       <div className="rounded-xl border border-dashed border-black/15 p-10 text-center dark:border-white/20">
         <p className="text-neutral-500">방명록은 준비 중입니다. 🚧</p>
