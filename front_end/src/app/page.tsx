@@ -5,7 +5,7 @@ import { ArrowRightIcon } from "@/components/ui/icons";
 import { getPosts } from "@/lib/api";
 
 export default async function Home() {
-  const { items } = await getPosts({ page: 1, pageSize: 4 });
+  const { items } = await getPosts({ page: 1, pageSize: 2 });
 
   return (
     <div>
