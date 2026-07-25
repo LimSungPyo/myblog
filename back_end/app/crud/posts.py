@@ -28,8 +28,18 @@ def list_posts(
     if tag:
         stmt = stmt.join(Post.tags).where(Tag.slug == tag)
     if q:
-        like = f"%{q}%"
-        stmt = stmt.where(or_(Post.title.ilike(like), Post.content.ilike(like)))
+        q = q.strip()
+        if q.startswith("#"):
+            # "#태그명" → 태그 검색 (이름/슬러그 부분 일치)
+            term = q[1:].strip()
+            if term:
+                like = f"%{term}%"
+                stmt = stmt.join(Post.tags).where(
+                    or_(Tag.name.ilike(like), Tag.slug.ilike(like))
+                )
+        else:
+            like = f"%{q}%"
+            stmt = stmt.where(or_(Post.title.ilike(like), Post.content.ilike(like)))
 
     # 정렬: 발행일(없으면 생성일) 최신순
     stmt = stmt.order_by(Post.published_at.desc().nullslast(), Post.created_at.desc())

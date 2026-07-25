@@ -26,6 +26,28 @@ describe("getPosts (mock 모드)", () => {
     const { items } = await getPosts({ category: "dev" });
     expect(items.every((p) => p.category?.slug === "dev")).toBe(true);
   });
+
+  it("#슬러그 로 태그 검색", async () => {
+    const { items } = await getPosts({ q: "#nextjs" });
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.every((p) => p.tags.some((t) => t.slug === "nextjs"))).toBe(
+      true,
+    );
+  });
+
+  it("#이름 은 대소문자·점 무시하고 태그 검색", async () => {
+    const { items } = await getPosts({ q: "#Next.js" });
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.every((p) => p.tags.some((t) => t.name === "Next.js"))).toBe(
+      true,
+    );
+  });
+
+  it("#검색은 제목/본문이 아닌 태그만 매칭", async () => {
+    // 존재하지 않는 태그 → 제목/본문에 같은 단어가 있어도 0건
+    const { items } = await getPosts({ q: "#블로그" });
+    expect(items).toHaveLength(0);
+  });
 });
 
 describe("getPost (mock 모드)", () => {

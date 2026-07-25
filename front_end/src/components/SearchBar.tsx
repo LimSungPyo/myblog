@@ -20,7 +20,7 @@ export default function SearchBar() {
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="검색어를 입력하세요"
+        placeholder="검색 (#태그명)"
         aria-label="글 검색"
         className="w-full rounded-full border border-black/10 dark:border-white/20 bg-transparent px-4 py-2 text-sm outline-none focus:border-blue-500"
       />

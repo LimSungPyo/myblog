@@ -39,6 +39,29 @@ def test_search_matches_title(client, make_post):
     assert slugs == ["a"]
 
 
+def test_search_hashtag_matches_tag_by_slug(client, make_post, tag):
+    # tag 픽스처: name="Next.js", slug="nextjs"
+    make_post(slug="tagged", tags=[tag])
+    make_post(slug="untagged")
+    body = client.get("/posts", params={"q": "#nextjs"}).json()
+    assert [p["slug"] for p in body["items"]] == ["tagged"]
+
+
+def test_search_hashtag_matches_tag_by_name(client, make_post, tag):
+    make_post(slug="tagged", tags=[tag])
+    make_post(slug="untagged")
+    # 이름(대소문자·점 포함)으로도 매칭
+    body = client.get("/posts", params={"q": "#Next.js"}).json()
+    assert [p["slug"] for p in body["items"]] == ["tagged"]
+
+
+def test_search_hashtag_ignores_title(client, make_post):
+    # 제목에 nextjs가 있어도 태그가 없으면 #검색엔 안 걸림
+    make_post(slug="a", title="nextjs 튜토리얼")
+    body = client.get("/posts", params={"q": "#nextjs"}).json()
+    assert body["items"] == []
+
+
 def test_get_does_not_increment_view(client, make_post):
     make_post(slug="a", status="published")
     v1 = client.get("/posts/a").json()["viewCount"]

@@ -71,12 +71,26 @@ export async function getPosts(
   if (query.tag)
     items = items.filter((p) => p.tags.some((t) => t.slug === query.tag));
   if (query.q) {
-    const q = query.q.toLowerCase();
-    items = items.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.content.toLowerCase().includes(q),
-    );
+    const raw = query.q.trim();
+    if (raw.startsWith("#")) {
+      // "#태그명" → 태그(이름/슬러그) 검색
+      const term = raw.slice(1).trim().toLowerCase();
+      if (term)
+        items = items.filter((p) =>
+          p.tags.some(
+            (t) =>
+              t.name.toLowerCase().includes(term) ||
+              t.slug.toLowerCase().includes(term),
+          ),
+        );
+    } else {
+      const q = raw.toLowerCase();
+      items = items.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.content.toLowerCase().includes(q),
+      );
+    }
   }
   items = [...items].sort(
     (a, b) =>
