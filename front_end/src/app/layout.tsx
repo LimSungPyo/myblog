@@ -47,28 +47,26 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <header className="border-b border-black/10 dark:border-white/10">
-          <div className="mx-auto max-w-3xl px-4">
-            <div className="flex items-center justify-between gap-4 py-4">
-              <Link href="/" aria-label={site.name} className="shrink-0">
-                <Image
-                  src="/images/logo.png"
-                  alt={site.name}
-                  width={44}
-                  height={44}
-                  priority
-                  className="dark:invert"
-                />
-              </Link>
-              <div className="flex items-center gap-4">
-                <div className="hidden sm:block">
-                  <Suspense fallback={null}>
-                    <SearchBar />
-                  </Suspense>
-                </div>
-                <HeaderAuth />
-              </div>
-            </div>
+          <div className="mx-auto flex max-w-5xl items-center gap-5 px-4 py-2">
+            <Link href="/" aria-label={site.name} className="shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt={site.name}
+                width={128}
+                height={128}
+                priority
+                className="h-16 w-auto sm:h-32 dark:invert"
+              />
+            </Link>
             <SiteNav />
+            <div className="ml-auto flex items-center gap-4">
+              <div className="hidden md:block">
+                <Suspense fallback={null}>
+                  <SearchBar />
+                </Suspense>
+              </div>
+              <HeaderAuth />
+            </div>
           </div>
         </header>
 

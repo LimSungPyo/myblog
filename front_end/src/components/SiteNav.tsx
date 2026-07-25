@@ -11,7 +11,7 @@ export default function SiteNav() {
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <nav className="flex gap-1 pb-3 text-sm">
+    <nav className="flex gap-1 text-sm">
       {nav.map((item) => (
         <Link
           key={item.href}
