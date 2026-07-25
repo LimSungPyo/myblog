@@ -1,18 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  getToken,
-  isAdmin,
-  isLoggedIn,
-  clearToken,
-  login,
-  signup,
-} from "@/lib/adminApi";
+import { getToken, clearToken, login } from "@/lib/adminApi";
 
 function clearCookies() {
   document.cookie.split(";").forEach((c) => {
     const name = c.split("=")[0].trim();
     if (name) document.cookie = `${name}=; max-age=0; path=/`;
   });
+}
+
+function hasCookie(kv: string) {
+  return document.cookie.split("; ").includes(kv);
 }
 
 function mockFetch(res: { ok: boolean; status: number; body?: unknown }) {
@@ -32,13 +29,11 @@ describe("adminApi 세션(쿠키)", () => {
     vi.unstubAllGlobals();
   });
 
-  it("초기 상태는 미로그인", () => {
-    expect(isLoggedIn()).toBe(false);
+  it("초기 상태는 토큰 없음", () => {
     expect(getToken()).toBeNull();
-    expect(isAdmin()).toBe(false);
   });
 
-  it("login 성공 시 토큰·isAdmin 쿠키 저장", async () => {
+  it("login 성공 시 토큰·is_admin 쿠키 저장", async () => {
     mockFetch({
       ok: true,
       status: 200,
@@ -47,8 +42,8 @@ describe("adminApi 세션(쿠키)", () => {
     const res = await login("admin", "pw");
     expect(res.isAdmin).toBe(true);
     expect(getToken()).toBe("tok");
-    expect(isAdmin()).toBe(true);
-    expect(isLoggedIn()).toBe(true);
+    // 프록시(/admin 게이팅)가 읽는 쿠키
+    expect(hasCookie("is_admin=1")).toBe(true);
   });
 
   it("login 실패 시 예외", async () => {
@@ -56,21 +51,16 @@ describe("adminApi 세션(쿠키)", () => {
     await expect(login("x", "y")).rejects.toThrow();
   });
 
-  it("signup 중복(409) 시 안내 메시지", async () => {
-    mockFetch({ ok: false, status: 409 });
-    await expect(signup("a", "bbbb")).rejects.toThrow("이미 사용");
-  });
-
-  it("clearToken 후 미로그인 상태", async () => {
+  it("clearToken 후 토큰·쿠키 제거", async () => {
     mockFetch({
       ok: true,
-      status: 201,
-      body: { accessToken: "t", isAdmin: false },
+      status: 200,
+      body: { accessToken: "t", isAdmin: true },
     });
-    await signup("newbie", "pass");
-    expect(isLoggedIn()).toBe(true);
+    await login("admin", "pw");
+    expect(getToken()).toBe("t");
     clearToken();
-    expect(isLoggedIn()).toBe(false);
-    expect(isAdmin()).toBe(false);
+    expect(getToken()).toBeNull();
+    expect(hasCookie("is_admin=1")).toBe(false);
   });
 });

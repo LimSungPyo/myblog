@@ -25,14 +25,6 @@ export function getToken(): string | null {
   return readCookie(TOKEN_COOKIE);
 }
 
-export function isAdmin(): boolean {
-  return readCookie(ADMIN_COOKIE) === "1";
-}
-
-export function isLoggedIn(): boolean {
-  return !!getToken();
-}
-
 function setSession({ accessToken, isAdmin }: AuthResult) {
   const maxAge = 60 * 60 * 24 * 7; // 7일
   document.cookie = `${TOKEN_COOKIE}=${encodeURIComponent(accessToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
@@ -64,23 +56,6 @@ export async function login(
     body: JSON.stringify({ username, password }),
   });
   if (!res.ok) throw new Error("아이디 또는 비밀번호가 올바르지 않습니다.");
-  const data: AuthResult = await res.json();
-  setSession(data);
-  return data;
-}
-
-export async function signup(
-  username: string,
-  password: string,
-): Promise<AuthResult> {
-  ensureConfigured();
-  const res = await fetch(`${PUBLIC_API}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-  if (res.status === 409) throw new Error("이미 사용 중인 아이디입니다.");
-  if (!res.ok) throw new Error("회원가입에 실패했습니다.");
   const data: AuthResult = await res.json();
   setSession(data);
   return data;

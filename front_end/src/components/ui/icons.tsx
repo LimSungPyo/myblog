@@ -30,6 +30,17 @@ export function MoonIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function KeyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} aria-hidden {...props}>
+      <circle cx="8" cy="12" r="4.5" />
+      <circle cx="8" cy="12" r="1" fill="currentColor" stroke="none" />
+      <path d="M12.5 12H21v3" />
+      <path d="M17 12v2" />
+    </svg>
+  );
+}
+
 export function FolderIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} aria-hidden {...props}>
