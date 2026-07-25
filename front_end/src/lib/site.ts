@@ -1,6 +1,6 @@
 export const site = {
-  name: "myblog",
-  title: "myblog — 개발과 일상 기록",
+  name: "SlowNSteady",
+  title: "SlowNSteady — 개발과 일상 기록",
   description:
     "Next.js와 FastAPI로 만든 개인 블로그. 개발 공부와 일상을 기록합니다.",
   // 배포 후 실제 도메인으로 교체 (Vercel URL 등). env로 덮어쓸 수 있음.
