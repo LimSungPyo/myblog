@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import "./globals.css";
@@ -48,8 +49,15 @@ export default function RootLayout({
         <header className="border-b border-black/10 dark:border-white/10">
           <div className="mx-auto max-w-3xl px-4">
             <div className="flex items-center justify-between gap-4 py-4">
-              <Link href="/" className="text-lg font-bold tracking-tight">
-                {site.name}
+              <Link href="/" aria-label={site.name} className="shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt={site.name}
+                  width={44}
+                  height={44}
+                  priority
+                  className="dark:invert"
+                />
               </Link>
               <div className="flex items-center gap-4">
                 <div className="hidden sm:block">
