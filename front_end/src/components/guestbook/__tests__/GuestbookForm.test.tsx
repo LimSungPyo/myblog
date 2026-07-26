@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -10,7 +10,15 @@ vi.mock("next/navigation", () => ({
 import GuestbookForm from "@/components/guestbook/GuestbookForm";
 
 describe("GuestbookForm", () => {
-  beforeEach(() => refresh.mockClear());
+  beforeEach(() => {
+    refresh.mockClear();
+    // 실제 서버 대신 성공 응답을 반환하도록 fetch를 목킹 (서버 실행 여부와 무관하게)
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, status: 201, json: async () => ({}) }),
+    );
+  });
+  afterEach(() => vi.unstubAllGlobals());
 
   it("이름/메시지가 비면 에러 표시", async () => {
     render(<GuestbookForm />);
