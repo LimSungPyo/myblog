@@ -13,12 +13,7 @@ describe("GuestbookForm", () => {
   beforeEach(() => {
     refresh.mockClear();
     // 실제 서버 대신 성공 응답을 반환하도록 fetch를 목킹 (서버 실행 여부와 무관하게)
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValue({ ok: true, status: 201, json: async () => ({}) }),
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
   });
   afterEach(() => vi.unstubAllGlobals());
 
