@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { getPosts, getPost, getAllPublishedSlugs } from "@/lib/api";
+import {
+  getPosts,
+  getPost,
+  getAllPublishedSlugs,
+  getGuestbook,
+} from "@/lib/api";
 
 // API_BASE_URL 미설정 → lib/api.ts는 mock 데이터로 동작
 
@@ -64,5 +69,15 @@ describe("getAllPublishedSlugs (mock 모드)", () => {
   it("발행글 slug 목록 반환", async () => {
     const slugs = await getAllPublishedSlugs();
     expect(slugs).toContain("why-nextjs-for-blog");
+  });
+});
+
+describe("getGuestbook (mock 모드)", () => {
+  it("페이지네이션된 방명록 반환", async () => {
+    const { items, total, pageSize, totalPages } = await getGuestbook(1);
+    expect(total).toBeGreaterThan(0);
+    expect(items.length).toBeLessThanOrEqual(pageSize);
+    expect(totalPages).toBeGreaterThanOrEqual(1);
+    expect(items[0]).toHaveProperty("authorName");
   });
 });

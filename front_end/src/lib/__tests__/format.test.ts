@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { formatDate, formatShortDate, readingMinutes } from "@/lib/format";
+import {
+  formatDate,
+  formatShortDate,
+  formatRelativeTime,
+  readingMinutes,
+} from "@/lib/format";
 
 describe("formatDate", () => {
   it("null이면 빈 문자열", () => {
@@ -18,6 +23,20 @@ describe("formatShortDate", () => {
   });
   it("YYYY.MM.DD 형태로 0 패딩", () => {
     expect(formatShortDate("2026-07-08T00:00:00")).toBe("2026.07.08");
+  });
+});
+
+describe("formatRelativeTime", () => {
+  it("방금 전", () => {
+    expect(formatRelativeTime(new Date().toISOString())).toBe("방금 전");
+  });
+  it("N시간 전", () => {
+    const iso = new Date(Date.now() - 5 * 3600_000).toISOString();
+    expect(formatRelativeTime(iso)).toBe("5시간 전");
+  });
+  it("N일 전", () => {
+    const iso = new Date(Date.now() - 3 * 86_400_000).toISOString();
+    expect(formatRelativeTime(iso)).toBe("3일 전");
   });
 });
 

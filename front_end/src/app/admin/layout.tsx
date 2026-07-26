@@ -8,6 +8,7 @@ const NAV = [
   { href: "/admin", label: "대시보드" },
   { href: "/admin/posts", label: "글 관리" },
   { href: "/admin/comments", label: "댓글 관리" },
+  { href: "/admin/guestbook", label: "방명록 관리" },
 ];
 
 export default function AdminLayout({

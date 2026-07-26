@@ -34,6 +34,13 @@ export interface Comment {
   createdAt: string;
 }
 
+export interface GuestbookEntry {
+  id: number;
+  authorName: string;
+  content: string;
+  createdAt: string;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

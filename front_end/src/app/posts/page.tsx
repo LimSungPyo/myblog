@@ -19,7 +19,7 @@ export default async function PostsPage({
   const { items, totalPages } = await getPosts({ page });
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto w-full max-w-3xl">
       <h1 className="mb-8 text-2xl font-bold tracking-tight">전체 글</h1>
 
       {items.length === 0 ? (

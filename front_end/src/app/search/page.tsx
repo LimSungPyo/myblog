@@ -23,7 +23,7 @@ export default async function SearchPage({
   const tagTerm = isTagSearch ? query.slice(1).trim() : "";
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto w-full max-w-3xl">
       <h1 className="mb-4 text-2xl font-bold tracking-tight">검색</h1>
       <div className="mb-6">
         <SearchBar />

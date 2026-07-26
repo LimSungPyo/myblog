@@ -1,6 +1,6 @@
 "use client";
 
-import type { Post } from "@/types";
+import type { GuestbookEntry, Post } from "@/types";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 const TOKEN_COOKIE = "auth_token";
@@ -145,4 +145,8 @@ export const adminApi = {
     }),
   deleteComment: (id: number) =>
     authed<void>(`/admin/comments/${id}`, { method: "DELETE" }),
+
+  listGuestbook: () => authed<GuestbookEntry[]>("/admin/guestbook"),
+  deleteGuestbook: (id: number) =>
+    authed<void>(`/admin/guestbook/${id}`, { method: "DELETE" }),
 };

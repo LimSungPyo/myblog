@@ -31,7 +31,7 @@ export default async function CategoryPage({
   const { items, totalPages } = await getPosts({ category: slug, page });
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto w-full max-w-3xl">
       <h1 className="mb-6 text-2xl font-bold tracking-tight">
         <span className="text-neutral-400">카테고리 · </span>
         {category.name}

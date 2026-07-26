@@ -1,4 +1,4 @@
-import type { Category, Comment, Post, Tag } from "@/types";
+import type { Category, Comment, GuestbookEntry, Post, Tag } from "@/types";
 
 export const categories: Category[] = [
   { id: 1, name: "개발", slug: "dev" },
@@ -106,5 +106,32 @@ export const comments: Comment[] = [
     authorName: "방문자",
     content: "SSR 설명이 깔끔하네요!",
     createdAt: "2026-07-11T02:00:00Z",
+  },
+];
+
+export const guestbook: GuestbookEntry[] = [
+  {
+    id: 1,
+    authorName: "김민수",
+    content: "정말 깔끔하고 멋진 사이트네요! 많은 영감을 받고 갑니다.",
+    createdAt: "2026-07-26T00:00:00Z",
+  },
+  {
+    id: 2,
+    authorName: "이지은",
+    content: "공부 기록 정리 방식이 너무 인상 깊어요. 저도 자극받았습니다 😊",
+    createdAt: "2026-07-25T00:00:00Z",
+  },
+  {
+    id: 3,
+    authorName: "Park J",
+    content: "꾸준함이 느껴지는 공간이네요. 앞으로도 응원할게요!",
+    createdAt: "2026-07-23T00:00:00Z",
+  },
+  {
+    id: 4,
+    authorName: "익명",
+    content: "조용하고 좋은 분위기예요. 자주 놀러올게요.",
+    createdAt: "2026-07-21T00:00:00Z",
   },
 ];

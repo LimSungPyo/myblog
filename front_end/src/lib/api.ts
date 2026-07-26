@@ -1,6 +1,7 @@
 import type {
   Category,
   Comment,
+  GuestbookEntry,
   Paginated,
   Post,
   PostQuery,
@@ -9,6 +10,7 @@ import type {
 import {
   categories as mockCategories,
   comments as mockComments,
+  guestbook as mockGuestbook,
   posts as mockPosts,
   tags as mockTags,
 } from "./mock";
@@ -146,4 +148,29 @@ export async function getComments(slug: string): Promise<Comment[]> {
   const post = mockPosts.find((p) => p.slug === slug);
   if (!post) return [];
   return mockComments.filter((c) => c.postId === post.id);
+}
+
+/* ---------------- Guestbook ---------------- */
+
+const GUESTBOOK_PAGE_SIZE = 4;
+
+export async function getGuestbook(
+  page = 1,
+): Promise<Paginated<GuestbookEntry>> {
+  // 기본(no-store) → 새 방명록/삭제가 즉시 반영
+  if (!useMock)
+    return apiGet<Paginated<GuestbookEntry>>(
+      `/guestbook?page=${page}&pageSize=${GUESTBOOK_PAGE_SIZE}`,
+    );
+
+  const total = mockGuestbook.length;
+  const totalPages = Math.max(1, Math.ceil(total / GUESTBOOK_PAGE_SIZE));
+  const start = (page - 1) * GUESTBOOK_PAGE_SIZE;
+  return {
+    items: mockGuestbook.slice(start, start + GUESTBOOK_PAGE_SIZE),
+    total,
+    page,
+    pageSize: GUESTBOOK_PAGE_SIZE,
+    totalPages,
+  };
 }

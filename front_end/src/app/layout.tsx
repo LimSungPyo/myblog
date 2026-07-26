@@ -48,7 +48,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col overflow-x-hidden">
         {/* 페인트 전에 테마 적용 → 새로고침 시 라이트/다크 깜빡임(FOUC) 방지 */}
         <script
           dangerouslySetInnerHTML={{
@@ -89,7 +89,7 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8">
           {children}
         </main>
 

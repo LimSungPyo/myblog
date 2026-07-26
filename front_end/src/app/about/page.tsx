@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <article className="prose-blog mx-auto max-w-3xl">
+    <article className="prose-blog mx-auto w-full max-w-3xl">
       <h1 className="text-3xl font-bold tracking-tight">소개</h1>
       <p>
         안녕하세요! 개발 공부와 일상을 기록하는 개인 블로그입니다. 이 페이지는
@@ -23,8 +23,7 @@ export default function AboutPage() {
           <strong>일상</strong> — 소소한 이야기
         </li>
         <li>
-          <strong>방명록</strong> — 방문자들이 가볍게 남기는 인스턴트 글 (준비
-          중)
+          <strong>방명록</strong> — 방문자들이 가볍게 남기는 인스턴트 글
         </li>
       </ul>
 
