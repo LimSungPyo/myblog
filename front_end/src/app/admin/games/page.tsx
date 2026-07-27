@@ -58,9 +58,7 @@ export default function AdminGamesPage() {
                 </span>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="truncate font-medium">
-                      {s.playerName}
-                    </span>
+                    <span className="truncate font-medium">{s.playerName}</span>
                     <span className="font-bold tabular-nums text-[#10213a] dark:text-white">
                       {s.score.toLocaleString()}점
                     </span>

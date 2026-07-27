@@ -1,7 +1,5 @@
 def test_create_score_returns_entry(client):
-    r = client.post(
-        "/games/2048/scores", json={"playerName": "홍길동", "score": 1024}
-    )
+    r = client.post("/games/2048/scores", json={"playerName": "홍길동", "score": 1024})
     assert r.status_code == 201
     d = r.json()
     assert d["gameKey"] == "2048"
@@ -39,9 +37,7 @@ def test_unknown_game_key_404(client):
 
 def test_list_scores_ordered_by_score_desc(client):
     for name, score in [("low", 100), ("high", 5000), ("mid", 1000)]:
-        client.post(
-            "/games/2048/scores", json={"playerName": name, "score": score}
-        )
+        client.post("/games/2048/scores", json={"playerName": name, "score": score})
     body = client.get("/games/2048/scores").json()
     scores = [row["score"] for row in body]
     assert scores == sorted(scores, reverse=True)
@@ -62,9 +58,7 @@ def test_list_scores_tie_earliest_first(client):
 
 def test_list_scores_respects_limit(client):
     for i in range(5):
-        client.post(
-            "/games/2048/scores", json={"playerName": f"p{i}", "score": i * 10}
-        )
+        client.post("/games/2048/scores", json={"playerName": f"p{i}", "score": i * 10})
     body = client.get("/games/2048/scores?limit=3").json()
     assert len(body) == 3
 
@@ -90,9 +84,7 @@ def test_admin_can_delete_score(client, admin_headers):
     ).json()
     sid = created["id"]
     assert (
-        client.delete(
-            f"/admin/games/scores/{sid}", headers=admin_headers
-        ).status_code
+        client.delete(f"/admin/games/scores/{sid}", headers=admin_headers).status_code
         == 204
     )
     body = client.get("/games/2048/scores").json()
@@ -106,8 +98,6 @@ def test_admin_scores_requires_admin(client, user_headers):
 
 def test_admin_delete_missing_score_404(client, admin_headers):
     assert (
-        client.delete(
-            "/admin/games/scores/999999", headers=admin_headers
-        ).status_code
+        client.delete("/admin/games/scores/999999", headers=admin_headers).status_code
         == 404
     )

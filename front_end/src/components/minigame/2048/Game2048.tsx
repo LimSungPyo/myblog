@@ -62,19 +62,16 @@ export default function Game2048({
     setPhase("playing");
   }, []);
 
-  const applyMove = useCallback(
-    (dir: Direction) => {
-      setBoard((prev) => {
-        const res = move(prev, dir);
-        if (!res.moved) return prev;
-        const next = spawnTile(res.board);
-        setScore((s) => s + res.gained);
-        if (isGameOver(next)) setPhase("over");
-        return next;
-      });
-    },
-    [],
-  );
+  const applyMove = useCallback((dir: Direction) => {
+    setBoard((prev) => {
+      const res = move(prev, dir);
+      if (!res.moved) return prev;
+      const next = spawnTile(res.board);
+      setScore((s) => s + res.gained);
+      if (isGameOver(next)) setPhase("over");
+      return next;
+    });
+  }, []);
 
   // 키보드 입력 (방향키 + WASD). 플레이 중에만 동작.
   useEffect(() => {

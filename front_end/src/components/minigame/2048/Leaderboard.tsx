@@ -12,15 +12,12 @@ export default function Leaderboard({
 }) {
   return (
     <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_6px_16px_rgba(0,0,0,0.05)] dark:border-white/10 dark:bg-neutral-900 dark:shadow-none">
-      <h2 className="flex items-center gap-2 text-lg font-bold">
-        🏆 순위
-      </h2>
+      <h2 className="flex items-center gap-2 text-lg font-bold">🏆 순위</h2>
 
       {scores.length === 0 ? (
         <p className="mt-4 text-sm text-neutral-500">
           아직 등록된 점수가 없어요.
-          <br />
-          첫 기록의 주인공이 되어보세요!
+          <br />첫 기록의 주인공이 되어보세요!
         </p>
       ) : (
         <ol className="mt-4 space-y-1.5">

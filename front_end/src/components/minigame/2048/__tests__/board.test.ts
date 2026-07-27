@@ -137,25 +137,25 @@ describe("hasWon", () => {
     expect(hasWon(board)).toBe(true);
   });
   it("없으면 승리 아님", () => {
-    expect(hasWon([
-      [2, 4, 8, 16],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ])).toBe(false);
+    expect(
+      hasWon([
+        [2, 4, 8, 16],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]),
+    ).toBe(false);
   });
 });
 
 describe("spawnTile / initBoard", () => {
   it("빈 칸 하나를 채운다", () => {
-    const before = emptyCells(
-      [
-        [2, 2, 2, 2],
-        [2, 2, 2, 2],
-        [2, 2, 2, 0],
-        [2, 2, 2, 2],
-      ],
-    ).length;
+    const before = emptyCells([
+      [2, 2, 2, 2],
+      [2, 2, 2, 2],
+      [2, 2, 2, 0],
+      [2, 2, 2, 2],
+    ]).length;
     const next = spawnTile(
       [
         [2, 2, 2, 2],
@@ -180,6 +180,11 @@ describe("spawnTile / initBoard", () => {
 describe("boardsEqual", () => {
   it("같은 보드는 true", () => {
     const a: Board = initBoard(() => 0.1);
-    expect(boardsEqual(a, a.map((r) => [...r]))).toBe(true);
+    expect(
+      boardsEqual(
+        a,
+        a.map((r) => [...r]),
+      ),
+    ).toBe(true);
   });
 });

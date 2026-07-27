@@ -6,7 +6,8 @@ import { getTopScores } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "2048",
-  description: "같은 숫자를 합쳐 2048을 만드는 미니게임. 최고 점수에 도전하세요.",
+  description:
+    "같은 숫자를 합쳐 2048을 만드는 미니게임. 최고 점수에 도전하세요.",
 };
 
 export default async function Game2048Page() {
