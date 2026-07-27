@@ -3,10 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import (
     admin_comments,
+    admin_games,
     admin_guestbook,
     admin_posts,
     admin_stats,
     auth,
+    games,
     guestbook,
     posts,
     taxonomy,
@@ -27,10 +29,12 @@ app.include_router(auth.router)
 app.include_router(posts.router)
 app.include_router(taxonomy.router)
 app.include_router(guestbook.router)
+app.include_router(games.router)
 app.include_router(admin_posts.router)
 app.include_router(admin_comments.router)
 app.include_router(admin_stats.router)
 app.include_router(admin_guestbook.router)
+app.include_router(admin_games.router)
 
 
 @app.get("/health", tags=["meta"])

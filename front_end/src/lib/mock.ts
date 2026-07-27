@@ -1,4 +1,11 @@
-import type { Category, Comment, GuestbookEntry, Post, Tag } from "@/types";
+import type {
+  Category,
+  Comment,
+  GameScore,
+  GuestbookEntry,
+  Post,
+  Tag,
+} from "@/types";
 
 export const categories: Category[] = [
   { id: 1, name: "개발", slug: "dev" },
@@ -133,5 +140,30 @@ export const guestbook: GuestbookEntry[] = [
     authorName: "익명",
     content: "조용하고 좋은 분위기예요. 자주 놀러올게요.",
     createdAt: "2026-07-21T00:00:00Z",
+  },
+];
+
+// 백엔드(API_BASE_URL) 미연결 시 순위 대시보드에 보여줄 목 데이터
+export const gameScores: GameScore[] = [
+  {
+    id: 1,
+    gameKey: "2048",
+    playerName: "김민수",
+    score: 12480,
+    createdAt: "2026-07-26T10:00:00Z",
+  },
+  {
+    id: 2,
+    gameKey: "2048",
+    playerName: "이지은",
+    score: 8360,
+    createdAt: "2026-07-25T12:00:00Z",
+  },
+  {
+    id: 3,
+    gameKey: "2048",
+    playerName: "Park J",
+    score: 4120,
+    createdAt: "2026-07-24T09:00:00Z",
   },
 ];

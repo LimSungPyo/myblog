@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/posts", label: "글 관리" },
   { href: "/admin/comments", label: "댓글 관리" },
   { href: "/admin/guestbook", label: "방명록 관리" },
+  { href: "/admin/games", label: "미니게임 순위 관리" },
 ];
 
 export default function AdminLayout({

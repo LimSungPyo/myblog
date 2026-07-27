@@ -41,6 +41,14 @@ export interface GuestbookEntry {
   createdAt: string;
 }
 
+export interface GameScore {
+  id: number;
+  gameKey: string;
+  playerName: string;
+  score: number;
+  createdAt: string;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

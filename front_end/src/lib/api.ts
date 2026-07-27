@@ -1,6 +1,7 @@
 import type {
   Category,
   Comment,
+  GameScore,
   GuestbookEntry,
   Paginated,
   Post,
@@ -10,6 +11,7 @@ import type {
 import {
   categories as mockCategories,
   comments as mockComments,
+  gameScores as mockGameScores,
   guestbook as mockGuestbook,
   posts as mockPosts,
   tags as mockTags,
@@ -173,4 +175,21 @@ export async function getGuestbook(
     pageSize: GUESTBOOK_PAGE_SIZE,
     totalPages,
   };
+}
+
+/* ---------------- Minigame scores ---------------- */
+
+/** 게임별 상위 순위(서버 초기 렌더용). 점수 등록은 클라이언트에서 minigameApi로 처리. */
+export async function getTopScores(
+  gameKey: string,
+  limit = 10,
+): Promise<GameScore[]> {
+  // 기본(no-store) → 방금 등록된 점수가 즉시 반영
+  if (!useMock)
+    return apiGet<GameScore[]>(`/games/${gameKey}/scores?limit=${limit}`);
+
+  return mockGameScores
+    .filter((s) => s.gameKey === gameKey)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
 }
