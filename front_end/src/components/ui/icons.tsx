@@ -67,15 +67,6 @@ export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-export function ArrowDownIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...base} aria-hidden {...props}>
-      <path d="M12 5v14" />
-      <path d="m6 13 6 6 6-6" />
-    </svg>
-  );
-}
-
 export function ChevronLeftIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} aria-hidden {...props}>

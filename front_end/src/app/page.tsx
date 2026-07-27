@@ -11,10 +11,7 @@ export default async function Home() {
     <div>
       <Hero />
 
-      <section
-        id="recent"
-        className="scroll-mt-20 border-t border-black/10 pt-10 dark:border-white/10"
-      >
+      <section className="border-t border-black/10 pt-10 dark:border-white/10">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight">최근 글</h2>
           <Link

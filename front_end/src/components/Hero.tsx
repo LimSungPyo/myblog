@@ -1,11 +1,11 @@
 import Image from "next/image";
-import Link from "next/link";
 import { hero } from "@/config/site";
-import { ArrowDownIcon } from "@/components/ui/icons";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden">
+    // pb-20: 예전 '최신 글 보기' 버튼이 차지하던 높이만큼 보정 →
+    // 고정 크기 컴퍼스(h-480)의 아랫부분이 최근 글 구분선에서 자연스럽게 잘림
+    <section className="relative overflow-hidden pb-20">
       <Image
         src="/images/logo-hero.png"
         alt=""
@@ -13,7 +13,7 @@ export default function Hero() {
         height={1097}
         priority
         aria-hidden
-        className="pointer-events-none absolute right-4 top-[48px] hidden h-[480px] w-auto lg:block"
+        className="pointer-events-none absolute right-12 top-[48px] hidden h-[480px] w-auto lg:block"
       />
 
       <div className="relative max-w-xl py-14 sm:py-20">
@@ -36,14 +36,6 @@ export default function Hero() {
             </span>
           ))}
         </p>
-
-        <Link
-          href="#recent"
-          className="mt-8 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-neutral-200"
-        >
-          최신 글 보기
-          <ArrowDownIcon className="h-4 w-4" />
-        </Link>
       </div>
     </section>
   );
