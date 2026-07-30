@@ -15,21 +15,26 @@ myblog/
 ```
 [Vercel] Next.js  ──API──▶  [Render/Fly] FastAPI  ──▶  [PostgreSQL] Supabase
   · 공개 페이지 SSR(SEO)        · REST API                · 글/태그/카테고리/댓글
-  · 통합 로그인/회원가입         · JWT 인증 + 역할(관리자/일반)
-  · 관리자 마크다운 에디터
+  · 통합 로그인/회원가입         · JWT 인증 + 역할(관리자/일반)   · 방명록/게임점수
+  · 관리자 마크다운 에디터       · Google OAuth              · 사용자/소셜계정
 ```
 
 ## 기능
 
-- 글 목록/상세, 페이지네이션
+- 글 목록/상세, 페이지네이션, 조회수
 - 태그 · 카테고리 분류/필터
 - 검색
-- 댓글
+- 댓글 (관리자 승인제)
+- 방명록
+- **미니게임**: 2048 — 점수 등록 및 순위표
+- 소개 페이지
 - **인증**: 회원가입(`/signup`) · 통합 로그인(`/login`) · **Google 소셜 로그인**
   - 로그인 성공 시 **관리자 → 관리자 페이지**, 일반 회원 → 홈으로 자동 이동
+  - 헤더에서 로그인 상태 표시(로그인/로그아웃 버튼 토글)
   - 사용자 PK는 **UUID**, 비밀번호는 bcrypt 해시 저장 (소셜 전용 계정은 비밀번호 없음)
   - 소셜 로그인은 검증된 이메일 기준으로 기존 계정에 자동 연결(중복 계정 방지)
-- **관리자**: 로그인 후 마크다운 글쓰기(작성/수정/삭제) — `/admin/*`는 관리자만 접근
+- **관리자** (`/admin/*`, 관리자만 접근)
+  - 마크다운 글쓰기(작성/수정/삭제), 댓글 승인/삭제, 방명록 관리, 미니게임 순위 관리, 통계 대시보드
 - SEO: SSR, `generateMetadata`(OG), sitemap/robots
 
 ## 기술 스택
@@ -52,6 +57,7 @@ docker-compose up -d              # 로컬 Postgres 기동 (localhost:5432)
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env              # JWT_SECRET / ADMIN_* 를 실제 값으로 채움(필수)
+                                  # GOOGLE_* 는 선택 — 비우면 소셜 로그인만 비활성
 alembic upgrade head              # 스키마 생성 (Alembic이 단일 소스)
 python -m app.seed                # 관리자 + 샘플 데이터
 uvicorn app.main:app --reload     # http://localhost:8000/docs
@@ -91,4 +97,6 @@ cd front_end && npm run test:e2e
 
 - `main` 브랜치에 push → Vercel/Render 자동 빌드·배포 (CI/CD)
 - 배포 후 최초 1회: `alembic upgrade head` + `python -m app.seed`
+- 스키마 변경이 포함된 배포는 백엔드 배포 **전에** 원격 DB에 `alembic upgrade head` 먼저 적용
+- Google 소셜 로그인은 Google Cloud Console에서 OAuth 클라이언트를 만들고 리디렉션 URI에 `<백엔드 주소>/auth/google/callback` 등록 후 `GOOGLE_*` 입력
 - 환경변수 실제 값은 각 대시보드에 입력(코드·저장소엔 없음)
