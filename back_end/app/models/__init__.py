@@ -3,6 +3,7 @@ from app.models.comment import Comment
 from app.models.game_score import GameScore
 from app.models.guestbook import GuestbookEntry
 from app.models.post import Post, post_tags
+from app.models.social_account import SocialAccount
 from app.models.tag import Tag
 from app.models.user import User
 
@@ -13,6 +14,7 @@ __all__ = [
     "GuestbookEntry",
     "Post",
     "post_tags",
+    "SocialAccount",
     "Tag",
     "User",
 ]

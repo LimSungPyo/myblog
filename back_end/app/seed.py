@@ -28,6 +28,7 @@ def seed() -> None:
                 User(
                     username=settings.ADMIN_USERNAME,
                     hashed_password=hash_password(settings.ADMIN_PASSWORD),
+                    display_name=settings.ADMIN_USERNAME,
                     is_admin=True,
                 )
             )
