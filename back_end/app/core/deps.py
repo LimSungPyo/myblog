@@ -1,6 +1,7 @@
+import uuid
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_access_token
@@ -19,12 +20,16 @@ def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="인증이 필요합니다."
         )
-    username = decode_access_token(credentials.credentials)
-    if not username:
+    subject = decode_access_token(credentials.credentials)
+    try:
+        user_id = uuid.UUID(subject) if subject else None
+    except ValueError:
+        user_id = None
+    if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="유효하지 않은 토큰입니다."
         )
-    user = db.scalar(select(User).where(User.username == username))
+    user = db.get(User, user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

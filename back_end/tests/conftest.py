@@ -12,7 +12,7 @@ os.environ.setdefault(
     "DATABASE_URL",
     "postgresql+psycopg2://postgres:postgres@localhost:5432/myblog_test",
 )
-os.environ.setdefault("JWT_SECRET", "test-secret-key-for-pytest-only")
+os.environ.setdefault("JWT_SECRET", "test-secret-key-for-pytest-only-32b+")
 os.environ.setdefault("ADMIN_USERNAME", "admin")
 os.environ.setdefault("ADMIN_PASSWORD", "admin1234")
 os.environ.setdefault("FRONTEND_ORIGIN", "http://localhost:3000")
@@ -87,6 +87,7 @@ def admin_user(db_session) -> User:
     user = User(
         username="admin",
         hashed_password=hash_password("admin1234"),
+        display_name="admin",
         is_admin=True,
     )
     db_session.add(user)
@@ -99,6 +100,7 @@ def regular_user(db_session) -> User:
     user = User(
         username="testuser",
         hashed_password=hash_password("test1234"),
+        display_name="testuser",
         is_admin=False,
     )
     db_session.add(user)
@@ -108,12 +110,12 @@ def regular_user(db_session) -> User:
 
 @pytest.fixture
 def admin_headers(admin_user) -> dict[str, str]:
-    return {"Authorization": f"Bearer {create_access_token(admin_user.username)}"}
+    return {"Authorization": f"Bearer {create_access_token(str(admin_user.id))}"}
 
 
 @pytest.fixture
 def user_headers(regular_user) -> dict[str, str]:
-    return {"Authorization": f"Bearer {create_access_token(regular_user.username)}"}
+    return {"Authorization": f"Bearer {create_access_token(str(regular_user.id))}"}
 
 
 # ─────────────── 데이터 팩토리 ───────────────
