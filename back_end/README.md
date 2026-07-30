@@ -39,9 +39,11 @@ alembic upgrade head                          # 적용
 
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
-| POST | `/auth/signup` | 회원가입(일반 회원) → JWT | - |
-| POST | `/auth/login` | 로그인 → JWT + `isAdmin` | - |
+| POST | `/auth/signup` | 회원가입(이메일, 일반 회원) → JWT | - |
+| POST | `/auth/login` | 로그인(관리자 username / 회원 이메일) → JWT + `isAdmin` | - |
 | GET | `/auth/me` | 현재 로그인 사용자 | Bearer |
+| GET | `/auth/google/login` | Google 로그인 시작 (Google로 리다이렉트) | - |
+| GET | `/auth/google/callback` | Google 콜백 → JWT 발급 후 프론트로 리다이렉트 | - |
 | GET | `/posts` | 목록 (page, pageSize, category, tag, q) | - |
 | GET | `/posts/{slug}` | 상세 (조회수 증가 안 함) | - |
 | POST | `/posts/{slug}/view` | 조회수 +1 (실제 방문 카운트) | - |
@@ -52,7 +54,8 @@ alembic upgrade head                          # 적용
 | GET | `/admin/posts` | 전체 글(초안 포함) | Bearer(관리자) |
 | POST/PUT/DELETE | `/admin/posts[/{id}]` | 글 생성/수정/삭제 | Bearer(관리자) |
 
-- 사용자 모델: `id`(UUID) · `username` · `hashed_password`(bcrypt) · `is_admin`
+- 사용자 모델: `id`(UUID) · `username`(관리자 전용) · `email` · `hashed_password`(bcrypt, 소셜 전용 계정은 NULL) · `display_name` · `avatar_url` · `is_admin`
+- 소셜 계정은 `social_accounts` 테이블로 연결. Google이 이메일 소유를 검증한 경우에만 같은 이메일의 기존 계정에 자동 연결(중복 계정 방지).
 - 관리자 계정은 **시드로만** 생성(회원가입은 일반 회원). `/admin/*`는 `is_admin` 검증(아니면 403).
 - 응답은 프론트 친화적으로 **camelCase**로 직렬화된다.
 
@@ -66,5 +69,5 @@ pytest --cov=app          # 테스트 DB는 트랜잭션 롤백으로 격리
 ## 배포 (Render 예시)
 
 - Root Directory: `back_end`, Dockerfile 사용
-- 환경변수: `DATABASE_URL`(Postgres), `JWT_SECRET`, `ADMIN_USERNAME/PASSWORD`, `FRONTEND_ORIGIN`(Vercel 도메인)
+- 환경변수: `DATABASE_URL`(Postgres), `JWT_SECRET`, `ADMIN_USERNAME/PASSWORD`, `FRONTEND_ORIGIN`(Vercel 도메인), `BACKEND_BASE_URL` + `GOOGLE_CLIENT_ID/SECRET`(소셜 로그인, 선택)
 - 배포 후 최초 1회 마이그레이션: `alembic upgrade head` (+ 필요 시 관리자 시드)

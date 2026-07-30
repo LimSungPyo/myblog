@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     # CORS: 프론트(Vercel) 오리진. 콤마로 여러 개 지정 가능.
     FRONTEND_ORIGIN: str = "http://localhost:3000"
 
+    # Google OAuth — 빈 값(기본)이면 소셜 로그인 라우트가 503을 반환.
+    # 필수로 만들지 않은 이유: 미설정 환경(CI, 소셜 미사용 배포)에서도 서버는 떠야 함.
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    # OAuth redirect_uri에 들어가는 백엔드 공개 주소 (배포 시 Render 도메인으로 교체)
+    BACKEND_BASE_URL: str = "http://localhost:8000"
+
     @property
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.FRONTEND_ORIGIN.split(",") if o.strip()]

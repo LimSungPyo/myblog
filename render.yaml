@@ -19,3 +19,9 @@ services:
         sync: false # 대시보드에서 직접 입력
       - key: FRONTEND_ORIGIN
         sync: false # 배포된 Vercel 도메인 (예: https://myblog.vercel.app)
+      - key: BACKEND_BASE_URL
+        sync: false # 이 서비스의 공개 주소 (예: https://myblog-api.onrender.com)
+      - key: GOOGLE_CLIENT_ID
+        sync: false # Google OAuth 클라이언트 ID (미입력 시 소셜 로그인만 비활성)
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false # Google OAuth 클라이언트 시크릿

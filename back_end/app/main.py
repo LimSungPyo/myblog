@@ -10,6 +10,7 @@ from app.api import (
     auth,
     games,
     guestbook,
+    oauth,
     posts,
     taxonomy,
 )
@@ -26,6 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(oauth.router)
 app.include_router(posts.router)
 app.include_router(taxonomy.router)
 app.include_router(guestbook.router)
