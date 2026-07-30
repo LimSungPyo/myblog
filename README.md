@@ -13,7 +13,7 @@ myblog/
 ## 아키텍처
 
 ```
-[Vercel] Next.js  ──API──▶  [Render/Fly] FastAPI  ──▶  [PostgreSQL] Supabase/Neon
+[Vercel] Next.js  ──API──▶  [Render/Fly] FastAPI  ──▶  [PostgreSQL] Supabase
   · 공개 페이지 SSR(SEO)        · REST API                · 글/태그/카테고리/댓글
   · 통합 로그인/회원가입         · JWT 인증 + 역할(관리자/일반)
   · 관리자 마크다운 에디터
@@ -25,25 +25,27 @@ myblog/
 - 태그 · 카테고리 분류/필터
 - 검색
 - 댓글
-- **인증**: 회원가입(`/signup`) · 통합 로그인(`/login`)
+- **인증**: 회원가입(`/signup`) · 통합 로그인(`/login`) · **Google 소셜 로그인**
   - 로그인 성공 시 **관리자 → 관리자 페이지**, 일반 회원 → 홈으로 자동 이동
-  - 사용자 PK는 **UUID**, 비밀번호는 bcrypt 해시 저장
+  - 사용자 PK는 **UUID**, 비밀번호는 bcrypt 해시 저장 (소셜 전용 계정은 비밀번호 없음)
+  - 소셜 로그인은 검증된 이메일 기준으로 기존 계정에 자동 연결(중복 계정 방지)
 - **관리자**: 로그인 후 마크다운 글쓰기(작성/수정/삭제) — `/admin/*`는 관리자만 접근
 - SEO: SSR, `generateMetadata`(OG), sitemap/robots
 
 ## 기술 스택
 
-| 영역 | 스택 |
-|------|------|
-| 프론트 | Next.js 16(App Router), TypeScript, Tailwind, react-markdown |
-| 백엔드 | FastAPI, SQLAlchemy 2.0, Alembic, python-jose(JWT), passlib(bcrypt) |
-| DB | PostgreSQL (로컬 Docker / 배포 Supabase·Neon) |
-| 테스트 | pytest, vitest + Testing Library, Playwright(E2E) |
-| CI | GitHub Actions |
+| 영역   | 스택                                                                |
+| ------ | ------------------------------------------------------------------- |
+| 프론트 | Next.js 16(App Router), TypeScript, Tailwind, react-markdown        |
+| 백엔드 | FastAPI, SQLAlchemy 2.0, Alembic, PyJWT, bcrypt, httpx(OAuth)      |
+| DB     | PostgreSQL (로컬 Docker / 배포 Supabase·Neon)                       |
+| 테스트 | pytest, vitest + Testing Library, Playwright(E2E)                   |
+| CI     | GitHub Actions                                                      |
 
 ## 로컬 개발
 
 ### 백엔드 (PostgreSQL 전용)
+
 ```bash
 cd back_end
 docker-compose up -d              # 로컬 Postgres 기동 (localhost:5432)
@@ -54,9 +56,11 @@ alembic upgrade head              # 스키마 생성 (Alembic이 단일 소스)
 python -m app.seed                # 관리자 + 샘플 데이터
 uvicorn app.main:app --reload     # http://localhost:8000/docs
 ```
+
 > `JWT_SECRET`·`ADMIN_*`는 기본값이 없어 미설정 시 서버가 뜨지 않습니다(fail-closed).
 
 ### 프론트엔드
+
 ```bash
 cd front_end
 npm install
@@ -74,15 +78,16 @@ cd front_end && npm run test
 # E2E (스택 기동 필요)
 cd front_end && npm run test:e2e
 ```
+
 `push`·PR 시 GitHub Actions(`.github/workflows/ci.yml`)가 백엔드·프론트·E2E를 자동 실행합니다.
 
 ## 배포
 
-| 대상 | 서비스 | Root Directory | 주요 환경변수 |
-|------|--------|----------------|----------------|
-| 프론트 | Vercel | `front_end` | `API_BASE_URL`, `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_SITE_URL` |
-| 백엔드 | Render/Fly | `back_end` | `DATABASE_URL`, `JWT_SECRET`, `ADMIN_*`, `FRONTEND_ORIGIN` |
-| DB | Supabase / Neon | — | 관리형 PostgreSQL |
+| 대상   | 서비스          | Root Directory | 주요 환경변수                                                      |
+| ------ | --------------- | -------------- | ------------------------------------------------------------------ |
+| 프론트 | Vercel          | `front_end`    | `API_BASE_URL`, `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_SITE_URL` |
+| 백엔드 | Render/Fly      | `back_end`     | `DATABASE_URL`, `JWT_SECRET`, `ADMIN_*`, `FRONTEND_ORIGIN`, `BACKEND_BASE_URL`, `GOOGLE_*` |
+| DB     | Supabase / Neon | —              | 관리형 PostgreSQL                                                  |
 
 - `main` 브랜치에 push → Vercel/Render 자동 빌드·배포 (CI/CD)
 - 배포 후 최초 1회: `alembic upgrade head` + `python -m app.seed`

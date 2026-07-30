@@ -1,3 +1,12 @@
+export interface AuthUser {
+  id: string; // UUID
+  username: string | null; // 관리자 전용 로그인 식별자
+  email: string | null;
+  displayName: string;
+  avatarUrl: string | null;
+  isAdmin: boolean;
+}
+
 export interface Category {
   id: number;
   name: string;

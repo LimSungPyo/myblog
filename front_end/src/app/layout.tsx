@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { site } from "@/config/site";
 import SearchBar from "@/components/SearchBar";
-import AdminLoginButton from "@/components/AdminLoginButton";
+import AuthButton from "@/components/AuthButton";
 import SiteNav from "@/components/SiteNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import SiteFooter from "@/components/SiteFooter";
@@ -84,7 +84,7 @@ export default function RootLayout({
                 </Suspense>
               </div>
               <ThemeToggle />
-              <AdminLoginButton />
+              <AuthButton />
             </div>
           </div>
         </header>

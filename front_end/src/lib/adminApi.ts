@@ -1,40 +1,12 @@
 "use client";
 
 import type { GameScore, GuestbookEntry, Post } from "@/types";
+import { clearToken, getToken } from "@/lib/authApi";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
-const TOKEN_COOKIE = "auth_token";
-const ADMIN_COOKIE = "is_admin"; // 프록시의 UX 게이팅용(실검증은 백엔드 JWT)
 
-interface AuthResult {
-  accessToken: string;
-  isAdmin: boolean;
-}
-
-/* ---------------- session (cookie) ---------------- */
-
-function readCookie(name: string): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie
-    .split("; ")
-    .find((c) => c.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.split("=")[1]) : null;
-}
-
-export function getToken(): string | null {
-  return readCookie(TOKEN_COOKIE);
-}
-
-function setSession({ accessToken, isAdmin }: AuthResult) {
-  const maxAge = 60 * 60 * 24 * 7; // 7일
-  document.cookie = `${TOKEN_COOKIE}=${encodeURIComponent(accessToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-  document.cookie = `${ADMIN_COOKIE}=${isAdmin ? "1" : "0"}; path=/; max-age=${maxAge}; SameSite=Lax`;
-}
-
-export function clearToken() {
-  document.cookie = `${TOKEN_COOKIE}=; path=/; max-age=0`;
-  document.cookie = `${ADMIN_COOKIE}=; path=/; max-age=0`;
-}
+// 세션/로그인 로직은 authApi로 이동 — 기존 import 경로 호환을 위해 re-export
+export { clearToken, getToken, login } from "@/lib/authApi";
 
 /* ---------------- requests ---------------- */
 
@@ -43,22 +15,6 @@ function ensureConfigured() {
     throw new Error(
       "NEXT_PUBLIC_API_BASE_URL 이 설정되지 않았습니다. 백엔드를 연결하세요.",
     );
-}
-
-export async function login(
-  username: string,
-  password: string,
-): Promise<AuthResult> {
-  ensureConfigured();
-  const res = await fetch(`${PUBLIC_API}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-  if (!res.ok) throw new Error("아이디 또는 비밀번호가 올바르지 않습니다.");
-  const data: AuthResult = await res.json();
-  setSession(data);
-  return data;
 }
 
 async function authed<T>(path: string, init: RequestInit = {}): Promise<T> {

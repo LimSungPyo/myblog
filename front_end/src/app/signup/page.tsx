@@ -1,41 +1,32 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { googleLoginUrl, login, safeNext } from "@/lib/authApi";
+import { useRouter } from "next/navigation";
+import { googleLoginUrl, signup } from "@/lib/authApi";
 import { GoogleIcon } from "@/components/ui/icons";
 
-export default function LoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
-  );
-}
-
-function LoginForm() {
+export default function SignupPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const from = safeNext(params.get("from"));
-  const googleUrl = googleLoginUrl(from ?? "/");
+  const googleUrl = googleLoginUrl("/");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const { isAdmin } = await login(username, password);
-      // 관리자는 관리자 페이지로, 일반 회원은 원래 가려던 곳(없으면 홈)으로
-      router.push(isAdmin ? (from ?? "/admin/posts") : (from ?? "/"));
+      // 가입 성공 시 토큰이 발급되어 바로 로그인 상태가 된다
+      await signup(email, password, displayName);
+      router.push("/");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "로그인 실패");
+      setError(err instanceof Error ? err.message : "회원가입 실패");
     } finally {
       setLoading(false);
     }
@@ -43,13 +34,23 @@ function LoginForm() {
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-6 text-2xl font-bold">로그인</h1>
+      <h1 className="mb-6 text-2xl font-bold">회원가입</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="아이디 또는 이메일"
-          autoComplete="username"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          placeholder="닉네임"
+          autoComplete="nickname"
+          maxLength={80}
+          className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
+          required
+        />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="이메일"
+          autoComplete="email"
           className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
           required
         />
@@ -57,8 +58,9 @@ function LoginForm() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="비밀번호"
-          autoComplete="current-password"
+          placeholder="비밀번호 (8자 이상)"
+          autoComplete="new-password"
+          minLength={8}
           className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
           required
         />
@@ -68,7 +70,7 @@ function LoginForm() {
           disabled={loading}
           className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
         >
-          {loading ? "로그인 중…" : "로그인"}
+          {loading ? "가입 중…" : "회원가입"}
         </button>
       </form>
 
@@ -90,9 +92,9 @@ function LoginForm() {
       )}
 
       <p className="mt-6 text-center text-sm text-neutral-500">
-        아직 계정이 없나요?{" "}
-        <Link href="/signup" className="text-blue-500 hover:underline">
-          회원가입
+        이미 계정이 있나요?{" "}
+        <Link href="/login" className="text-blue-500 hover:underline">
+          로그인
         </Link>
       </p>
     </div>
