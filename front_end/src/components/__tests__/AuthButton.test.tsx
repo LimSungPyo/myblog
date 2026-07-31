@@ -30,6 +30,7 @@ const user: AuthUser = {
 
 describe("AuthButton", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     push.mockClear();
     clearToken.mockClear();
     fetchMe.mockReset();
@@ -53,17 +54,33 @@ describe("AuthButton", () => {
     expect(screen.queryByRole("link", { name: "로그인" })).toBeNull();
   });
 
-  it("로그아웃 클릭 → 세션 제거 후 다시 로그인 링크", async () => {
+  it("로그아웃 클릭 → 확인 후 세션 제거, 다시 로그인 링크", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     fetchMe.mockResolvedValue(user);
     render(<AuthButton />);
     await userEvent.click(
       await screen.findByRole("button", { name: "로그아웃" }),
     );
 
+    expect(window.confirm).toHaveBeenCalledWith("로그아웃 하시겠습니까?");
     expect(clearToken).toHaveBeenCalled();
     expect(push).toHaveBeenCalledWith("/");
     expect(
       await screen.findByRole("link", { name: "로그인" }),
+    ).toBeInTheDocument();
+  });
+
+  it("로그아웃 확인 창에서 취소 → 로그인 상태 유지", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    fetchMe.mockResolvedValue(user);
+    render(<AuthButton />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "로그아웃" }),
+    );
+
+    expect(clearToken).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("button", { name: "로그아웃" }),
     ).toBeInTheDocument();
   });
 
