@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { AuthUser } from "@/types";
 
@@ -12,6 +12,7 @@ vi.mock("next/navigation", () => ({
 const fetchMe = vi.fn();
 const clearToken = vi.fn();
 vi.mock("@/lib/authApi", () => ({
+  AUTH_CHANGED_EVENT: "auth:changed",
   fetchMe: () => fetchMe(),
   clearToken: () => clearToken(),
 }));
@@ -63,6 +64,21 @@ describe("AuthButton", () => {
     expect(push).toHaveBeenCalledWith("/");
     expect(
       await screen.findByRole("link", { name: "로그인" }),
+    ).toBeInTheDocument();
+  });
+
+  it("세션 변경 이벤트 → 로그인 상태 재확인", async () => {
+    // 소셜 콜백처럼 마운트 시점엔 토큰이 없다가 이후에 세션이 생기는 경우
+    fetchMe.mockResolvedValueOnce(null);
+    render(<AuthButton />);
+    await screen.findByRole("link", { name: "로그인" });
+
+    fetchMe.mockResolvedValueOnce(user);
+    act(() => {
+      window.dispatchEvent(new Event("auth:changed"));
+    });
+    expect(
+      await screen.findByRole("button", { name: "로그아웃" }),
     ).toBeInTheDocument();
   });
 });

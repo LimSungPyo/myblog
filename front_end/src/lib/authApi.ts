@@ -13,6 +13,15 @@ export interface AuthResult {
 
 /* ---------------- session (cookie) ---------------- */
 
+/** 세션 쿠키가 바뀔 때 발행되는 이벤트 — 헤더 등이 구독해 로그인 상태를 다시 확인한다. */
+export const AUTH_CHANGED_EVENT = "auth:changed";
+
+function notifyAuthChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+  }
+}
+
 function readCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie
@@ -29,11 +38,13 @@ export function setSession({ accessToken, isAdmin }: AuthResult) {
   const maxAge = 60 * 60 * 24 * 7; // 7일
   document.cookie = `${TOKEN_COOKIE}=${encodeURIComponent(accessToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
   document.cookie = `${ADMIN_COOKIE}=${isAdmin ? "1" : "0"}; path=/; max-age=${maxAge}; SameSite=Lax`;
+  notifyAuthChanged();
 }
 
 export function clearToken() {
   document.cookie = `${TOKEN_COOKIE}=; path=/; max-age=0`;
   document.cookie = `${ADMIN_COOKIE}=; path=/; max-age=0`;
+  notifyAuthChanged();
 }
 
 /* ---------------- helpers ---------------- */

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { AuthUser } from "@/types";
-import { clearToken, fetchMe } from "@/lib/authApi";
+import { AUTH_CHANGED_EVENT, clearToken, fetchMe } from "@/lib/authApi";
 import { LogoutIcon, UserIcon } from "@/components/ui/icons";
 
 /** 헤더의 로그인 상태 버튼 — 비로그인: /login 링크, 로그인: 로그아웃 버튼. */
@@ -13,7 +13,23 @@ export default function AuthButton() {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
-    fetchMe().then(setUser);
+    // 소셜 콜백 페이지가 헤더 마운트 이후에 쿠키를 쓰므로, 마운트 1회 확인만으로는
+    // 로그인 직후 상태를 놓친다. 세션 변경 이벤트를 구독해 그때마다 다시 확인한다.
+    let alive = true;
+    let seq = 0;
+    const sync = () => {
+      const id = ++seq;
+      fetchMe().then((me) => {
+        // 늦게 도착한 이전 응답이 최신 상태를 덮어쓰지 않게 마지막 요청만 반영
+        if (alive && id === seq) setUser(me);
+      });
+    };
+    sync();
+    window.addEventListener(AUTH_CHANGED_EVENT, sync);
+    return () => {
+      alive = false;
+      window.removeEventListener(AUTH_CHANGED_EVENT, sync);
+    };
   }, []);
 
   function logout() {
