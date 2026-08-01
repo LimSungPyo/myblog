@@ -6,7 +6,7 @@ from app.schemas.base import CamelModel
 
 
 class GameScoreCreate(CamelModel):
-    player_name: str = Field(min_length=1, max_length=40)
+    # 플레이어 이름은 클라이언트가 보내지 않는다 — 서버가 로그인 사용자의 닉네임을 쓴다
     # 비정상적으로 큰 값 방지용 상한 (2048의 현실적 점수 범위를 크게 상회)
     score: int = Field(ge=0, le=10_000_000)
 

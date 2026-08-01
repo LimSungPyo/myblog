@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.deps import get_current_user
 from app.crud import game_score as crud
 from app.db.session import get_db
+from app.models import User
 from app.schemas.game_score import GameScoreCreate, GameScoreOut
 
 router = APIRouter(prefix="/games", tags=["games"])
@@ -36,6 +38,7 @@ def create_score(
     game_key: str,
     payload: GameScoreCreate,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> GameScoreOut:
     _require_known_game(game_key)
-    return crud.create(db, game_key=game_key, data=payload)
+    return crud.create(db, game_key=game_key, data=payload, player=user)

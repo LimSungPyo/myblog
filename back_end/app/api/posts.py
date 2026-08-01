@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.deps import get_current_user
 from app.crud import comments as comments_crud
 from app.crud import posts as crud
 from app.db.session import get_db
+from app.models import User
 from app.schemas.comment import CommentCreate, CommentOut
 from app.schemas.common import PaginatedPosts
 from app.schemas.post import PostOut
@@ -78,10 +80,15 @@ def get_comments(slug: str, db: Session = Depends(get_db)):
     response_model=CommentOut,
     status_code=status.HTTP_201_CREATED,
 )
-def create_comment(slug: str, payload: CommentCreate, db: Session = Depends(get_db)):
+def create_comment(
+    slug: str,
+    payload: CommentCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
     post = crud.get_by_slug(db, slug)
     if post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
         )
-    return comments_crud.create(db, post.id, payload)
+    return comments_crud.create(db, post.id, payload, author=user)

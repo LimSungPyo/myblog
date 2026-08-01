@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.deps import get_current_user
 from app.crud import guestbook as crud
 from app.db.session import get_db
+from app.models import User
 from app.schemas.guestbook import (
     GuestbookCreate,
     GuestbookOut,
@@ -31,6 +33,8 @@ def list_guestbook(
 
 @router.post("", response_model=GuestbookOut, status_code=status.HTTP_201_CREATED)
 def create_guestbook(
-    payload: GuestbookCreate, db: Session = Depends(get_db)
+    payload: GuestbookCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> GuestbookOut:
-    return crud.create(db, payload)
+    return crud.create(db, payload, author=user)

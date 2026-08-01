@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import Comment
+from app.models import Comment, User
 from app.schemas.comment import CommentCreate
 
 
@@ -42,10 +42,11 @@ def delete(db: Session, comment: Comment) -> None:
     db.commit()
 
 
-def create(db: Session, post_id: int, data: CommentCreate) -> Comment:
+def create(db: Session, post_id: int, data: CommentCreate, author: User) -> Comment:
     comment = Comment(
         post_id=post_id,
-        author_name=data.author_name,
+        user_id=author.id,
+        author_name=author.display_name,
         content=data.content,
     )
     db.add(comment)

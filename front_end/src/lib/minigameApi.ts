@@ -1,4 +1,5 @@
 import type { GameScore } from "@/types";
+import { getToken } from "@/lib/authApi";
 
 /**
  * 미니게임 순위 클라이언트 API.
@@ -20,17 +21,21 @@ export async function fetchTopScores(
   return res.json() as Promise<GameScore[]>;
 }
 
+/** 점수 등록 — 로그인 필수. 플레이어 이름은 서버가 로그인 사용자의 닉네임으로 기록한다. */
 export async function submitScore(
   gameKey: string,
-  playerName: string,
   score: number,
 ): Promise<GameScore | null> {
   if (!PUBLIC_API) return null; // 백엔드 미연결 환경에서는 등록을 건너뜀
   const res = await fetch(`${PUBLIC_API}/games/${gameKey}/scores`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ playerName, score }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ score }),
   });
+  if (res.status === 401) throw new Error("로그인이 필요합니다.");
   if (!res.ok) throw new Error("점수 등록에 실패했습니다.");
   return res.json() as Promise<GameScore>;
 }

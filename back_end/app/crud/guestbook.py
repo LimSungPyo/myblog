@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import GuestbookEntry
+from app.models import GuestbookEntry, User
 from app.schemas.guestbook import GuestbookCreate
 
 
@@ -34,8 +34,10 @@ def get_by_id(db: Session, entry_id: int) -> GuestbookEntry | None:
     return db.get(GuestbookEntry, entry_id)
 
 
-def create(db: Session, data: GuestbookCreate) -> GuestbookEntry:
-    entry = GuestbookEntry(author_name=data.author_name, content=data.content)
+def create(db: Session, data: GuestbookCreate, author: User) -> GuestbookEntry:
+    entry = GuestbookEntry(
+        user_id=author.id, author_name=author.display_name, content=data.content
+    )
     db.add(entry)
     db.commit()
     db.refresh(entry)

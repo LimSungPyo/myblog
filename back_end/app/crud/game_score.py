@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import GameScore
+from app.models import GameScore, User
 from app.schemas.game_score import GameScoreCreate
 
 
@@ -34,10 +34,13 @@ def get_by_id(db: Session, score_id: int) -> GameScore | None:
     return db.get(GameScore, score_id)
 
 
-def create(db: Session, *, game_key: str, data: GameScoreCreate) -> GameScore:
+def create(
+    db: Session, *, game_key: str, data: GameScoreCreate, player: User
+) -> GameScore:
     entry = GameScore(
         game_key=game_key,
-        player_name=data.player_name,
+        user_id=player.id,
+        player_name=player.display_name,
         score=data.score,
     )
     db.add(entry)

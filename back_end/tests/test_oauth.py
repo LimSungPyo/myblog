@@ -45,7 +45,10 @@ def test_unknown_provider_404(client, google_configured):
     assert client.get("/auth/kakao/login", follow_redirects=False).status_code == 404
 
 
-def test_unconfigured_provider_503(client):
+def test_unconfigured_provider_503(client, monkeypatch):
+    # 개발자 로컬 .env에 실제 키가 있어도 미설정 상태를 보장
+    monkeypatch.setattr(settings, "GOOGLE_CLIENT_ID", "")
+    monkeypatch.setattr(settings, "GOOGLE_CLIENT_SECRET", "")
     assert client.get("/auth/google/login", follow_redirects=False).status_code == 503
 
 
