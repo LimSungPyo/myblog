@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     # CORS: 프론트(Vercel) 오리진. 콤마로 여러 개 지정 가능.
     FRONTEND_ORIGIN: str = "http://localhost:3000"
 
+    # 메일(SMTP) — 빈 값(기본)이면 메일이 필요한 기능(가입·비밀번호 재설정)이 503.
+    # Gmail은 계정 비밀번호가 아니라 "앱 비밀번호"(2단계 인증 필요)를 SMTP_PASSWORD에 넣는다.
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    MAIL_FROM_NAME: str = "myblog"
+
     # Google OAuth — 빈 값(기본)이면 소셜 로그인 라우트가 503을 반환.
     # 필수로 만들지 않은 이유: 미설정 환경(CI, 소셜 미사용 배포)에서도 서버는 떠야 함.
     GOOGLE_CLIENT_ID: str = ""

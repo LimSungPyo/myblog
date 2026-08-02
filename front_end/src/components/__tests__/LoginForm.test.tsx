@@ -9,17 +9,24 @@ vi.mock("next/navigation", () => ({
 }));
 
 const login = vi.fn();
+const resendVerification = vi.fn();
 vi.mock("@/lib/authApi", async (importOriginal) => {
   const mod = await importOriginal<typeof import("@/lib/authApi")>();
-  return { ...mod, login: (...args: unknown[]) => login(...args) };
+  return {
+    ...mod,
+    login: (...args: unknown[]) => login(...args),
+    resendVerification: (...args: unknown[]) => resendVerification(...args),
+  };
 });
 
 import LoginPage from "@/app/login/page";
+import { ApiError } from "@/lib/authApi";
 
 describe("로그인 페이지", () => {
   beforeEach(() => {
     push.mockClear();
     login.mockReset();
+    resendVerification.mockReset();
   });
 
   it("관리자 로그인 성공 → /admin/posts 이동", async () => {
@@ -65,6 +72,56 @@ describe("로그인 페이지", () => {
       await screen.findByText("아이디 또는 비밀번호가 올바르지 않습니다."),
     ).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it("미인증 계정(403) → 인증 메일 다시 받기 버튼 표시·재발송", async () => {
+    login.mockRejectedValue(
+      new ApiError("이메일 인증이 필요합니다. 메일함을 확인해주세요.", 403),
+    );
+    resendVerification.mockResolvedValue({ message: "ok" });
+    render(<LoginPage />);
+    await userEvent.type(
+      screen.getByPlaceholderText("아이디 또는 이메일"),
+      "new@example.com",
+    );
+    await userEvent.type(screen.getByPlaceholderText("비밀번호"), "pw");
+    await userEvent.click(screen.getByRole("button", { name: "로그인" }));
+
+    expect(
+      await screen.findByText(/이메일 인증이 필요합니다/),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "인증 메일 다시 받기" }),
+    );
+    expect(resendVerification).toHaveBeenCalledWith("new@example.com");
+    expect(
+      await screen.findByText(/인증 메일을 다시 보냈습니다/),
+    ).toBeInTheDocument();
+  });
+
+  it("일반 실패(401)에는 재발송 버튼이 뜨지 않음", async () => {
+    login.mockRejectedValue(
+      new ApiError("아이디 또는 비밀번호가 올바르지 않습니다.", 401),
+    );
+    render(<LoginPage />);
+    await userEvent.type(
+      screen.getByPlaceholderText("아이디 또는 이메일"),
+      "x",
+    );
+    await userEvent.type(screen.getByPlaceholderText("비밀번호"), "y");
+    await userEvent.click(screen.getByRole("button", { name: "로그인" }));
+
+    await screen.findByText("아이디 또는 비밀번호가 올바르지 않습니다.");
+    expect(
+      screen.queryByRole("button", { name: "인증 메일 다시 받기" }),
+    ).toBeNull();
+  });
+
+  it("비밀번호 찾기 링크가 /forgot-password로 연결", () => {
+    render(<LoginPage />);
+    expect(
+      screen.getByRole("link", { name: "비밀번호를 잊으셨나요?" }),
+    ).toHaveAttribute("href", "/forgot-password");
   });
 
   it("Google 로그인 버튼이 백엔드 OAuth 시작 주소로 연결", () => {

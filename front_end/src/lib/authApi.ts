@@ -62,6 +62,15 @@ function ensureConfigured() {
     );
 }
 
+/** HTTP 상태를 품은 에러 — 호출부가 상태별 UI(예: 403 → 인증 재발송)를 분기할 수 있게. */
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 async function post<T>(
   path: string,
   body: unknown,
@@ -81,7 +90,7 @@ async function post<T>(
     } catch {
       // 응답이 JSON이 아니면 기본 메시지 사용
     }
-    throw new Error(detail);
+    throw new ApiError(detail, res.status);
   }
   return res.json() as Promise<T>;
 }
@@ -101,15 +110,59 @@ export async function login(
   return data;
 }
 
+/** 가입 신청 — 인증 메일이 발송되고, 메일 링크를 열어야 로그인이 완료된다. */
 export async function signup(
   email: string,
   password: string,
   displayName: string,
-): Promise<AuthResult> {
-  const data = await post<AuthResult>(
+): Promise<{ message: string }> {
+  return post<{ message: string }>(
     "/auth/signup",
     { email, password, displayName },
     "회원가입에 실패했습니다.",
+  );
+}
+
+/** 메일 링크의 토큰으로 이메일 인증 — 성공 시 바로 로그인된다. */
+export async function verifyEmail(token: string): Promise<AuthResult> {
+  const data = await post<AuthResult>(
+    "/auth/verify-email",
+    { token },
+    "인증 링크가 유효하지 않거나 만료되었습니다.",
+  );
+  setSession(data);
+  return data;
+}
+
+export async function resendVerification(
+  email: string,
+): Promise<{ message: string }> {
+  return post<{ message: string }>(
+    "/auth/resend-verification",
+    { email },
+    "인증 메일 발송에 실패했습니다.",
+  );
+}
+
+export async function forgotPassword(
+  email: string,
+): Promise<{ message: string }> {
+  return post<{ message: string }>(
+    "/auth/forgot-password",
+    { email },
+    "재설정 메일 발송에 실패했습니다.",
+  );
+}
+
+/** 메일 링크의 토큰으로 새 비밀번호 설정 — 성공 시 바로 로그인된다. */
+export async function resetPassword(
+  token: string,
+  password: string,
+): Promise<AuthResult> {
+  const data = await post<AuthResult>(
+    "/auth/reset-password",
+    { token, password },
+    "재설정 링크가 유효하지 않거나 이미 사용되었습니다.",
   );
   setSession(data);
   return data;

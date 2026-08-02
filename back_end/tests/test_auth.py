@@ -1,3 +1,12 @@
+from app.core.config import settings
+from app.core.security import create_access_token
+from app.models import User
+
+
+def token_from(link: str) -> str:
+    return link.split("token=", 1)[1]
+
+
 def test_login_admin_returns_is_admin_true(client, admin_user):
     r = client.post("/auth/login", json={"username": "admin", "password": "admin1234"})
     assert r.status_code == 200
@@ -17,55 +26,82 @@ def test_login_wrong_password(client, admin_user):
     assert r.status_code == 401
 
 
-# ─────────────── 회원가입 / 이메일 로그인 ───────────────
-def test_signup_creates_user_and_logs_in(client):
-    r = client.post(
-        "/auth/signup",
-        json={
-            "email": "New@Example.com",
-            "password": "pass12345",
-            "displayName": "새회원",
-        },
-    )
+# ─────────────── 회원가입 + 이메일 인증 ───────────────
+SIGNUP = {
+    "email": "new@example.com",
+    "password": "pass12345",
+    "displayName": "새회원",
+}
+
+
+def test_signup_sends_verification_mail(client, mail_outbox):
+    r = client.post("/auth/signup", json={**SIGNUP, "email": "New@Example.com"})
     assert r.status_code == 201
-    body = r.json()
-    assert body["isAdmin"] is False
-    # 발급된 토큰으로 바로 인증 가능 + 이메일은 소문자로 정규화되어 저장
-    me = client.get(
-        "/auth/me", headers={"Authorization": f"Bearer {body['accessToken']}"}
+    assert "메일" in r.json()["message"]
+    kind, to, link = mail_outbox[0]
+    assert kind == "verify"
+    assert to == "new@example.com"  # 이메일은 소문자로 정규화되어 저장
+    assert "/verify-email?token=" in link
+
+
+def test_login_blocked_until_verified_then_verify_logs_in(client, mail_outbox):
+    client.post("/auth/signup", json=SIGNUP)
+
+    # 인증 전에는 비밀번호가 맞아도 로그인 불가
+    r = client.post(
+        "/auth/login",
+        json={"username": SIGNUP["email"], "password": SIGNUP["password"]},
     )
+    assert r.status_code == 403
+
+    # 메일 링크의 토큰으로 인증 → 즉시 로그인 토큰 발급
+    r = client.post("/auth/verify-email", json={"token": token_from(mail_outbox[0][2])})
+    assert r.status_code == 200
+    access = r.json()["accessToken"]
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {access}"})
     assert me.status_code == 200
     assert me.json()["email"] == "new@example.com"
-    assert me.json()["displayName"] == "새회원"
+
+    # 이후에는 이메일 로그인 가능 (대소문자 무관)
+    r = client.post(
+        "/auth/login", json={"username": "New@Example.com", "password": "pass12345"}
+    )
+    assert r.status_code == 200
 
 
-def test_signup_duplicate_email_conflict(client):
-    payload = {
-        "email": "dup@example.com",
-        "password": "pass12345",
-        "displayName": "회원",
-    }
-    assert client.post("/auth/signup", json=payload).status_code == 201
+def test_verify_email_is_idempotent(client, mail_outbox):
+    client.post("/auth/signup", json=SIGNUP)
+    token = token_from(mail_outbox[0][2])
+    assert client.post("/auth/verify-email", json={"token": token}).status_code == 200
+    # 링크를 한 번 더 열어도 에러 대신 그대로 로그인
+    assert client.post("/auth/verify-email", json={"token": token}).status_code == 200
+
+
+def test_verify_email_garbage_token_400(client):
+    r = client.post("/auth/verify-email", json={"token": "garbage"})
+    assert r.status_code == 400
+
+
+def test_verify_email_rejects_access_token(client, regular_user):
+    # 용도가 다른 토큰(API 인증용)은 typ이 달라 인증 링크로 쓸 수 없다
+    token = create_access_token(str(regular_user.id))
+    r = client.post("/auth/verify-email", json={"token": token})
+    assert r.status_code == 400
+
+
+def test_signup_duplicate_email_conflict(client, mail_outbox):
+    assert client.post("/auth/signup", json=SIGNUP).status_code == 201
     # 대소문자만 달라도 같은 이메일로 취급
-    payload["email"] = "DUP@example.com"
-    assert client.post("/auth/signup", json=payload).status_code == 409
+    r = client.post("/auth/signup", json={**SIGNUP, "email": "NEW@example.com"})
+    assert r.status_code == 409
 
 
-def test_signup_social_only_email_conflict(client, db_session):
-    from app.models import User
-
+def test_signup_social_only_email_conflict(client, db_session, mail_outbox):
     db_session.add(
         User(email="social@example.com", hashed_password=None, display_name="소셜회원")
     )
     db_session.commit()
-    r = client.post(
-        "/auth/signup",
-        json={
-            "email": "social@example.com",
-            "password": "pass12345",
-            "displayName": "회원",
-        },
-    )
+    r = client.post("/auth/signup", json={**SIGNUP, "email": "social@example.com"})
     assert r.status_code == 409
     assert "소셜" in r.json()["detail"]
 
@@ -78,25 +114,38 @@ def test_signup_password_too_long(client):
     assert r.status_code == 422
 
 
-def test_login_with_email(client):
-    client.post(
-        "/auth/signup",
-        json={
-            "email": "mail@example.com",
-            "password": "pass12345",
-            "displayName": "회원",
-        },
-    )
-    r = client.post(
-        "/auth/login", json={"username": "Mail@Example.com", "password": "pass12345"}
-    )
+def test_signup_mail_unconfigured_503(client, monkeypatch):
+    # 개발자 로컬 .env에 실제 SMTP 키가 있어도 미설정 상태를 보장
+    monkeypatch.setattr(settings, "SMTP_USER", "")
+    monkeypatch.setattr(settings, "SMTP_PASSWORD", "")
+    r = client.post("/auth/signup", json=SIGNUP)
+    assert r.status_code == 503
+
+
+def test_resend_verification(client, mail_outbox):
+    client.post("/auth/signup", json=SIGNUP)
+    assert len(mail_outbox) == 1
+    r = client.post("/auth/resend-verification", json={"email": SIGNUP["email"]})
     assert r.status_code == 200
-    assert r.json()["isAdmin"] is False
+    assert len(mail_outbox) == 2
+
+
+def test_resend_verification_unknown_email_no_leak(client, mail_outbox):
+    # 미가입 이메일이어도 같은 응답 → 계정 존재 여부가 새어 나가지 않음
+    r = client.post("/auth/resend-verification", json={"email": "nobody@example.com"})
+    assert r.status_code == 200
+    assert mail_outbox == []
+
+
+def test_resend_verification_already_verified_sends_nothing(client, mail_outbox):
+    client.post("/auth/signup", json=SIGNUP)
+    client.post("/auth/verify-email", json={"token": token_from(mail_outbox[0][2])})
+    r = client.post("/auth/resend-verification", json={"email": SIGNUP["email"]})
+    assert r.status_code == 200
+    assert len(mail_outbox) == 1  # 추가 발송 없음
 
 
 def test_login_social_only_account_rejected(client, db_session):
-    from app.models import User
-
     db_session.add(
         User(email="social2@example.com", hashed_password=None, display_name="소셜회원")
     )
@@ -107,6 +156,7 @@ def test_login_social_only_account_rejected(client, db_session):
     assert r.status_code == 401
 
 
+# ─────────────── me ───────────────
 def test_me_returns_current_user(client, user_headers):
     r = client.get("/auth/me", headers=user_headers)
     assert r.status_code == 200

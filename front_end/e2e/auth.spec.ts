@@ -18,7 +18,9 @@ test("비로그인 상태로 /admin 접근 시 로그인 페이지로 차단", a
   await expect(page).toHaveURL(/\/login/);
 });
 
-test("회원가입 → 자동 로그인 → 헤더에 계정 표시", async ({ page }) => {
+test("회원가입 → 인증 메일 안내 화면 표시", async ({ page }) => {
+  // 메일 인증이 도입되어 가입 즉시 로그인되지 않는다.
+  // 실제 메일 수신은 e2e로 검증할 수 없으므로 안내 화면까지만 확인한다.
   // 반복 실행해도 충돌하지 않도록 매번 새 이메일 사용
   const email = `e2e-${Date.now()}@example.com`;
   await page.goto("/signup");
@@ -27,10 +29,6 @@ test("회원가입 → 자동 로그인 → 헤더에 계정 표시", async ({ p
   await page.getByPlaceholder("비밀번호 (8자 이상)").fill("pass12345");
   await page.getByRole("button", { name: "회원가입" }).click();
 
-  await expect(page).toHaveURL("/");
-  await expect(page.getByRole("button", { name: "로그아웃" })).toBeVisible();
-
-  // 일반 회원은 /admin 접근 불가 (프록시가 홈으로 돌려보냄)
-  await page.goto("/admin/posts");
-  await expect(page).toHaveURL("/");
+  await expect(page.getByText("메일을 확인해주세요")).toBeVisible();
+  await expect(page.getByText(email)).toBeVisible();
 });

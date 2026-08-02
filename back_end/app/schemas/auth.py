@@ -11,10 +11,8 @@ class LoginRequest(CamelModel):
     password: str
 
 
-class SignupRequest(CamelModel):
-    email: EmailStr
+class _PasswordModel(CamelModel):
     password: str = Field(min_length=8)
-    display_name: str = Field(min_length=1, max_length=80)
 
     @field_validator("password")
     @classmethod
@@ -23,6 +21,27 @@ class SignupRequest(CamelModel):
         if len(v.encode("utf-8")) > 72:
             raise ValueError("비밀번호는 최대 72바이트까지 가능합니다.")
         return v
+
+
+class SignupRequest(_PasswordModel):
+    email: EmailStr
+    display_name: str = Field(min_length=1, max_length=80)
+
+
+class EmailRequest(CamelModel):
+    email: EmailStr
+
+
+class VerifyEmailRequest(CamelModel):
+    token: str
+
+
+class ResetPasswordRequest(_PasswordModel):
+    token: str
+
+
+class MessageOut(CamelModel):
+    message: str
 
 
 class TokenOut(CamelModel):

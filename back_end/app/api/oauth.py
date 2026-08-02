@@ -73,6 +73,14 @@ def _get_or_create_user(db: Session, info: OAuthUserInfo) -> User:
         logger.info(
             "social link: %s account linked to existing user %s", info.provider, user.id
         )
+        if not user.email_verified and user.hashed_password is not None:
+            # 선점 가입 방어: 메일 인증을 거치지 않은 비밀번호는 이메일 소유가 증명된 적 없는
+            # 값이다. 지금 이 사람(Google이 이메일 소유를 확인해준)이 진짜 주인이므로,
+            # 먼저 가입해둔 누군가의 비밀번호가 이 계정에 남지 않도록 폐기한다.
+            user.hashed_password = None
+            logger.info(
+                "social link: unverified password discarded for user %s", user.id
+            )
         user.email_verified = True
         if not user.avatar_url and info.picture:
             user.avatar_url = info.picture

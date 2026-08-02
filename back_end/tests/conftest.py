@@ -81,6 +81,24 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 
+# ─────────────── 메일 픽스처 ───────────────
+@pytest.fixture
+def mail_outbox(monkeypatch) -> list[tuple[str, str, str]]:
+    """SMTP가 설정된 것처럼 만들고, 실제 발송 대신 (종류, 수신자, 링크)를 쌓는다."""
+    monkeypatch.setattr(settings, "SMTP_USER", "mailer@test.local")
+    monkeypatch.setattr(settings, "SMTP_PASSWORD", "test-app-password")
+    outbox: list[tuple[str, str, str]] = []
+    monkeypatch.setattr(
+        "app.api.auth.send_verification_email",
+        lambda to, link: outbox.append(("verify", to, link)),
+    )
+    monkeypatch.setattr(
+        "app.api.auth.send_password_reset_email",
+        lambda to, link: outbox.append(("reset", to, link)),
+    )
+    return outbox
+
+
 # ─────────────── 사용자 픽스처 ───────────────
 @pytest.fixture
 def admin_user(db_session) -> User:

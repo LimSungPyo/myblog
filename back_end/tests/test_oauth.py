@@ -116,9 +116,9 @@ def test_callback_same_social_account_logs_in_same_user(
 
 
 def test_callback_links_to_existing_email_account(
-    client, db_session, google_configured, monkeypatch
+    client, db_session, google_configured, monkeypatch, mail_outbox
 ):
-    """이메일 가입자가 같은 이메일(검증됨)의 Google로 로그인 → 계정 중복 생성 없이 연결."""
+    """인증된 이메일 가입자가 같은 이메일의 Google로 로그인 → 중복 생성 없이 연결."""
     signup = client.post(
         "/auth/signup",
         json={
@@ -128,6 +128,9 @@ def test_callback_links_to_existing_email_account(
         },
     )
     assert signup.status_code == 201
+    existing = db_session.scalar(select(User).where(User.email == "same@gmail.com"))
+    existing.email_verified = True  # 메일 인증까지 마친 상태
+    db_session.commit()
 
     mock_user_info(monkeypatch, email="Same@Gmail.com", email_verified=True)
     state = create_state_token("/")
@@ -140,13 +143,46 @@ def test_callback_links_to_existing_email_account(
     assert len(users) == 1
     user = users[0]
     assert user.email_verified is True
-    assert user.hashed_password is not None  # 기존 비밀번호 유지
+    assert user.hashed_password is not None  # 인증된 계정의 비밀번호는 유지
     account = db_session.scalar(select(SocialAccount))
     assert account.user_id == user.id
 
 
+def test_callback_link_discards_unverified_password(
+    client, db_session, google_configured, monkeypatch, mail_outbox
+):
+    """선점 가입 방어: 미인증 계정에 연결될 때는 심어져 있던 비밀번호를 폐기한다."""
+    client.post(
+        "/auth/signup",
+        json={
+            "email": "victim@gmail.com",
+            "password": "attacker123",  # 공격자가 남의 이메일로 먼저 심어둔 비밀번호
+            "displayName": "선점가입자",
+        },
+    )
+
+    # 이메일의 진짜 주인이 Google로 로그인 (Google이 이메일 소유를 확인해줌)
+    mock_user_info(monkeypatch, email="victim@gmail.com", email_verified=True)
+    state = create_state_token("/")
+    r = client.get(
+        f"/auth/google/callback?code=abc&state={state}", follow_redirects=False
+    )
+    assert r.status_code == 302
+
+    users = db_session.scalars(select(User)).all()
+    assert len(users) == 1
+    assert users[0].hashed_password is None  # 미인증 비밀번호는 살아남지 못함
+    assert users[0].email_verified is True
+
+    # 공격자가 심어둔 비밀번호로는 더 이상 로그인할 수 없다
+    login = client.post(
+        "/auth/login", json={"username": "victim@gmail.com", "password": "attacker123"}
+    )
+    assert login.status_code == 401
+
+
 def test_callback_unverified_email_creates_separate_user(
-    client, db_session, google_configured, monkeypatch
+    client, db_session, google_configured, monkeypatch, mail_outbox
 ):
     """미검증 이메일은 소유 증명이 없으므로 기존 계정에 연결하지 않는다."""
     client.post(

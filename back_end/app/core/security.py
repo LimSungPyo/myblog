@@ -1,9 +1,19 @@
+import hashlib
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
 import jwt
 
 from app.core.config import settings
+
+
+def _decode(token: str) -> dict | None:
+    try:
+        return jwt.decode(
+            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+        )
+    except jwt.InvalidTokenError:
+        return None
 
 
 def hash_password(password: str) -> str:
@@ -29,13 +39,10 @@ def create_access_token(subject: str) -> str:
 
 def decode_access_token(token: str) -> str | None:
     """유효하면 subject 반환, 아니면 None."""
-    try:
-        payload = jwt.decode(
-            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
-        )
-    except jwt.InvalidTokenError:
+    payload = _decode(token)
+    if payload is None:
         return None
-    # typ이 있으면 다른 용도(OAuth state 등)의 토큰 → API 인증에 사용 불가
+    # typ이 있으면 다른 용도(OAuth state·메일 링크 등)의 토큰 → API 인증에 사용 불가
     if payload.get("typ") is not None:
         return None
     return payload.get("sub")
@@ -55,12 +62,57 @@ def create_state_token(next_path: str) -> str:
 
 def verify_state_token(token: str) -> str | None:
     """유효하면 로그인 후 이동할 next 경로 반환, 아니면 None."""
-    try:
-        payload = jwt.decode(
-            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
-        )
-    except jwt.InvalidTokenError:
-        return None
-    if payload.get("typ") != _STATE_TOKEN_TYP:
+    payload = _decode(token)
+    if payload is None or payload.get("typ") != _STATE_TOKEN_TYP:
         return None
     return payload.get("next", "/")
+
+
+# ─────────────── 메일 링크 토큰 (이메일 인증 / 비밀번호 재설정) ───────────────
+# state 토큰과 같은 stateless 방식. typ 구분 덕에 API 인증(access token)으로는 못 쓴다.
+_EMAIL_VERIFY_TYP = "email_verify"
+_EMAIL_VERIFY_EXPIRE_HOURS = 24
+_PASSWORD_RESET_TYP = "password_reset"
+_PASSWORD_RESET_EXPIRE_MINUTES = 30
+
+
+def create_email_verify_token(user_id: str) -> str:
+    expire = datetime.now(UTC) + timedelta(hours=_EMAIL_VERIFY_EXPIRE_HOURS)
+    payload = {"typ": _EMAIL_VERIFY_TYP, "sub": user_id, "exp": expire}
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+
+def verify_email_verify_token(token: str) -> str | None:
+    """유효하면 user id 반환, 아니면 None."""
+    payload = _decode(token)
+    if payload is None or payload.get("typ") != _EMAIL_VERIFY_TYP:
+        return None
+    return payload.get("sub")
+
+
+def password_fingerprint(hashed_password: str | None) -> str:
+    """현재 비밀번호 해시의 지문. 재설정 토큰에 넣어 두면 비밀번호가 바뀌는 순간
+    지문이 달라져 이전 토큰이 전부 무효가 된다 → DB 저장 없이 일회용 토큰."""
+    return hashlib.sha256((hashed_password or "").encode("utf-8")).hexdigest()[:16]
+
+
+def create_password_reset_token(user_id: str, hashed_password: str | None) -> str:
+    expire = datetime.now(UTC) + timedelta(minutes=_PASSWORD_RESET_EXPIRE_MINUTES)
+    payload = {
+        "typ": _PASSWORD_RESET_TYP,
+        "sub": user_id,
+        "pwd": password_fingerprint(hashed_password),
+        "exp": expire,
+    }
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+
+def decode_password_reset_token(token: str) -> tuple[str, str] | None:
+    """유효하면 (user id, 발급 시점의 비밀번호 지문) 반환, 아니면 None."""
+    payload = _decode(token)
+    if payload is None or payload.get("typ") != _PASSWORD_RESET_TYP:
+        return None
+    sub, pwd = payload.get("sub"), payload.get("pwd")
+    if not isinstance(sub, str) or not isinstance(pwd, str):
+        return None
+    return sub, pwd

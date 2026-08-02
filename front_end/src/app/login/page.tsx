@@ -3,7 +3,13 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { googleLoginUrl, login, safeNext } from "@/lib/authApi";
+import {
+  ApiError,
+  googleLoginUrl,
+  login,
+  resendVerification,
+  safeNext,
+} from "@/lib/authApi";
 import { GoogleIcon } from "@/components/ui/icons";
 
 export default function LoginPage() {
@@ -21,6 +27,9 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // 미인증 계정(403)이면 인증 메일 재발송 버튼을 보여준다
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resent, setResent] = useState(false);
 
   const from = safeNext(params.get("from"));
   const googleUrl = googleLoginUrl(from ?? "/");
@@ -29,6 +38,8 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setNeedsVerification(false);
+    setResent(false);
     try {
       const { isAdmin } = await login(username, password);
       // 관리자는 관리자 페이지로, 일반 회원은 원래 가려던 곳(없으면 홈)으로
@@ -36,8 +47,21 @@ function LoginForm() {
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "로그인 실패");
+      if (err instanceof ApiError && err.status === 403) {
+        setNeedsVerification(true);
+      }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onResend() {
+    setError(null);
+    try {
+      await resendVerification(username);
+      setResent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "재발송 실패");
     }
   }
 
@@ -63,6 +87,20 @@ function LoginForm() {
           required
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
+        {needsVerification &&
+          (resent ? (
+            <p className="text-sm text-green-600 dark:text-green-400">
+              인증 메일을 다시 보냈습니다. 메일함을 확인해주세요.
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={onResend}
+              className="text-sm text-blue-500 hover:underline"
+            >
+              인증 메일 다시 받기
+            </button>
+          ))}
         <button
           type="submit"
           disabled={loading}
@@ -70,6 +108,14 @@ function LoginForm() {
         >
           {loading ? "로그인 중…" : "로그인"}
         </button>
+        <p className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-neutral-500 hover:text-blue-500 hover:underline"
+          >
+            비밀번호를 잊으셨나요?
+          </Link>
+        </p>
       </form>
 
       {googleUrl && (

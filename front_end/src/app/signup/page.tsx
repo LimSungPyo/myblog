@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { googleLoginUrl, signup } from "@/lib/authApi";
+import { googleLoginUrl, resendVerification, signup } from "@/lib/authApi";
 import { GoogleIcon } from "@/components/ui/icons";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // 가입 신청이 접수된 이메일 — 값이 있으면 "메일을 확인해주세요" 화면을 보여준다
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
 
   const googleUrl = googleLoginUrl("/");
 
@@ -21,15 +22,53 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
-      // 가입 성공 시 토큰이 발급되어 바로 로그인 상태가 된다
       await signup(email, password, displayName);
-      router.push("/");
-      router.refresh();
+      setSentTo(email);
     } catch (err) {
       setError(err instanceof Error ? err.message : "회원가입 실패");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function onResend() {
+    if (!sentTo) return;
+    setError(null);
+    try {
+      await resendVerification(sentTo);
+      setResent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "재발송 실패");
+    }
+  }
+
+  if (sentTo) {
+    return (
+      <div className="mx-auto w-full max-w-sm text-center">
+        <h1 className="mb-4 text-2xl font-bold">메일을 확인해주세요</h1>
+        <p className="text-sm text-neutral-500">
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+            {sentTo}
+          </span>
+          로 인증 메일을 보냈습니다.
+          <br />
+          메일의 링크를 열면 가입이 완료되고 바로 로그인됩니다.
+        </p>
+        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+        {resent ? (
+          <p className="mt-6 text-sm text-green-600 dark:text-green-400">
+            인증 메일을 다시 보냈습니다.
+          </p>
+        ) : (
+          <button
+            onClick={onResend}
+            className="mt-6 text-sm text-blue-500 hover:underline"
+          >
+            메일이 안 왔나요? 다시 보내기
+          </button>
+        )}
+      </div>
+    );
   }
 
   return (
