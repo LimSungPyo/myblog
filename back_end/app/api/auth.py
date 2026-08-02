@@ -100,11 +100,14 @@ def signup(
     email = payload.email.lower()
     existing = _find_user_by_email(db, email)
     if existing is not None:
-        # 소셜 전용 계정에 비밀번호를 심는 계정 탈취를 막기 위해 흡수 대신 409
+        # 소셜 전용 계정은 이미 email_verified=True다. 여기서 비밀번호를 받아 심으면
+        # 인증 게이트를 그냥 통과해 남의 계정으로 로그인할 수 있게 된다.
+        # 비밀번호가 필요하면 메일 소유를 증명하는 재설정 흐름으로 가야 한다.
         if existing.hashed_password is None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="소셜 로그인으로 가입된 이메일입니다. 소셜 로그인을 이용하세요.",
+                detail="소셜 로그인으로 가입된 이메일입니다. "
+                "소셜 로그인을 이용하시거나, 비밀번호 찾기로 비밀번호를 설정해주세요.",
             )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

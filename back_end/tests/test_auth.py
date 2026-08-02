@@ -103,7 +103,10 @@ def test_signup_social_only_email_conflict(client, db_session, mail_outbox):
     db_session.commit()
     r = client.post("/auth/signup", json={**SIGNUP, "email": "social@example.com"})
     assert r.status_code == 409
-    assert "소셜" in r.json()["detail"]
+    detail = r.json()["detail"]
+    assert "소셜" in detail
+    # 막다른 골목이 되지 않게 비밀번호를 얻는 경로(재설정)를 함께 안내한다
+    assert "비밀번호" in detail
 
 
 def test_signup_password_too_long(client):

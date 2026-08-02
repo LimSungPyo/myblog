@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { googleLoginUrl, resendVerification, signup } from "@/lib/authApi";
+import {
+  ApiError,
+  googleLoginUrl,
+  resendVerification,
+  signup,
+} from "@/lib/authApi";
 import { GoogleIcon } from "@/components/ui/icons";
 
 export default function SignupPage() {
@@ -11,6 +16,8 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // 이미 쓰이는 이메일(409)이면 가입 대신 갈 곳을 안내한다
+  const [taken, setTaken] = useState(false);
   // 가입 신청이 접수된 이메일 — 값이 있으면 "메일을 확인해주세요" 화면을 보여준다
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
@@ -21,11 +28,13 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setTaken(false);
     try {
       await signup(email, password, displayName);
       setSentTo(email);
     } catch (err) {
       setError(err instanceof Error ? err.message : "회원가입 실패");
+      if (err instanceof ApiError && err.status === 409) setTaken(true);
     } finally {
       setLoading(false);
     }
@@ -104,6 +113,24 @@ export default function SignupPage() {
           required
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
+        {taken && (
+          <p className="text-sm text-neutral-500">
+            <Link
+              href={`/login?from=/`}
+              className="text-blue-500 hover:underline"
+            >
+              로그인
+            </Link>
+            하거나{" "}
+            <Link
+              href="/forgot-password"
+              className="text-blue-500 hover:underline"
+            >
+              비밀번호 설정
+            </Link>
+            으로 진행할 수 있습니다.
+          </p>
+        )}
         <button
           type="submit"
           disabled={loading}
