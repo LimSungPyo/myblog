@@ -34,12 +34,11 @@ class Settings(BaseSettings):
     # CORS: 프론트(Vercel) 오리진. 콤마로 여러 개 지정 가능.
     FRONTEND_ORIGIN: str = "http://localhost:3000"
 
-    # 메일(SMTP) — 빈 값(기본)이면 메일이 필요한 기능(가입·비밀번호 재설정)이 503.
-    # Gmail은 계정 비밀번호가 아니라 "앱 비밀번호"(2단계 인증 필요)를 SMTP_PASSWORD에 넣는다.
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
+    # 메일(Brevo HTTP API) — 빈 값(기본)이면 메일이 필요한 기능(가입·비밀번호 재설정)이 503.
+    # SMTP를 안 쓰는 이유: Render 무료 플랜이 아웃바운드 SMTP 포트를 차단한다(mailer.py 참고).
+    # MAIL_FROM_EMAIL은 Brevo에 발신자로 등록·인증을 마친 주소여야 한다(미인증이면 발송 거절).
+    BREVO_API_KEY: str = ""
+    MAIL_FROM_EMAIL: str = ""
     MAIL_FROM_NAME: str = "myblog"
 
     # Google OAuth — 빈 값(기본)이면 소셜 로그인 라우트가 503을 반환.

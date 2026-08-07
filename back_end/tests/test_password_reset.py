@@ -55,8 +55,8 @@ def test_forgot_password_unknown_email_no_leak(client, mail_outbox):
 
 
 def test_forgot_password_mail_unconfigured_503(client, monkeypatch):
-    monkeypatch.setattr(settings, "SMTP_USER", "")
-    monkeypatch.setattr(settings, "SMTP_PASSWORD", "")
+    monkeypatch.setattr(settings, "BREVO_API_KEY", "")
+    monkeypatch.setattr(settings, "MAIL_FROM_EMAIL", "")
     r = client.post("/auth/forgot-password", json={"email": EMAIL})
     assert r.status_code == 503
 

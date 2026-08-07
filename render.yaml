@@ -25,7 +25,9 @@ services:
         sync: false # Google OAuth 클라이언트 ID (미입력 시 소셜 로그인만 비활성)
       - key: GOOGLE_CLIENT_SECRET
         sync: false # Google OAuth 클라이언트 시크릿
-      - key: SMTP_USER
-        sync: false # 보내는 Gmail 주소 (미입력 시 가입·비밀번호 재설정만 비활성)
-      - key: SMTP_PASSWORD
-        sync: false # Gmail 앱 비밀번호 (2단계 인증 후 발급, 계정 비밀번호 아님)
+      # 메일은 SMTP가 아니라 Brevo HTTP API로 보낸다.
+      # 무료 플랜은 아웃바운드 SMTP 포트(25·465·587)가 막혀 있어 smtplib이 나가지 못한다.
+      - key: BREVO_API_KEY
+        sync: false # Brevo > SMTP & API > API Keys (미입력 시 가입·비밀번호 재설정만 비활성)
+      - key: MAIL_FROM_EMAIL
+        sync: false # Brevo > Senders 에 등록·인증을 마친 발신자 주소

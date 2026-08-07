@@ -84,9 +84,9 @@ def client(db_session):
 # ─────────────── 메일 픽스처 ───────────────
 @pytest.fixture
 def mail_outbox(monkeypatch) -> list[tuple[str, str, str]]:
-    """SMTP가 설정된 것처럼 만들고, 실제 발송 대신 (종류, 수신자, 링크)를 쌓는다."""
-    monkeypatch.setattr(settings, "SMTP_USER", "mailer@test.local")
-    monkeypatch.setattr(settings, "SMTP_PASSWORD", "test-app-password")
+    """메일이 설정된 것처럼 만들고, 실제 발송 대신 (종류, 수신자, 링크)를 쌓는다."""
+    monkeypatch.setattr(settings, "BREVO_API_KEY", "test-api-key")
+    monkeypatch.setattr(settings, "MAIL_FROM_EMAIL", "mailer@test.local")
     outbox: list[tuple[str, str, str]] = []
     monkeypatch.setattr(
         "app.api.auth.send_verification_email",

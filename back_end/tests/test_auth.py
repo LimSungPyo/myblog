@@ -118,9 +118,9 @@ def test_signup_password_too_long(client):
 
 
 def test_signup_mail_unconfigured_503(client, monkeypatch):
-    # 개발자 로컬 .env에 실제 SMTP 키가 있어도 미설정 상태를 보장
-    monkeypatch.setattr(settings, "SMTP_USER", "")
-    monkeypatch.setattr(settings, "SMTP_PASSWORD", "")
+    # 개발자 로컬 .env에 실제 메일 키가 있어도 미설정 상태를 보장
+    monkeypatch.setattr(settings, "BREVO_API_KEY", "")
+    monkeypatch.setattr(settings, "MAIL_FROM_EMAIL", "")
     r = client.post("/auth/signup", json=SIGNUP)
     assert r.status_code == 503
 
