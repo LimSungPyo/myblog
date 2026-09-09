@@ -241,9 +241,8 @@ def visitor_id(request: Request) -> str:
     아니라 근사치이고, 그래서 애초에 "정확한 조회수"가 아니라 "부풀리기 방지"가 목표다.
     """
     raw = f"{client_ip(request)}|{request.headers.get('user-agent', '')}"
-    return hmac.new(
-        _daily_salt().encode(), raw.encode(), hashlib.sha256
-    ).hexdigest()[:32]
+    digest = hmac.new(_daily_salt().encode(), raw.encode(), hashlib.sha256)
+    return digest.hexdigest()[:32]
 
 
 def mark_first_seen(key: str, ttl: int) -> bool:

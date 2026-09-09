@@ -30,7 +30,9 @@ def test_list_paginated_newest_first(client, db_session, regular_user):
     # 7건을 API로 만들면 도배 제한(5건/10분)에 걸려 준비 단계가 먼저 깨진다.
     for i in range(7):
         db_session.add(
-            GuestbookEntry(user_id=regular_user.id, author_name="testuser", content=f"msg{i}")
+            GuestbookEntry(
+                user_id=regular_user.id, author_name="testuser", content=f"msg{i}"
+            )
         )
     db_session.commit()
     body = client.get("/guestbook?pageSize=5").json()

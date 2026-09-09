@@ -76,9 +76,7 @@ def test_comment_limit_spans_posts(client, make_post, user_headers):
     assert write_comment(client, user_headers, "b").status_code == 429
 
 
-def test_comment_and_guestbook_quotas_are_separate(
-    client, make_post, user_headers
-):
+def test_comment_and_guestbook_quotas_are_separate(client, make_post, user_headers):
     """댓글을 한도까지 썼다고 방명록까지 막히면 정상 사용자가 억울해진다."""
     make_post(slug="a")
     for _ in range(WRITE_BY_USER.limit):

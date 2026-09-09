@@ -297,9 +297,7 @@ def test_mail_quota_is_shared_across_endpoints(client, mail_outbox):
     """창구를 바꿔가며 같은 사람에게 세 배로 보낼 수 없어야 한다."""
     for _ in range(MAIL_BY_RECIPIENT.limit):
         forgot(client, "target@example.com")
-    r = client.post(
-        "/auth/resend-verification", json={"email": "target@example.com"}
-    )
+    r = client.post("/auth/resend-verification", json={"email": "target@example.com"})
     assert r.status_code == 429
     r = client.post("/auth/signup", json={**SIGNUP, "email": "target@example.com"})
     assert r.status_code == 429
