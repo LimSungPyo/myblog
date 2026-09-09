@@ -28,6 +28,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # 브라우저는 기본적으로 몇 개의 표준 헤더 외에는 자바스크립트에서 못 읽게 막는다.
+    # 여기에 명시하지 않으면 429 응답의 Retry-After가 프론트에서 null로 보인다.
+    expose_headers=["Retry-After"],
 )
 
 app.include_router(auth.router)

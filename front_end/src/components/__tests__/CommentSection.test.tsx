@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { AuthUser } from "@/types";
 
 const authState: { user: AuthUser | null; loading: boolean } = {
@@ -76,5 +77,61 @@ describe("CommentSection", () => {
     );
     expect(screen.getByText("이전작성자")).toBeInTheDocument();
     expect(screen.getByText("좋은 글이네요")).toBeInTheDocument();
+  });
+
+  describe("도배 제한(429)", () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    function stubTooManyRequests(retryAfter: string | null) {
+      const headers = new Headers();
+      if (retryAfter !== null) headers.set("Retry-After", retryAfter);
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(
+          async () =>
+            new Response(JSON.stringify({ detail: "요청이 너무 잦습니다." }), {
+              status: 429,
+              headers,
+            }),
+        ),
+      );
+    }
+
+    async function submitComment() {
+      const input = screen.getByPlaceholderText("댓글을 입력하세요");
+      await userEvent.type(input, "도배");
+      await userEvent.click(screen.getByRole("button", { name: /댓글 등록/ }));
+    }
+
+    it("429면 남은 대기 시간을 안내하고 등록 버튼을 잠근다", async () => {
+      authState.user = user;
+      stubTooManyRequests("30");
+      render(<CommentSection slug="hello" initial={[]} />);
+      await submitComment();
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/30초 후에 다시 시도해주세요/),
+        ).toBeInTheDocument();
+      });
+      expect(
+        screen.getByRole("button", { name: /30초 후 가능/ }),
+      ).toBeDisabled();
+    });
+
+    it("Retry-After를 못 읽으면 서버가 준 메시지를 그대로 보여준다", async () => {
+      // CORS에서 헤더가 노출되지 않는 환경에서도 사용자가 이유는 알 수 있어야 한다
+      authState.user = user;
+      stubTooManyRequests(null);
+      render(<CommentSection slug="hello" initial={[]} />);
+      await submitComment();
+
+      await waitFor(() => {
+        expect(screen.getByText("요청이 너무 잦습니다.")).toBeInTheDocument();
+      });
+      expect(screen.getByRole("button", { name: "댓글 등록" })).toBeEnabled();
+    });
   });
 });

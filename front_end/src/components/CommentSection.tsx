@@ -5,6 +5,8 @@ import Link from "next/link";
 import type { Comment } from "@/types";
 import { formatDate } from "@/lib/format";
 import { getToken } from "@/lib/authApi";
+import { ApiError, ensureOk } from "@/lib/apiError";
+import { deadlineFrom, useCountdown } from "@/hooks/useCountdown";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
@@ -21,6 +23,9 @@ export default function CommentSection({
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 429를 받으면 언제 다시 되는지까지 알려주고, 그때까지 버튼을 잠근다
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+  const cooldown = useCountdown(retryAt);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,7 +44,7 @@ export default function CommentSection({
           body: JSON.stringify({ content }),
         });
         if (res.status === 401) throw new Error("로그인이 필요합니다.");
-        if (!res.ok) throw new Error("댓글 등록에 실패했습니다.");
+        await ensureOk(res, "댓글 등록에 실패했습니다.");
         const created: Comment = await res.json();
         setComments((prev) => [...prev, created]);
       } else {
@@ -58,6 +63,9 @@ export default function CommentSection({
       setContent("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
+      if (err instanceof ApiError && err.status === 429) {
+        setRetryAt(deadlineFrom(err.retryAfter));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -103,13 +111,23 @@ export default function CommentSection({
             className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
             required
           />
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && (
+            <p className="text-sm text-red-500">
+              {cooldown > 0
+                ? `너무 잦은 요청입니다. ${cooldown}초 후에 다시 시도해주세요.`
+                : error}
+            </p>
+          )}
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || cooldown > 0}
             className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
           >
-            {submitting ? "등록 중…" : "댓글 등록"}
+            {submitting
+              ? "등록 중…"
+              : cooldown > 0
+                ? `${cooldown}초 후 가능`
+                : "댓글 등록"}
           </button>
         </form>
       ) : (

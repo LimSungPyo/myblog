@@ -10,6 +10,7 @@ import {
   resendVerification,
   safeNext,
 } from "@/lib/authApi";
+import { deadlineFrom, useCountdown } from "@/hooks/useCountdown";
 import { GoogleIcon } from "@/components/ui/icons";
 
 export default function LoginPage() {
@@ -30,6 +31,9 @@ function LoginForm() {
   // 미인증 계정(403)이면 인증 메일 재발송 버튼을 보여준다
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resent, setResent] = useState(false);
+  // 429(요청 제한)면 남은 대기 시간을 세어 보여주고 그때까지 제출을 막는다
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+  const cooldown = useCountdown(retryAt);
 
   const from = safeNext(params.get("from"));
   const googleUrl = googleLoginUrl(from ?? "/");
@@ -49,6 +53,9 @@ function LoginForm() {
       setError(err instanceof Error ? err.message : "로그인 실패");
       if (err instanceof ApiError && err.status === 403) {
         setNeedsVerification(true);
+      }
+      if (err instanceof ApiError && err.status === 429) {
+        setRetryAt(deadlineFrom(err.retryAfter));
       }
     } finally {
       setLoading(false);
@@ -86,7 +93,13 @@ function LoginForm() {
           className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
           required
         />
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-500">
+            {cooldown > 0
+              ? `로그인 시도가 너무 많습니다. ${cooldown}초 후에 다시 시도해주세요.`
+              : error}
+          </p>
+        )}
         {needsVerification &&
           (resent ? (
             <p className="text-sm text-green-600 dark:text-green-400">
@@ -103,10 +116,14 @@ function LoginForm() {
           ))}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || cooldown > 0}
           className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
         >
-          {loading ? "로그인 중…" : "로그인"}
+          {loading
+            ? "로그인 중…"
+            : cooldown > 0
+              ? `${cooldown}초 후 가능`
+              : "로그인"}
         </button>
         <p className="text-right">
           <Link

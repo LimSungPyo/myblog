@@ -74,3 +74,16 @@ def test_health_db_head_still_touches_db(broken_db):
     """HEAD로 바꿔도 SELECT 1은 그대로 돌아야 Supabase 무활동 방지가 유지된다."""
     res = broken_db.head("/health/db")
     assert res.status_code == 503
+
+
+def test_retry_after_is_exposed_to_the_browser(client):
+    """429를 받아도 Retry-After를 자바스크립트에서 못 읽으면 대기 시간을 못 보여준다.
+
+    노출 목록은 예비 요청(OPTIONS)이 아니라 실제 응답에 붙는다.
+    """
+    r = client.post(
+        "/auth/login",
+        json={"username": "nobody", "password": "x"},
+        headers={"Origin": "http://localhost:3000"},
+    )
+    assert "retry-after" in r.headers["access-control-expose-headers"].lower()

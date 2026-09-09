@@ -1,6 +1,10 @@
 "use client";
 
 import type { AuthUser } from "@/types";
+import { ApiError, ensureOk } from "./apiError";
+
+// 기존 호출부가 authApi에서 가져다 쓰던 이름이라 그대로 다시 내보낸다
+export { ApiError };
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 const TOKEN_COOKIE = "auth_token";
@@ -62,15 +66,6 @@ function ensureConfigured() {
     );
 }
 
-/** HTTP 상태를 품은 에러 — 호출부가 상태별 UI(예: 403 → 인증 재발송)를 분기할 수 있게. */
-export class ApiError extends Error {
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
-  }
-}
-
 async function post<T>(
   path: string,
   body: unknown,
@@ -82,16 +77,7 @@ async function post<T>(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    let detail = fallback;
-    try {
-      const data = await res.json();
-      if (typeof data.detail === "string") detail = data.detail;
-    } catch {
-      // 응답이 JSON이 아니면 기본 메시지 사용
-    }
-    throw new ApiError(detail, res.status);
-  }
+  await ensureOk(res, fallback);
   return res.json() as Promise<T>;
 }
 

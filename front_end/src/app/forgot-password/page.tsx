@@ -2,13 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ApiError } from "@/lib/apiError";
 import { forgotPassword } from "@/lib/authApi";
+import { deadlineFrom, useCountdown } from "@/hooks/useCountdown";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  // 메일 발송은 한도가 빡빡해서(수신 주소당 시간당 3회) 대기 안내가 특히 중요하다
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+  const cooldown = useCountdown(retryAt);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -19,6 +24,9 @@ export default function ForgotPasswordPage() {
       setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "요청 실패");
+      if (err instanceof ApiError && err.status === 429) {
+        setRetryAt(deadlineFrom(err.retryAfter));
+      }
     } finally {
       setLoading(false);
     }
@@ -63,13 +71,23 @@ export default function ForgotPasswordPage() {
           className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
           required
         />
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-500">
+            {cooldown > 0
+              ? `요청이 너무 잦습니다. ${cooldown}초 후에 다시 시도해주세요.`
+              : error}
+          </p>
+        )}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || cooldown > 0}
           className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
         >
-          {loading ? "전송 중…" : "재설정 메일 보내기"}
+          {loading
+            ? "전송 중…"
+            : cooldown > 0
+              ? `${cooldown}초 후 가능`
+              : "재설정 메일 보내기"}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-neutral-500">

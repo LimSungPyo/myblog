@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SmileIcon } from "@/components/ui/icons";
 import { getToken } from "@/lib/authApi";
+import { ApiError, ensureOk } from "@/lib/apiError";
+import { deadlineFrom, useCountdown } from "@/hooks/useCountdown";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
@@ -34,6 +36,9 @@ export default function GuestbookForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  // 429를 받으면 언제 다시 되는지까지 알려주고, 그때까지 버튼을 잠근다
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+  const cooldown = useCountdown(retryAt);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,12 +59,15 @@ export default function GuestbookForm({
           body: JSON.stringify({ content }),
         });
         if (res.status === 401) throw new Error("로그인이 필요합니다.");
-        if (!res.ok) throw new Error("등록에 실패했습니다.");
+        await ensureOk(res, "등록에 실패했습니다.");
       }
       setContent("");
       router.refresh(); // 서버 렌더 목록 갱신 (새 글은 1페이지 최상단)
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
+      if (err instanceof ApiError && err.status === 429) {
+        setRetryAt(deadlineFrom(err.retryAfter));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -93,7 +101,13 @@ export default function GuestbookForm({
         className="w-full resize-y rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 dark:border-white/15 dark:bg-white/5"
       />
 
-      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+      {error && (
+        <p className="mt-2 text-sm text-red-500">
+          {cooldown > 0
+            ? `너무 잦은 요청입니다. ${cooldown}초 후에 다시 시도해주세요.`
+            : error}
+        </p>
+      )}
 
       <div className="mt-3 flex items-center justify-between">
         <div className="relative">
@@ -126,10 +140,14 @@ export default function GuestbookForm({
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || cooldown > 0}
           className="rounded-xl bg-[#10213a] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3157] disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-neutral-200"
         >
-          {submitting ? "등록 중…" : "등록하기"}
+          {submitting
+            ? "등록 중…"
+            : cooldown > 0
+              ? `${cooldown}초 후 가능`
+              : "등록하기"}
         </button>
       </div>
     </form>
