@@ -1,3 +1,7 @@
+from app.core.ratelimit import WRITE_BY_USER
+from app.models import GuestbookEntry
+
+
 def test_create_returns_entry(client, user_headers):
     r = client.post("/guestbook", json={"content": "안녕하세요"}, headers=user_headers)
     assert r.status_code == 201
@@ -21,9 +25,14 @@ def test_create_validation(client, user_headers):
     )
 
 
-def test_list_paginated_newest_first(client, user_headers):
+def test_list_paginated_newest_first(client, db_session, regular_user):
+    # API 대신 DB로 직접 심는다. 이 테스트의 관심사는 목록 조회이고,
+    # 7건을 API로 만들면 도배 제한(5건/10분)에 걸려 준비 단계가 먼저 깨진다.
     for i in range(7):
-        client.post("/guestbook", json={"content": f"msg{i}"}, headers=user_headers)
+        db_session.add(
+            GuestbookEntry(user_id=regular_user.id, author_name="testuser", content=f"msg{i}")
+        )
+    db_session.commit()
     body = client.get("/guestbook?pageSize=5").json()
     assert body["total"] == 7
     assert body["totalPages"] == 2
@@ -77,3 +86,31 @@ def test_delete_missing_404(client, admin_headers):
         client.delete("/admin/guestbook/999999", headers=admin_headers).status_code
         == 404
     )
+
+
+# ─────────────── 도배 제한 ───────────────
+def write_entry(client, headers, content: str = "도배"):
+    return client.post("/guestbook", json={"content": content}, headers=headers)
+
+
+def test_guestbook_blocked_after_limit(client, user_headers):
+    for _ in range(WRITE_BY_USER.limit):
+        assert write_entry(client, user_headers).status_code == 201
+    r = write_entry(client, user_headers)
+    assert r.status_code == 429
+    assert r.headers["Retry-After"]
+
+
+def test_guestbook_limit_is_per_account(client, user_headers, admin_headers):
+    for _ in range(WRITE_BY_USER.limit):
+        write_entry(client, user_headers)
+    assert write_entry(client, user_headers).status_code == 429
+    # 다른 계정은 영향을 받지 않는다
+    assert write_entry(client, admin_headers).status_code == 201
+
+
+def test_validation_failure_does_not_consume_quota(client, user_headers):
+    """빈 내용으로 422를 맞은 건 도배가 아니다. 그걸로 몫을 깎으면 안 된다."""
+    for _ in range(10):
+        assert write_entry(client, user_headers, "").status_code == 422
+    assert write_entry(client, user_headers).status_code == 201

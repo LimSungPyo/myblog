@@ -2,7 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
-from app.core.ratelimit import VIEW_DEDUP_TTL, mark_first_seen, visitor_id
+from app.core.ratelimit import (
+    VIEW_DEDUP_TTL,
+    WRITE_BY_USER,
+    guard,
+    mark_first_seen,
+    record,
+    visitor_id,
+)
 from app.crud import comments as comments_crud
 from app.crud import posts as crud
 from app.db.session import get_db
@@ -98,9 +105,15 @@ def create_comment(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    # 글마다 따로 세지 않는다. 막으려는 건 "이 사람이 쏟아내는 것"이라, 글을
+    # 옮겨 다니며 도배하는 걸 계정 하나로 묶어서 봐야 한다.
+    key = f"write:comment:{user.id}"
+    guard(key, WRITE_BY_USER)
     post = crud.get_by_slug(db, slug)
     if post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
         )
-    return comments_crud.create(db, post.id, payload, author=user)
+    comment = comments_crud.create(db, post.id, payload, author=user)
+    record(key, WRITE_BY_USER)
+    return comment

@@ -77,6 +77,10 @@ MAIL_BY_IP = Rule(limit=10, window=60 * 60)
 # 조회수 중복 제거 — 같은 방문자가 같은 글을 하루에 여러 번 열어도 한 번만 센다.
 VIEW_DEDUP_TTL = 24 * 60 * 60
 
+# 댓글·방명록 도배 방지 — 로그인해야 쓸 수 있는 글이라 계정 축 하나면 충분하다.
+# IP 축을 덧붙이면 같은 공유기를 쓰는 사람들이 서로의 몫을 깎아먹는다.
+WRITE_BY_USER = Rule(limit=5, window=10 * 60)
+
 
 class RateLimitStore(Protocol):
     """카운터 저장소. 인메모리 → Redis 교체 지점."""

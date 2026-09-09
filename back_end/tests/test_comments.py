@@ -1,3 +1,4 @@
+from app.core.ratelimit import WRITE_BY_USER
 from app.models import Comment
 
 
@@ -48,3 +49,44 @@ def test_create_comment_ignores_client_author_name(client, make_post, user_heade
 def test_comment_on_missing_post_404(client, user_headers):
     r = client.post("/posts/none/comments", json={"content": "b"}, headers=user_headers)
     assert r.status_code == 404
+
+
+# ─────────────── 도배 제한 ───────────────
+def write_comment(client, headers, slug: str = "a", content: str = "도배"):
+    return client.post(
+        f"/posts/{slug}/comments", json={"content": content}, headers=headers
+    )
+
+
+def test_comment_blocked_after_limit(client, make_post, user_headers):
+    make_post(slug="a")
+    for _ in range(WRITE_BY_USER.limit):
+        assert write_comment(client, user_headers).status_code == 201
+    r = write_comment(client, user_headers)
+    assert r.status_code == 429
+    assert r.headers["Retry-After"]
+
+
+def test_comment_limit_spans_posts(client, make_post, user_headers):
+    """글을 옮겨 다니며 도배하는 걸 막으려면 글마다 따로 세면 안 된다."""
+    make_post(slug="a")
+    make_post(slug="b")
+    for _ in range(WRITE_BY_USER.limit):
+        write_comment(client, user_headers, "a")
+    assert write_comment(client, user_headers, "b").status_code == 429
+
+
+def test_comment_and_guestbook_quotas_are_separate(
+    client, make_post, user_headers
+):
+    """댓글을 한도까지 썼다고 방명록까지 막히면 정상 사용자가 억울해진다."""
+    make_post(slug="a")
+    for _ in range(WRITE_BY_USER.limit):
+        write_comment(client, user_headers)
+    assert write_comment(client, user_headers).status_code == 429
+    assert (
+        client.post(
+            "/guestbook", json={"content": "안녕"}, headers=user_headers
+        ).status_code
+        == 201
+    )

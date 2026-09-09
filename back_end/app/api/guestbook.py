@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
+from app.core.ratelimit import WRITE_BY_USER, guard, record
 from app.crud import guestbook as crud
 from app.db.session import get_db
 from app.models import User
@@ -37,4 +38,10 @@ def create_guestbook(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> GuestbookOut:
-    return crud.create(db, payload, author=user)
+    # 계정 기준으로만 센다. 여기는 로그인해야 쓸 수 있어서 "누가 썼나"가 확실하다.
+    key = f"write:guestbook:{user.id}"
+    guard(key, WRITE_BY_USER)
+    entry = crud.create(db, payload, author=user)
+    # 실제로 글이 만들어졌을 때만 센다. 404나 검증 실패는 도배가 아니다.
+    record(key, WRITE_BY_USER)
+    return entry
