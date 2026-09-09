@@ -15,6 +15,8 @@ from app.core.mailer import (
 from app.core.ratelimit import (
     LOGIN_BY_IDENTITY,
     LOGIN_BY_IP,
+    MAIL_BY_IP,
+    MAIL_BY_RECIPIENT,
     clear,
     client_ip,
     guard,
@@ -71,6 +73,25 @@ def _find_user_by_email(db: Session, email: str) -> User | None:
     return db.scalar(select(User).where(User.email == email.lower()))
 
 
+def _spend_mail_quota(request: Request, email: str) -> None:
+    """메일을 보내는 엔드포인트가 공통으로 쓰는 발송 한도.
+
+    호출 결과와 무관하게 항상 센다. 실제로 메일이 나갔을 때만 세면, 가입된 주소만
+    빨리 429가 되면서 제한이 계정 열거 오라클이 된다. 응답 메시지를 통일해 둔
+    노력이 제한 하나로 무너지는 셈이다.
+
+    수신 주소 축은 가입·재발송·재설정이 함께 쓴다. 지키려는 대상이 엔드포인트가
+    아니라 그 메일함과 Brevo 무료 발송 한도라서, 엔드포인트마다 따로 세면
+    창구를 바꿔가며 같은 사람에게 세 배로 보낼 수 있다.
+    """
+    recipient_key = f"mail:to:{email.strip().lower()}"
+    ip_key = f"mail:ip:{client_ip(request)}"
+    guard(recipient_key, MAIL_BY_RECIPIENT)
+    guard(ip_key, MAIL_BY_IP)
+    record(recipient_key, MAIL_BY_RECIPIENT)
+    record(ip_key, MAIL_BY_IP)
+
+
 @router.post("/login", response_model=TokenOut)
 def login(
     payload: LoginRequest, request: Request, db: Session = Depends(get_db)
@@ -120,10 +141,12 @@ def login(
 @router.post("/signup", response_model=MessageOut, status_code=status.HTTP_201_CREATED)
 def signup(
     payload: SignupRequest,
+    request: Request,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ) -> MessageOut:
     _require_mail_configured()
+    _spend_mail_quota(request, payload.email)
     email = payload.email.lower()
     existing = _find_user_by_email(db, email)
     if existing is not None:
@@ -155,10 +178,12 @@ def signup(
 @router.post("/resend-verification", response_model=MessageOut)
 def resend_verification(
     payload: EmailRequest,
+    request: Request,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ) -> MessageOut:
     _require_mail_configured()
+    _spend_mail_quota(request, payload.email)
     user = _find_user_by_email(db, payload.email)
     # 계정 존재 여부가 응답으로 새어 나가지 않게, 어떤 경우든 같은 메시지를 돌려준다
     if user is not None and not user.email_verified:
@@ -193,10 +218,12 @@ def verify_email(
 @router.post("/forgot-password", response_model=MessageOut)
 def forgot_password(
     payload: EmailRequest,
+    request: Request,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ) -> MessageOut:
     _require_mail_configured()
+    _spend_mail_quota(request, payload.email)
     user = _find_user_by_email(db, payload.email)
     # 소셜 전용 계정(비밀번호 없음)도 허용 — 메일 수신이 곧 이메일 소유 증명이므로
     # 이 흐름으로 비밀번호를 새로 만들어 이메일 로그인을 열어줄 수 있다

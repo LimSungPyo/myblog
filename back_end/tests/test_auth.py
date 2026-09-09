@@ -1,5 +1,10 @@
 from app.core.config import settings
-from app.core.ratelimit import LOGIN_BY_IDENTITY, LOGIN_BY_IP
+from app.core.ratelimit import (
+    LOGIN_BY_IDENTITY,
+    LOGIN_BY_IP,
+    MAIL_BY_IP,
+    MAIL_BY_RECIPIENT,
+)
 from app.core.security import create_access_token
 from app.models import User
 
@@ -241,3 +246,67 @@ def test_ip_limit_blocks_across_accounts(client):
     for i in range(LOGIN_BY_IP.limit):
         assert fail_login(client, f"user{i}@example.com").status_code == 401
     assert fail_login(client, "another@example.com").status_code == 429
+
+
+# ─────────────── 메일 발송 요청 제한 ───────────────
+def forgot(client, email: str = "target@example.com"):
+    return client.post("/auth/forgot-password", json={"email": email})
+
+
+def test_mail_blocked_after_limit_for_same_recipient(client, mail_outbox):
+    for _ in range(MAIL_BY_RECIPIENT.limit):
+        assert forgot(client).status_code == 200
+    r = forgot(client)
+    assert r.status_code == 429
+    assert r.headers["Retry-After"]
+
+
+def test_mail_limit_stops_actual_sending(client, regular_user, db_session, mail_outbox):
+    """한도를 넘긴 요청은 Brevo로 나가지 않아야 한다. 막는 목적이 발송 자체다."""
+    regular_user.email = "target@example.com"
+    regular_user.email_verified = True
+    db_session.commit()
+    for _ in range(MAIL_BY_RECIPIENT.limit):
+        forgot(client)
+    sent_before = len(mail_outbox)
+    assert forgot(client).status_code == 429
+    assert len(mail_outbox) == sent_before
+
+
+def test_mail_limit_is_per_recipient(client, mail_outbox):
+    for _ in range(MAIL_BY_RECIPIENT.limit):
+        forgot(client, "a@example.com")
+    assert forgot(client, "a@example.com").status_code == 429
+    assert forgot(client, "b@example.com").status_code == 200
+
+
+def test_mail_limit_counts_unregistered_address_too(client, mail_outbox):
+    """가입된 주소만 카운트하면, 429가 나오는지로 가입 여부를 알 수 있게 된다."""
+    for _ in range(MAIL_BY_RECIPIENT.limit):
+        assert forgot(client, "nobody@example.com").status_code == 200
+    assert forgot(client, "nobody@example.com").status_code == 429
+
+
+def test_mail_recipient_key_is_case_insensitive(client, mail_outbox):
+    for _ in range(MAIL_BY_RECIPIENT.limit):
+        forgot(client, "Target@Example.com")
+    assert forgot(client, "target@example.com").status_code == 429
+
+
+def test_mail_quota_is_shared_across_endpoints(client, mail_outbox):
+    """창구를 바꿔가며 같은 사람에게 세 배로 보낼 수 없어야 한다."""
+    for _ in range(MAIL_BY_RECIPIENT.limit):
+        forgot(client, "target@example.com")
+    r = client.post(
+        "/auth/resend-verification", json={"email": "target@example.com"}
+    )
+    assert r.status_code == 429
+    r = client.post("/auth/signup", json={**SIGNUP, "email": "target@example.com"})
+    assert r.status_code == 429
+
+
+def test_mail_ip_limit_blocks_rotating_addresses(client, mail_outbox):
+    """수신 주소를 계속 바꾸면 주소 축으로는 안 잡힌다. IP 축이 무료 발송 한도를 지킨다."""
+    for i in range(MAIL_BY_IP.limit):
+        assert forgot(client, f"user{i}@example.com").status_code == 200
+    assert forgot(client, "another@example.com").status_code == 429

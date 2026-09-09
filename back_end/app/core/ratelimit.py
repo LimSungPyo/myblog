@@ -63,6 +63,14 @@ class Rule:
 LOGIN_BY_IDENTITY = Rule(limit=5, window=10 * 60)
 LOGIN_BY_IP = Rule(limit=20, window=10 * 60)
 
+# 메일 발송 — 세는 대상이 "누가 요청했나"가 아니라 "누구의 메일함으로 가나"다.
+# 공격자가 IP를 100개 돌려도 피해자의 주소는 하나뿐이라, 수신 주소 축이 본진이고
+# IP 축은 주소를 바꿔가며 무료 발송 한도를 태우는 걸 막는 보조다.
+# 가입·인증 메일 재발송·비밀번호 재설정이 같은 수신 주소 카운터를 공유한다.
+# 지키려는 게 "이 엔드포인트"가 아니라 "이 메일함"과 Brevo 무료 한도이기 때문이다.
+MAIL_BY_RECIPIENT = Rule(limit=3, window=60 * 60)
+MAIL_BY_IP = Rule(limit=10, window=60 * 60)
+
 
 class RateLimitStore(Protocol):
     """카운터 저장소. 인메모리 → Redis 교체 지점."""
