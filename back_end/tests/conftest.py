@@ -24,6 +24,7 @@ from sqlalchemy.engine import make_url  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
+from app.core.ratelimit import store as rate_limit_store  # noqa: E402
 from app.core.security import create_access_token, hash_password  # noqa: E402
 from app.db.session import Base, engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
@@ -54,6 +55,15 @@ def _setup_database():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    """요청 제한 카운터는 프로세스 메모리에 있어서 테스트 사이에 살아남는다.
+    비우지 않으면 앞 테스트의 로그인 실패가 뒤 테스트를 429로 떨어뜨린다."""
+    rate_limit_store.reset()
+    yield
+    rate_limit_store.reset()
 
 
 @pytest.fixture

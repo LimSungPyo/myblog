@@ -34,6 +34,12 @@ class Settings(BaseSettings):
     # CORS: 프론트(Vercel) 오리진. 콤마로 여러 개 지정 가능.
     FRONTEND_ORIGIN: str = "http://localhost:3000"
 
+    # 요청 제한이 클라이언트를 식별할 때 X-Forwarded-For를 오른쪽에서 몇 칸 볼지.
+    # 프록시가 붙인 값만 믿기 위한 값이라 실제 홉 수와 정확히 같아야 한다
+    # (크면 모두가 한 키를 공유해 다 같이 막히고, 작으면 헤더 위조가 통한다).
+    # 로컬은 프록시가 없으니 0, Render 배포는 앞에 프록시 1대라 1.
+    TRUSTED_PROXY_COUNT: int = 0
+
     # 메일(Brevo HTTP API) — 빈 값(기본)이면 메일이 필요한 기능(가입·비밀번호 재설정)이 503.
     # SMTP를 안 쓰는 이유: Render 무료 플랜이 아웃바운드 SMTP 포트를 차단한다(mailer.py 참고).
     # MAIL_FROM_EMAIL은 Brevo에 발신자로 등록·인증을 마친 주소여야 한다(미인증이면 발송 거절).

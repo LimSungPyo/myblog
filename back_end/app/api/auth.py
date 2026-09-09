@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,14 @@ from app.core.mailer import (
     is_mail_configured,
     send_password_reset_email,
     send_verification_email,
+)
+from app.core.ratelimit import (
+    LOGIN_BY_IDENTITY,
+    LOGIN_BY_IP,
+    clear,
+    client_ip,
+    guard,
+    record,
 )
 from app.core.security import (
     create_access_token,
@@ -64,7 +72,18 @@ def _find_user_by_email(db: Session, email: str) -> User | None:
 
 
 @router.post("/login", response_model=TokenOut)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenOut:
+def login(
+    payload: LoginRequest, request: Request, db: Session = Depends(get_db)
+) -> TokenOut:
+    # 두 축을 동시에 건다. 계정 축만 걸면 공격자가 계정을 바꿔가며 계속 두들길 수 있고,
+    # IP 축만 걸면 IP를 돌려서 한 계정을 노리는 걸 못 막는다.
+    identity_key = f"login:identity:{payload.username.strip().lower()}"
+    ip_key = f"login:ip:{client_ip(request)}"
+    # 카운터는 계정이 있든 없든 똑같이 오른다. 존재하는 계정에서만 429가 나오면
+    # 제한 자체가 "이 계정은 있다"를 알려주는 계정 열거 오라클이 된다.
+    guard(identity_key, LOGIN_BY_IDENTITY)
+    guard(ip_key, LOGIN_BY_IP)
+
     # 관리자는 username, 일반 회원은 이메일로 로그인 (한 필드로 둘 다 조회)
     user = db.scalar(
         select(User).where(
@@ -75,10 +94,18 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenOut:
         )
     )
     if user is None or not verify_password(payload.password, user.hashed_password):
+        # 성공까지 세면 기기 여러 대에서 정상 로그인만 해도 막힌다. 막으려는 건
+        # "맞을 때까지 찍어보는 것"이라 실패만 센다.
+        record(identity_key, LOGIN_BY_IDENTITY)
+        record(ip_key, LOGIN_BY_IP)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="아이디 또는 비밀번호가 올바르지 않습니다.",
         )
+    # 비밀번호를 아는 게 증명됐으니 이 계정의 실패 기록은 지운다.
+    # IP 축은 남긴다. 자기 계정에 로그인하는 것만으로 IP 카운터를 지울 수 있으면
+    # 공격자가 계정 하나를 갖고 제한을 무한히 리셋할 수 있다.
+    clear(identity_key)
     # 이메일 가입자는 메일 인증을 마쳐야 로그인 완료.
     # 관리자는 email 없이 username으로 로그인하는 계정이라 검사 대상이 아니다.
     if user.email is not None and not user.email_verified:

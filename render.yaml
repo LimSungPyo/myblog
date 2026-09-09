@@ -19,6 +19,10 @@ services:
         sync: false # 대시보드에서 직접 입력
       - key: FRONTEND_ORIGIN
         sync: false # 배포된 Vercel 도메인 (예: https://myblog.vercel.app)
+      # 요청 제한이 클라이언트 IP를 X-Forwarded-For의 오른쪽에서 몇 칸 볼지.
+      # Render는 앞에 프록시가 1대라 1. 로컬은 프록시가 없어서 기본값 0을 쓴다.
+      - key: TRUSTED_PROXY_COUNT
+        value: "1"
       - key: BACKEND_BASE_URL
         sync: false # 이 서비스의 공개 주소 (현재: https://myblog-63um.onrender.com)
       - key: GOOGLE_CLIENT_ID

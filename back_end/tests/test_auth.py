@@ -1,4 +1,5 @@
 from app.core.config import settings
+from app.core.ratelimit import LOGIN_BY_IDENTITY, LOGIN_BY_IP
 from app.core.security import create_access_token
 from app.models import User
 
@@ -176,3 +177,67 @@ def test_me_without_token(client):
 def test_me_with_garbage_token(client):
     r = client.get("/auth/me", headers={"Authorization": "Bearer garbage"})
     assert r.status_code == 401
+
+
+# ─────────────── 로그인 요청 제한 ───────────────
+def fail_login(client, username: str = "admin", password: str = "wrong"):
+    return client.post("/auth/login", json={"username": username, "password": password})
+
+
+def test_login_blocked_after_repeated_failures(client, admin_user):
+    for _ in range(LOGIN_BY_IDENTITY.limit):
+        assert fail_login(client).status_code == 401
+    r = fail_login(client)
+    assert r.status_code == 429
+    assert r.headers["Retry-After"]
+
+
+def test_blocked_login_rejects_even_correct_password(client, admin_user):
+    """차단 중에는 비밀번호가 맞아도 안 통해야 한다. 안 그러면 대입을 못 막는다."""
+    for _ in range(LOGIN_BY_IDENTITY.limit):
+        fail_login(client)
+    r = client.post("/auth/login", json={"username": "admin", "password": "admin1234"})
+    assert r.status_code == 429
+
+
+def test_successful_login_clears_failure_count(client, admin_user):
+    for _ in range(LOGIN_BY_IDENTITY.limit - 1):
+        fail_login(client)
+    assert (
+        client.post(
+            "/auth/login", json={"username": "admin", "password": "admin1234"}
+        ).status_code
+        == 200
+    )
+    # 카운터가 지워졌으니 다시 한도만큼 실패할 여유가 있어야 한다
+    for _ in range(LOGIN_BY_IDENTITY.limit - 1):
+        assert fail_login(client).status_code == 401
+
+
+def test_limit_is_per_identity(client, admin_user, regular_user):
+    for _ in range(LOGIN_BY_IDENTITY.limit):
+        fail_login(client, "admin")
+    assert fail_login(client, "admin").status_code == 429
+    # 다른 계정은 영향을 받지 않는다 (IP 한도에는 아직 여유가 있음)
+    assert fail_login(client, "testuser").status_code == 401
+
+
+def test_unknown_account_is_counted_the_same(client):
+    """없는 계정이라고 안 세면, 429가 나오는지 여부가 계정 존재 여부를 알려준다."""
+    for _ in range(LOGIN_BY_IDENTITY.limit):
+        assert fail_login(client, "nobody@example.com").status_code == 401
+    assert fail_login(client, "nobody@example.com").status_code == 429
+
+
+def test_identity_key_is_case_insensitive(client):
+    """대소문자만 바꿔 제한을 우회할 수 없어야 한다."""
+    for _ in range(LOGIN_BY_IDENTITY.limit):
+        fail_login(client, "Nobody@Example.com")
+    assert fail_login(client, "nobody@example.com").status_code == 429
+
+
+def test_ip_limit_blocks_across_accounts(client):
+    """계정을 바꿔가며 두들기는 건 계정 축으로는 안 잡히고 IP 축으로 잡힌다."""
+    for i in range(LOGIN_BY_IP.limit):
+        assert fail_login(client, f"user{i}@example.com").status_code == 401
+    assert fail_login(client, "another@example.com").status_code == 429
