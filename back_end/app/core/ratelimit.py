@@ -37,9 +37,12 @@ Dockerfile의 uvicorn은 워커 1개로 뜨고 Render 인스턴스도 1대라, �
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import threading
 import time
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Protocol
 
 from fastapi import HTTPException, Request, status
@@ -70,6 +73,9 @@ LOGIN_BY_IP = Rule(limit=20, window=10 * 60)
 # 지키려는 게 "이 엔드포인트"가 아니라 "이 메일함"과 Brevo 무료 한도이기 때문이다.
 MAIL_BY_RECIPIENT = Rule(limit=3, window=60 * 60)
 MAIL_BY_IP = Rule(limit=10, window=60 * 60)
+
+# 조회수 중복 제거 — 같은 방문자가 같은 글을 하루에 여러 번 열어도 한 번만 센다.
+VIEW_DEDUP_TTL = 24 * 60 * 60
 
 
 class RateLimitStore(Protocol):
@@ -206,6 +212,43 @@ def client_ip(request: Request) -> str:
         if len(chain) >= hops:
             return chain[-hops]
     return request.client.host if request.client else "unknown"
+
+
+def _daily_salt() -> str:
+    """날마다 바뀌는 비밀 솔트.
+
+    IP는 대부분의 법제에서 개인정보라 원문을 저장하지 않는 게 낫다. 그렇다고 그냥
+    해시하면 IPv4는 43억 개뿐이라 전수 계산으로 역산된다. 그래서 서버만 아는 값을
+    섞는다(여기서는 JWT 서명 키를 재사용한다).
+
+    솔트를 날마다 갈아치우면 어제 만든 해시와 오늘 만든 해시가 이어지지 않는다.
+    한 사람을 오래 추적하는 게 구조적으로 불가능해진다. 쿠키를 안 쓰는 분석 도구들이
+    쓰는 방식이다. 대신 자정을 넘기면 같은 사람이 다른 방문자로 보이므로,
+    중복 제거 창은 사실상 "24시간"이 아니라 "그날 하루"다.
+    """
+    return f"{settings.JWT_SECRET}:{datetime.now(UTC).date().isoformat()}"
+
+
+def visitor_id(request: Request) -> str:
+    """로그인하지 않은 방문자를 구분하기 위한 익명 식별자.
+
+    IP만으로는 같은 공유기 뒤의 사람들이 한 명으로 뭉쳐서, 한 명이 읽으면 나머지는
+    조회수에 안 잡힌다. User-Agent를 같이 넣어 조금 더 갈라 놓는다. 완벽한 식별이
+    아니라 근사치이고, 그래서 애초에 "정확한 조회수"가 아니라 "부풀리기 방지"가 목표다.
+    """
+    raw = f"{client_ip(request)}|{request.headers.get('user-agent', '')}"
+    return hmac.new(
+        _daily_salt().encode(), raw.encode(), hashlib.sha256
+    ).hexdigest()[:32]
+
+
+def mark_first_seen(key: str, ttl: int) -> bool:
+    """이 키를 처음 봤으면 True(그리고 ttl초 동안 기억), 이미 봤으면 False.
+
+    질문의 형태가 요청 제한과 다르다. "이 요청을 허용할까"가 아니라
+    "이 방문을 이미 셌나"인데, 도구는 같다. 둘 다 "최근에 이 키를 본 적 있나"다.
+    """
+    return store.mark_once(key, ttl)
 
 
 # ── 적용 ────────────────────────────────────────────────────────────────

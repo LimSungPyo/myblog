@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
+from app.core.ratelimit import VIEW_DEDUP_TTL, mark_first_seen, visitor_id
 from app.crud import comments as comments_crud
 from app.crud import posts as crud
 from app.db.session import get_db
@@ -54,14 +55,25 @@ def get_post(slug: str, db: Session = Depends(get_db)):
 
 
 @router.post("/posts/{slug}/view")
-def increment_post_view(slug: str, db: Session = Depends(get_db)):
-    """실제 방문 카운트용. 클라이언트가 상세 페이지 진입 시 1회 호출."""
+def increment_post_view(slug: str, request: Request, db: Session = Depends(get_db)):
+    """실제 방문 카운트용. 클라이언트가 상세 페이지 진입 시 1회 호출.
+
+    인증이 없는 엔드포인트라 예전에는 `curl`을 반복하는 만큼 숫자가 올라갔다.
+    여기에 "분당 N회" 식의 제한을 거는 대신 중복 제거를 골랐다. 횟수 제한은
+    천천히 부르면 계속 통과하지만, 중복 제거는 같은 방문자를 아예 한 번만 세기
+    때문에 속도를 늦춰도 소용이 없다. 조회수를 지키는 목적에는 이쪽이 맞다.
+
+    이미 센 방문이면 429가 아니라 200을 준다. 재방문은 잘못된 요청이 아니라
+    정상 동작이고, 클라이언트가 재시도해야 할 일도 없기 때문이다.
+    """
     post = crud.get_by_slug(db, slug)
     if post is None or post.status != "published":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
         )
-    crud.increment_view(db, post)
+    # 검사와 기록이 한 동작이라 같은 방문자가 동시에 두 번 열어도 하나만 통과한다
+    if mark_first_seen(f"view:{visitor_id(request)}:{slug}", VIEW_DEDUP_TTL):
+        crud.increment_view(db, post)
     return {"viewCount": post.view_count}
 
 
