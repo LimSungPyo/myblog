@@ -1,3 +1,10 @@
+from datetime import date, timedelta
+
+from sqlalchemy import func, select
+
+from app.models import PostView
+
+
 def test_list_only_published(client, make_post):
     make_post(slug="pub", status="published")
     make_post(slug="dft", status="draft")
@@ -134,14 +141,72 @@ def test_dedup_is_per_post(client, make_post):
     assert view(client, "b").json()["viewCount"] == before + 1
 
 
-def test_visitor_id_hides_the_raw_ip(client, make_post):
-    """식별자에 IP 원문이 남으면 개인정보를 그대로 들고 있는 셈이 된다."""
-    from app.core.ratelimit import visitor_id
-    from tests.test_ratelimit import make_request
+# ─────────────── 방문 기록을 DB에 두는 이유 ───────────────
+def test_view_is_not_recounted_after_process_restart(client, make_post, monkeypatch):
+    """예전엔 "이미 센 방문자"를 프로세스 메모리에 기억해서, 배포·슬립으로 서버가 새로
+    뜰 때마다 같은 독자가 다시 세어졌다. 기록이 DB에 있으면 메모리를 비워도 안 센다."""
+    from app.core.ratelimit import store as rate_limit_store
+    from app.crud import post_views
 
-    ip = "203.0.113.9"
-    identifier = visitor_id(make_request(ip))
-    assert ip not in identifier
-    # 같은 방문자는 같은 값으로, 다른 방문자는 다른 값으로 떨어져야 한다
-    assert identifier == visitor_id(make_request(ip))
-    assert identifier != visitor_id(make_request("203.0.113.10"))
+    make_post(slug="a")
+    first = view(client).json()["viewCount"]
+
+    # 재시작 흉내: 프로세스 메모리에 있던 상태를 전부 비운다
+    rate_limit_store.reset()
+    monkeypatch.setattr(post_views, "_last_purged_on", None)
+
+    assert view(client).json()["viewCount"] == first
+
+
+def test_same_visitor_counts_again_on_a_new_day(client, make_post, monkeypatch):
+    make_post(slug="a")
+    first = view(client).json()["viewCount"]
+    monkeypatch.setattr("app.api.posts.today_utc", lambda: date(2099, 1, 2))
+    assert view(client).json()["viewCount"] == first + 1
+
+
+def test_view_records_are_deleted_with_the_post(client, make_post, db_session):
+    post = make_post(slug="a")
+    view(client)
+    assert db_session.scalar(select(func.count()).select_from(PostView)) == 1
+    db_session.delete(post)
+    db_session.commit()
+    assert db_session.scalar(select(func.count()).select_from(PostView)) == 0
+
+
+# ─────────────── 오래된 방문 기록 청소 ───────────────
+def test_purge_keeps_only_today_and_yesterday(make_post, db_session):
+    """솔트가 날마다 바뀌어서 이틀 전 기록은 중복 판단에 쓸 수가 없다. 쌓아둘 이유가 없다."""
+    from app.crud.post_views import purge_older_than_retention
+
+    post = make_post(slug="a")
+    today = date(2026, 9, 24)
+    for days_ago in (0, 1, 2, 5):
+        db_session.add(
+            PostView(
+                post_id=post.id,
+                visitor=f"v{days_ago}",
+                day=today - timedelta(days=days_ago),
+            )
+        )
+    db_session.commit()
+
+    assert purge_older_than_retention(db_session, today) == 2
+    remaining = sorted(db_session.scalars(select(PostView.visitor)).all())
+    assert remaining == ["v0", "v1"]
+
+
+def test_purge_runs_at_most_once_a_day(db_session, monkeypatch):
+    """스케줄러가 없어서 조회 요청이 올 때 청소한다. 요청마다 DELETE를 날리면 낭비다."""
+    from app.crud import post_views
+
+    calls = []
+    monkeypatch.setattr(post_views, "_last_purged_on", None)
+    monkeypatch.setattr(
+        post_views, "purge_older_than_retention", lambda db, today: calls.append(today)
+    )
+    today = date(2026, 9, 24)
+    for _ in range(3):
+        post_views.purge_once_a_day(db_session, today)
+    post_views.purge_once_a_day(db_session, today + timedelta(days=1))
+    assert calls == [today, today + timedelta(days=1)]

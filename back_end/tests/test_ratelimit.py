@@ -81,19 +81,6 @@ def test_expired_entries_are_swept():
     assert len(store._counters) < InMemoryFixedWindowStore._SWEEP_EVERY
 
 
-# ─────────────── SET NX EX 대응 ───────────────
-def test_mark_once_is_true_only_the_first_time():
-    store = InMemoryFixedWindowStore()
-    assert store.mark_once("visit", 60) is True
-    assert store.mark_once("visit", 60) is False
-
-
-def test_mark_once_true_again_after_ttl():
-    store = InMemoryFixedWindowStore()
-    assert store.mark_once("visit", 0) is True
-    assert store.mark_once("visit", 0) is True
-
-
 # ─────────────── 호출자 식별 ───────────────
 def test_client_ip_ignores_forwarded_header_without_proxy(monkeypatch):
     """프록시가 없으면 X-Forwarded-For는 순수 사용자 입력이라 믿으면 안 된다."""
@@ -133,28 +120,3 @@ def test_guard_raises_429_with_retry_after(monkeypatch):
     # 403이 아니라 429여야 한다. 403은 영구적 거부라 클라이언트가 재시도하지 않는다.
     assert exc.value.status_code == 429
     assert int(exc.value.headers["Retry-After"]) >= 1
-
-
-# ─────────────── 방문자 식별 ───────────────
-def test_visitor_id_changes_when_the_daily_salt_rotates(monkeypatch):
-    """솔트를 날마다 갈아치우는 이유는 어제 해시와 오늘 해시가 안 이어지게 하려는 것이다.
-    같은 사람을 오래 추적하는 게 구조적으로 불가능해진다."""
-    from app.core import ratelimit
-
-    request = make_request("203.0.113.9")
-    monkeypatch.setattr(ratelimit, "_daily_salt", lambda: "secret:2026-09-10")
-    today = ratelimit.visitor_id(request)
-    monkeypatch.setattr(ratelimit, "_daily_salt", lambda: "secret:2026-09-11")
-    assert ratelimit.visitor_id(request) != today
-
-
-def test_visitor_id_separates_user_agents(monkeypatch):
-    """IP만 쓰면 같은 공유기 뒤의 사람들이 한 명으로 뭉친다."""
-    monkeypatch.setattr(settings, "TRUSTED_PROXY_COUNT", 0)
-    a = make_request("203.0.113.9")
-    a.scope["headers"] = [(b"user-agent", b"chrome")]
-    b = make_request("203.0.113.9")
-    b.scope["headers"] = [(b"user-agent", b"safari")]
-    from app.core.ratelimit import visitor_id
-
-    assert visitor_id(a) != visitor_id(b)

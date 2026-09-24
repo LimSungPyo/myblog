@@ -2,15 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
-from app.core.ratelimit import (
-    VIEW_DEDUP_TTL,
-    WRITE_BY_USER,
-    guard,
-    mark_first_seen,
-    record,
-    visitor_id,
-)
+from app.core.ratelimit import WRITE_BY_USER, guard, record
+from app.core.visitor import today_utc, visitor_id
 from app.crud import comments as comments_crud
+from app.crud import post_views
 from app.crud import posts as crud
 from app.db.session import get_db
 from app.models import User
@@ -78,9 +73,10 @@ def increment_post_view(slug: str, request: Request, db: Session = Depends(get_d
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="글을 찾을 수 없습니다."
         )
-    # 검사와 기록이 한 동작이라 같은 방문자가 동시에 두 번 열어도 하나만 통과한다
-    if mark_first_seen(f"view:{visitor_id(request)}:{slug}", VIEW_DEDUP_TTL):
-        crud.increment_view(db, post)
+    # 날짜는 한 번만 구해서 식별값과 기록에 같이 쓴다 (자정 경계에서 어긋나지 않게)
+    day = today_utc()
+    post_views.purge_once_a_day(db, day)
+    post_views.record_first_view(db, post, visitor_id(request, day), day)
     return {"viewCount": post.view_count}
 
 

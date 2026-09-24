@@ -64,11 +64,6 @@ def get_by_id(db: Session, post_id: int) -> Post | None:
     return db.scalars(_base_query().where(Post.id == post_id)).unique().one_or_none()
 
 
-def increment_view(db: Session, post: Post) -> None:
-    post.view_count += 1
-    db.commit()
-
-
 def all_published_slugs(db: Session) -> list[str]:
     return list(db.scalars(select(Post.slug).where(Post.status == "published")).all())
 
