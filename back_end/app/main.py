@@ -15,6 +15,7 @@ from app.api import (
     auth,
     games,
     guestbook,
+    me,
     oauth,
     posts,
     taxonomy,
@@ -42,6 +43,7 @@ app.include_router(posts.router)
 app.include_router(taxonomy.router)
 app.include_router(guestbook.router)
 app.include_router(games.router)
+app.include_router(me.router)
 app.include_router(admin_posts.router)
 app.include_router(admin_comments.router)
 app.include_router(admin_stats.router)
