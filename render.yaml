@@ -35,3 +35,14 @@ services:
         sync: false # Brevo > SMTP & API > API Keys (미입력 시 가입·비밀번호 재설정만 비활성)
       - key: MAIL_FROM_EMAIL
         sync: false # Brevo > Senders 에 등록·인증을 마친 발신자 주소
+      # 이미지 저장소(Supabase Storage). 글 이미지 업로드가 여기로 간다.
+      - key: SUPABASE_URL
+        sync: false # Supabase > Project Settings > API 의 Project URL (https://xxxx.supabase.co)
+      - key: SUPABASE_SECRET_KEY
+        sync: false # Supabase > Project Settings > API Keys 의 Secret key (sb_secret_...). 프론트에 넣지 말 것
+      - key: SUPABASE_STORAGE_BUCKET
+        value: post-images # Storage에 이 이름의 Public 버킷을 먼저 만들어 둔다
+      # 로컬 폴더 저장 금지. Render 무료 인스턴스는 재배포·재시작마다 디스크가 비워져서
+      # Supabase 설정을 깜빡하면 올린 이미지가 조용히 사라진다. 대신 업로드를 503으로 막는다.
+      - key: ALLOW_LOCAL_UPLOADS
+        value: "false"

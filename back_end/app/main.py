@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -10,6 +11,7 @@ from app.api import (
     admin_guestbook,
     admin_posts,
     admin_stats,
+    admin_uploads,
     auth,
     games,
     guestbook,
@@ -18,6 +20,7 @@ from app.api import (
     taxonomy,
 )
 from app.core.config import settings
+from app.core.storage import upload_dir, uses_local_folder
 from app.db.session import get_db
 
 app = FastAPI(title="myblog API", version="1.0.0")
@@ -44,6 +47,13 @@ app.include_router(admin_comments.router)
 app.include_router(admin_stats.router)
 app.include_router(admin_guestbook.router)
 app.include_router(admin_games.router)
+app.include_router(admin_uploads.router)
+
+# 로컬 폴더 저장소일 때만 백엔드가 이미지를 직접 내준다. Supabase를 쓰면 이미지는
+# Supabase CDN에서 바로 나가므로 이 경로가 필요 없고, 열어둘 이유도 없다.
+if uses_local_folder():
+    upload_dir().mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=upload_dir()), name="uploads")
 
 
 @app.api_route("/health", methods=["GET", "HEAD"], tags=["meta"])

@@ -60,3 +60,6 @@ htmlcov/
 
 .claude
 claude.md
+
+# ---- 로컬 이미지 업로드 (배포는 Supabase Storage) ----
+back_end/.uploads/

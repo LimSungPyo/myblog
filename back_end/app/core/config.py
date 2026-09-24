@@ -54,6 +54,20 @@ class Settings(BaseSettings):
     # OAuth redirect_uri에 들어가는 백엔드 공개 주소 (배포 시 Render 도메인으로 교체)
     BACKEND_BASE_URL: str = "http://localhost:8000"
 
+    # 이미지 저장소(Supabase Storage) — 셋 중 URL과 키가 비어 있으면(기본) 로컬 폴더에 저장한다.
+    # 로컬 개발은 컨테이너나 가입 없이 바로 쓰고, 배포에서만 Supabase를 붙이기 위함이다.
+    # SECRET_KEY는 sb_secret_로 시작하는 서버 전용 키. 저장소 파일을 지울 수도 있는 키라
+    # 프론트(NEXT_PUBLIC_*)에는 절대 넣지 않는다.
+    SUPABASE_URL: str = ""
+    SUPABASE_SECRET_KEY: str = ""
+    SUPABASE_STORAGE_BUCKET: str = "post-images"
+    # 로컬 저장 폴더 (back_end 기준 상대 경로). .gitignore에 등록돼 있다.
+    UPLOAD_DIR: str = ".uploads"
+    # 배포에서는 false로 둔다. Supabase 설정을 깜빡하면 로컬 폴더로 떨어지는데, Render 무료
+    # 인스턴스는 재배포·재시작마다 디스크가 비워져서 "올리기는 성공했는데 며칠 뒤 이미지가
+    # 전부 사라지는" 일이 생긴다. 조용히 망가지느니 업로드를 503으로 막아 바로 드러나게 한다.
+    ALLOW_LOCAL_UPLOADS: bool = True
+
     @property
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.FRONTEND_ORIGIN.split(",") if o.strip()]
