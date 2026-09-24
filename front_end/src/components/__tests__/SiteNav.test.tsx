@@ -9,7 +9,10 @@ vi.mock("next/navigation", () => ({
 import SiteNav from "@/components/SiteNav";
 
 describe("SiteNav", () => {
-  beforeEach(() => mockUsePathname.mockReturnValue("/"));
+  beforeEach(() => {
+    // 중괄호로 감싸 반환값을 없앤다. mock을 반환하면 vitest가 teardown으로 호출한다 (TroubleShoot 005)
+    mockUsePathname.mockReturnValue("/");
+  });
 
   it("모든 메뉴를 렌더한다", () => {
     render(<SiteNav />);

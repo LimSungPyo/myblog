@@ -22,7 +22,10 @@ const stats = {
 };
 
 describe("관리자 대시보드", () => {
-  beforeEach(() => getStats.mockReset());
+  beforeEach(() => {
+    // 중괄호로 감싸 반환값을 없앤다. mock을 반환하면 vitest가 teardown으로 호출한다 (TroubleShoot 005)
+    getStats.mockReset();
+  });
 
   it("통계 값과 인기글을 렌더한다", async () => {
     getStats.mockResolvedValue(stats);

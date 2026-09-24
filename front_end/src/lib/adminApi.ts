@@ -2,6 +2,7 @@
 
 import type { GameScore, GuestbookEntry, Post } from "@/types";
 import { clearToken, getToken } from "@/lib/authApi";
+import { ensureOk } from "@/lib/apiError";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 
@@ -58,6 +59,38 @@ export interface AdminComment {
   createdAt: string;
 }
 
+export interface UploadedImage {
+  url: string;
+  width: number;
+  height: number;
+}
+
+/**
+ * 이미지 업로드. JSON이 아니라 파일을 보내므로 공통 `authed`를 쓰지 않는다.
+ *
+ * Content-Type을 직접 넣지 않는 게 핵심이다. 파일 전송(multipart)은 본문을 나누는
+ * 경계값(boundary)이 헤더에 같이 적혀야 하는데, 그 값은 브라우저가 FormData를 보고
+ * 만들어 붙인다. 손으로 `multipart/form-data`만 적으면 경계값이 빠져 서버가 못 읽는다.
+ */
+async function uploadImage(file: File): Promise<UploadedImage> {
+  ensureConfigured();
+  const form = new FormData();
+  form.append("file", file);
+  const token = getToken();
+  const res = await fetch(`${PUBLIC_API}/admin/uploads/images`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (res.status === 401) {
+    clearToken();
+    throw new Error("인증이 만료되었습니다. 다시 로그인하세요.");
+  }
+  // 서버가 "10MB 이하만", "JPG, PNG, WebP만" 같은 이유를 보내주므로 그대로 보여준다
+  await ensureOk(res, "이미지를 올리지 못했어요.");
+  return res.json() as Promise<UploadedImage>;
+}
+
 export interface TopPost {
   id: number;
   title: string;
@@ -92,6 +125,8 @@ export const adminApi = {
     authed<void>(`/admin/posts/${id}`, { method: "DELETE" }),
 
   getStats: () => authed<AdminStats>("/admin/stats"),
+
+  uploadImage,
 
   listComments: () => authed<AdminComment[]>("/admin/comments"),
   moderateComment: (id: number, approved: boolean) =>
