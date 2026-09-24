@@ -46,3 +46,7 @@ class DisplayNameUpdate(CamelModel):
         if not v:
             raise ValueError("닉네임을 입력해주세요.")
         return v
+
+
+class WithdrawRequest(CamelModel):
+    confirmation: str

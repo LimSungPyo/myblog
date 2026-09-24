@@ -176,3 +176,107 @@ def test_cannot_delete_someone_elses_guestbook_entry(
         client.delete(f"/me/guestbook/{g.id}", headers=user_headers).status_code == 404
     )
     assert db_session.scalar(select(GuestbookEntry).where(GuestbookEntry.id == g.id))
+
+
+# ─────────────── 회원 탈퇴 ───────────────
+WITHDRAW = {"confirmation": "탈퇴합니다"}
+
+
+def withdraw(client, headers, body=WITHDRAW):
+    return client.post("/me/withdraw", json=body, headers=headers)
+
+
+def test_withdraw_deletes_account_but_keeps_posts_anonymized(
+    client, db_session, make_post, regular_user, user_headers
+):
+    """글은 남겨서 대화 흐름은 지키고, 누가 썼는지는 알 수 없게 한다."""
+    post = make_post(slug="a")
+    c = add_comment(db_session, post, regular_user, "남길 댓글")
+    g = add_guestbook(db_session, regular_user, "남길 방명록")
+    s = add_score(db_session, regular_user, 2048)
+    user_id = regular_user.id
+
+    assert withdraw(client, user_headers).status_code == 204
+
+    db_session.expire_all()
+    assert db_session.get(User, user_id) is None
+    for obj, name_attr in ((c, "author_name"), (g, "author_name"), (s, "player_name")):
+        db_session.refresh(obj)
+        assert getattr(obj, name_attr) == "탈퇴한 사용자"
+        assert obj.user_id is None
+    assert c.content == "남길 댓글"
+    assert s.score == 2048
+
+
+def test_withdraw_leaves_other_users_untouched(
+    client, db_session, make_post, regular_user, other_user, user_headers
+):
+    theirs = add_comment(db_session, make_post(slug="a"), other_user)
+    withdraw(client, user_headers)
+    db_session.refresh(theirs)
+    assert theirs.author_name == "다른사람"
+    assert theirs.user_id == other_user.id
+
+
+def test_withdraw_removes_social_login_links(
+    client, db_session, regular_user, user_headers
+):
+    from app.models import SocialAccount
+
+    db_session.add(
+        SocialAccount(
+            user_id=regular_user.id, provider="google", provider_user_id="g-1"
+        )
+    )
+    db_session.commit()
+    withdraw(client, user_headers)
+    db_session.expire_all()
+    assert db_session.scalars(select(SocialAccount)).all() == []
+
+
+def test_token_stops_working_after_withdraw(client, user_headers):
+    withdraw(client, user_headers)
+    assert client.get("/auth/me", headers=user_headers).status_code == 401
+
+
+def test_same_email_can_sign_up_again(client, other_user, other_headers, mail_outbox):
+    """계정을 지웠는데 이메일이 막혀 있으면 다시 가입할 길이 없다."""
+    assert withdraw(client, other_headers).status_code == 204
+    r = client.post(
+        "/auth/signup",
+        json={
+            "email": "other@example.com",
+            "password": "newpass123",
+            "displayName": "돌아온사람",
+        },
+    )
+    assert r.status_code == 201
+
+
+@pytest.mark.parametrize("phrase", ["", "탈퇴", "탈퇴 합니다", "withdraw"])
+def test_withdraw_requires_exact_confirmation(
+    client, db_session, regular_user, user_headers, phrase
+):
+    r = withdraw(client, user_headers, {"confirmation": phrase})
+    assert r.status_code == 400
+    db_session.expire_all()
+    assert db_session.get(User, regular_user.id) is not None
+
+
+def test_confirmation_ignores_surrounding_spaces(client, user_headers):
+    assert (
+        withdraw(client, user_headers, {"confirmation": " 탈퇴합니다 "}).status_code
+        == 204
+    )
+
+
+def test_admin_cannot_withdraw(client, db_session, admin_user, admin_headers):
+    """관리자가 실수로 사라지면 관리자 페이지에 들어갈 방법이 없다."""
+    r = withdraw(client, admin_headers)
+    assert r.status_code == 403
+    db_session.expire_all()
+    assert db_session.get(User, admin_user.id) is not None
+
+
+def test_withdraw_requires_login(client):
+    assert client.post("/me/withdraw", json=WITHDRAW).status_code == 401

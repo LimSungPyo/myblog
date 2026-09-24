@@ -87,3 +87,39 @@ def get_my_guestbook(
             GuestbookEntry.id == entry_id, GuestbookEntry.user_id == user_id
         )
     )
+
+
+# 탈퇴한 사람이 남긴 글에 찍힐 이름. 글은 남겨서 다른 사람과 주고받은 흐름은 지키고,
+# 누가 썼는지는 알 수 없게 한다.
+WITHDRAWN_NAME = "탈퇴한 사용자"
+
+
+def withdraw(db: Session, user: User) -> None:
+    """계정을 지운다. 남긴 글은 남기되 이름과 계정 연결을 끊는다.
+
+    외래 키가 `ON DELETE SET NULL`이라 계정만 지워도 연결은 끊기지만, 글에 복사해둔
+    닉네임은 그대로 남는다. 계정은 없는데 이름은 계속 보이면 "지워달라"는 요청에
+    온전히 응한 게 아니라서 복사본을 먼저 덮어쓴다. 연결 끊기도 DB에 맡기지 않고 여기서
+    명시적으로 한다. 이 함수만 읽어도 탈퇴가 무엇을 하는지 다 보이게 하려는 것이다.
+
+    소셜 로그인 연결(social_accounts)은 `ON DELETE CASCADE`라 계정과 함께 지워진다.
+    전부 한 커밋이라, 중간에 실패하면 계정도 글도 원래대로 남는다.
+    """
+    anonymized = {"user_id": None}
+    db.execute(
+        update(Comment)
+        .where(Comment.user_id == user.id)
+        .values(author_name=WITHDRAWN_NAME, **anonymized)
+    )
+    db.execute(
+        update(GuestbookEntry)
+        .where(GuestbookEntry.user_id == user.id)
+        .values(author_name=WITHDRAWN_NAME, **anonymized)
+    )
+    db.execute(
+        update(GameScore)
+        .where(GameScore.user_id == user.id)
+        .values(player_name=WITHDRAWN_NAME, **anonymized)
+    )
+    db.delete(user)
+    db.commit()
