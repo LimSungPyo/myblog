@@ -20,7 +20,7 @@ export interface AuthResult {
 /** 세션 쿠키가 바뀔 때 발행되는 이벤트 — 헤더 등이 구독해 로그인 상태를 다시 확인한다. */
 export const AUTH_CHANGED_EVENT = "auth:changed";
 
-function notifyAuthChanged() {
+export function notifyAuthChanged() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
   }

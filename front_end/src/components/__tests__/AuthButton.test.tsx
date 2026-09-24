@@ -1,20 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { AuthUser } from "@/types";
 
-const push = vi.fn();
-const refresh = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push, refresh }),
-}));
-
 const fetchMe = vi.fn();
-const clearToken = vi.fn();
 vi.mock("@/lib/authApi", () => ({
   AUTH_CHANGED_EVENT: "auth:changed",
   fetchMe: () => fetchMe(),
-  clearToken: () => clearToken(),
 }));
 
 import AuthButton from "@/components/AuthButton";
@@ -30,58 +21,33 @@ const user: AuthUser = {
 
 describe("AuthButton", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    push.mockClear();
-    clearToken.mockClear();
     fetchMe.mockReset();
   });
 
-  it("비로그인 → 로그인 링크 표시", async () => {
+  it("비로그인 → 로그인 링크", async () => {
     fetchMe.mockResolvedValue(null);
     render(<AuthButton />);
-    expect(
-      await screen.findByRole("link", { name: "로그인" }),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "로그아웃" })).toBeNull();
+    expect(await screen.findByRole("link", { name: "로그인" })).toHaveAttribute(
+      "href",
+      "/login",
+    );
+    expect(screen.queryByRole("link", { name: "마이페이지" })).toBeNull();
   });
 
-  it("로그인 → 로그아웃 버튼으로 교체", async () => {
+  it("로그인 → 마이페이지 링크, 이름은 툴팁으로", async () => {
     fetchMe.mockResolvedValue(user);
     render(<AuthButton />);
-    expect(
-      await screen.findByRole("button", { name: "로그아웃" }),
-    ).toBeInTheDocument();
+    const link = await screen.findByRole("link", { name: "마이페이지" });
+    expect(link).toHaveAttribute("href", "/mypage");
+    expect(link).toHaveAttribute("title", "테스터님의 마이페이지");
     expect(screen.queryByRole("link", { name: "로그인" })).toBeNull();
   });
 
-  it("로그아웃 클릭 → 확인 후 세션 제거, 다시 로그인 링크", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+  it("헤더에서 바로 로그아웃되지 않는다 (로그아웃은 마이페이지 안에 있다)", async () => {
     fetchMe.mockResolvedValue(user);
     render(<AuthButton />);
-    await userEvent.click(
-      await screen.findByRole("button", { name: "로그아웃" }),
-    );
-
-    expect(window.confirm).toHaveBeenCalledWith("로그아웃 하시겠습니까?");
-    expect(clearToken).toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith("/");
-    expect(
-      await screen.findByRole("link", { name: "로그인" }),
-    ).toBeInTheDocument();
-  });
-
-  it("로그아웃 확인 창에서 취소 → 로그인 상태 유지", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
-    fetchMe.mockResolvedValue(user);
-    render(<AuthButton />);
-    await userEvent.click(
-      await screen.findByRole("button", { name: "로그아웃" }),
-    );
-
-    expect(clearToken).not.toHaveBeenCalled();
-    expect(
-      screen.getByRole("button", { name: "로그아웃" }),
-    ).toBeInTheDocument();
+    await screen.findByRole("link", { name: "마이페이지" });
+    expect(screen.queryByRole("button", { name: "로그아웃" })).toBeNull();
   });
 
   it("세션 변경 이벤트 → 로그인 상태 재확인", async () => {
@@ -95,7 +61,21 @@ describe("AuthButton", () => {
       window.dispatchEvent(new Event("auth:changed"));
     });
     expect(
-      await screen.findByRole("button", { name: "로그아웃" }),
+      await screen.findByRole("link", { name: "마이페이지" }),
+    ).toBeInTheDocument();
+  });
+
+  it("닉네임을 바꾸면 이벤트로 새 이름을 다시 읽는다", async () => {
+    fetchMe.mockResolvedValueOnce(user);
+    render(<AuthButton />);
+    await screen.findByRole("link", { name: "마이페이지" });
+
+    fetchMe.mockResolvedValueOnce({ ...user, displayName: "새이름" });
+    act(() => {
+      window.dispatchEvent(new Event("auth:changed"));
+    });
+    expect(
+      await screen.findByTitle("새이름님의 마이페이지"),
     ).toBeInTheDocument();
   });
 });
