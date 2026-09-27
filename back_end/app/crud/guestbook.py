@@ -1,6 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.names import author_name_for
 from app.core.storage import delete_image_quietly
 from app.models import GuestbookEntry, User
 
@@ -39,7 +40,7 @@ def create(
 ) -> GuestbookEntry:
     entry = GuestbookEntry(
         user_id=author.id,
-        author_name=author.display_name,
+        author_name=author_name_for(author),
         content=content,
         image_key=image_key,
     )

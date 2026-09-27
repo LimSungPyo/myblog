@@ -132,7 +132,11 @@ export default function GuestbookForm({
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder={`${user.displayName}님, 메시지를 입력해주세요.`}
+        placeholder={
+          user.isAdmin
+            ? "관리자로 남길 메시지를 입력해주세요."
+            : `${user.displayName}님, 메시지를 입력해주세요.`
+        }
         rows={3}
         maxLength={1000}
         aria-label="메시지"

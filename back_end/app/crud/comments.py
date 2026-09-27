@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.names import author_name_for
 from app.models import Comment, User
 from app.schemas.comment import CommentCreate
 
@@ -46,7 +47,7 @@ def create(db: Session, post_id: int, data: CommentCreate, author: User) -> Comm
     comment = Comment(
         post_id=post_id,
         user_id=author.id,
-        author_name=author.display_name,
+        author_name=author_name_for(author),
         content=data.content,
     )
     db.add(comment)

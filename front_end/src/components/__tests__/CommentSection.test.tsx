@@ -60,6 +60,14 @@ describe("CommentSection", () => {
     expect(screen.queryByPlaceholderText("이름")).toBeNull();
   });
 
+  it("관리자로 로그인하면 '관리자로 작성'으로 안내한다", () => {
+    authState.user = { ...user, username: "admin", isAdmin: true };
+    render(<CommentSection slug="hello" initial={[]} />);
+    expect(screen.getByText("관리자")).toBeInTheDocument();
+    expect(screen.getByText(/로 작성/)).toBeInTheDocument();
+    expect(screen.queryByText("홍길동")).toBeNull();
+  });
+
   it("기존 댓글 목록은 로그인과 무관하게 표시", () => {
     render(
       <CommentSection

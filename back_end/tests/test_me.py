@@ -309,3 +309,42 @@ def test_admin_cannot_withdraw(client, db_session, admin_user, admin_headers):
 
 def test_withdraw_requires_login(client):
     assert client.post("/me/withdraw", json=WITHDRAW).status_code == 401
+
+
+# ─────────────── 관리자 글은 "관리자"로 ───────────────
+def test_admin_comment_and_guestbook_show_as_admin(
+    client, make_post, admin_user, admin_headers, user_headers
+):
+    """방문자에게는 관리자의 닉네임보다 "블로그 주인이 답했다"는 사실이 중요하다."""
+    make_post(slug="a")
+    r = client.post(
+        "/posts/a/comments", json={"content": "답글"}, headers=admin_headers
+    )
+    assert r.json()["authorName"] == "관리자"
+    r = client.post("/guestbook", data={"content": "환영해요"}, headers=admin_headers)
+    assert r.json()["authorName"] == "관리자"
+    # 일반 회원은 지금처럼 닉네임
+    r = client.post("/guestbook", data={"content": "안녕"}, headers=user_headers)
+    assert r.json()["authorName"] == "testuser"
+
+
+def test_admin_rename_keeps_admin_name_on_posts(
+    client, db_session, make_post, admin_user, admin_headers
+):
+    """관리자가 닉네임을 바꿔도 댓글·방명록은 "관리자"로 남고, 게임 기록만 새 닉네임을 따른다."""
+    make_post(slug="a")
+    client.post("/posts/a/comments", json={"content": "답글"}, headers=admin_headers)
+    client.post("/guestbook", data={"content": "환영"}, headers=admin_headers)
+    score = add_score(db_session, admin_user, 128)
+
+    r = client.patch("/me", json={"displayName": "블로그주인"}, headers=admin_headers)
+    assert r.status_code == 200
+
+    db_session.expire_all()
+    names = {
+        db_session.scalar(select(Comment.author_name)),
+        db_session.scalar(select(GuestbookEntry.author_name)),
+    }
+    assert names == {"관리자"}
+    db_session.refresh(score)
+    assert score.player_name == "블로그주인"

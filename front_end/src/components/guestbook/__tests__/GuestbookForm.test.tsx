@@ -80,6 +80,14 @@ describe("GuestbookForm", () => {
     expect(screen.queryByLabelText("이름")).toBeNull();
   });
 
+  it("관리자는 '관리자'로 남긴다고 안내한다", () => {
+    authState.user = { ...user, username: "admin", isAdmin: true };
+    render(<GuestbookForm />);
+    expect(
+      screen.getByPlaceholderText("관리자로 남길 메시지를 입력해주세요."),
+    ).toBeInTheDocument();
+  });
+
   it("메시지도 사진도 없으면 에러 표시", async () => {
     render(<GuestbookForm />);
     await userEvent.click(screen.getByRole("button", { name: "등록하기" }));

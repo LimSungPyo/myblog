@@ -54,7 +54,7 @@ export default function CommentSection({
           {
             id: Date.now(),
             postId: 0,
-            authorName: user?.displayName ?? "나",
+            authorName: user?.isAdmin ? "관리자" : (user?.displayName ?? "나"),
             content,
             createdAt: new Date().toISOString(),
           },
@@ -98,10 +98,11 @@ export default function CommentSection({
       {user ? (
         <form onSubmit={onSubmit} className="mt-6 space-y-3">
           <p className="text-sm text-neutral-500">
+            {/* 서버가 관리자 글은 "관리자"로 저장하므로 안내도 같게 맞춘다 */}
             <span className="font-medium text-neutral-700 dark:text-neutral-300">
-              {user.displayName}
+              {user.isAdmin ? "관리자" : user.displayName}
             </span>
-            님으로 작성
+            {user.isAdmin ? "로 작성" : "님으로 작성"}
           </p>
           <textarea
             value={content}

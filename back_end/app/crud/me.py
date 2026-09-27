@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.names import author_name_for
 from app.core.storage import delete_image_quietly
 from app.models import Comment, GameScore, GuestbookEntry, User
 
@@ -52,17 +53,22 @@ def rename(db: Session, user: User, display_name: str) -> User:
     바꾸면 옛 글에는 옛 이름이 남는다. 한 사람이 두 이름으로 보이는 혼란을 막기로 해서
     전부 새 이름으로 맞춘다. 네 군데가 한 커밋에 묶여 있어서, 중간에 실패하면 전부
     되돌아가고 이름이 반쯤만 바뀐 상태로 남지 않는다.
+
+    댓글·방명록에는 닉네임이 아니라 `author_name_for`가 정한 이름을 넣는다. 관리자는
+    닉네임을 바꿔도 댓글·방명록에 "관리자"로 남아야 하기 때문이다. 게임 기록은 닉네임
+    그대로 따라간다.
     """
     user.display_name = display_name
+    author_name = author_name_for(user)
     db.execute(
         update(Comment)
         .where(Comment.user_id == user.id)
-        .values(author_name=display_name)
+        .values(author_name=author_name)
     )
     db.execute(
         update(GuestbookEntry)
         .where(GuestbookEntry.user_id == user.id)
-        .values(author_name=display_name)
+        .values(author_name=author_name)
     )
     db.execute(
         update(GameScore)
