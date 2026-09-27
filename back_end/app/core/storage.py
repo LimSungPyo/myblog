@@ -20,6 +20,7 @@ import httpx
 from fastapi import HTTPException, status
 
 from app.core.config import settings
+from app.core.http_errors import describe_http_error
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +135,8 @@ class SupabaseImageStorage:
             )
             raise StorageError from exc
         except httpx.HTTPError as exc:
-            logger.error("이미지 업로드 실패: %s", exc)
+            # 오류 메시지를 그대로 적으면 헤더에 실린 비밀 키가 로그에 찍힐 수 있다
+            logger.error("이미지 업로드 실패: %s", describe_http_error(exc))
             raise StorageError from exc
         return self.public_url(key)
 
@@ -156,7 +158,7 @@ class SupabaseImageStorage:
             )
             raise StorageError from exc
         except httpx.HTTPError as exc:
-            logger.error("이미지 삭제 실패: %s", exc)
+            logger.error("이미지 삭제 실패: %s", describe_http_error(exc))
             raise StorageError from exc
 
     def public_url(self, key: str) -> str:

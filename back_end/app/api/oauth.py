@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.http_errors import describe_http_error
 from app.core.oauth import PROVIDERS, OAuthProvider, OAuthUserInfo
 from app.core.security import (
     create_access_token,
@@ -143,8 +144,11 @@ def oauth_callback(
 
     try:
         info = p.fetch_user_info(code)
-    except httpx.HTTPError:
-        logger.exception("oauth: %s user info fetch failed", provider)
+    except httpx.HTTPError as exc:
+        # 사용자 정보 요청의 헤더에는 access token이 실린다. 오류 메시지를 그대로 찍지 않는다.
+        logger.error(
+            "oauth: %s user info fetch failed (%s)", provider, describe_http_error(exc)
+        )
         return RedirectResponse(
             f"{frontend}/auth/callback#error=provider_error",
             status_code=status.HTTP_302_FOUND,

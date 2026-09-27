@@ -15,6 +15,7 @@ import logging
 import httpx
 
 from app.core.config import settings
+from app.core.http_errors import describe_http_error
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +51,15 @@ def send_email(to: str, subject: str, body: str) -> None:
             exc.response.status_code,
             exc.response.text,
         )
-    except httpx.HTTPError:
-        logger.exception("mail: send failed (to=%s, subject=%s)", to, subject)
+    except httpx.HTTPError as exc:
+        # logger.exception은 오류 메시지까지 찍는데, 헤더 값 오류면 그 메시지에 API 키가
+        # 통째로 들어 있다. 종류와 힌트만 남긴다.
+        logger.error(
+            "mail: send failed (to=%s, subject=%s, error=%s)",
+            to,
+            subject,
+            describe_http_error(exc),
+        )
 
 
 def send_verification_email(to: str, link: str) -> None:
