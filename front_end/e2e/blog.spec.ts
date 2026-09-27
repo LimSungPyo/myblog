@@ -10,7 +10,7 @@ test("관리자가 글을 작성하면 공개 상세 페이지에 노출된다",
 
   // 관리자 로그인
   await page.goto("/login");
-  await page.getByPlaceholder("아이디").fill(ADMIN_USER);
+  await page.getByPlaceholder("이메일").fill(ADMIN_USER);
   await page.getByPlaceholder("비밀번호").fill(ADMIN_PASS);
   await page.getByRole("button", { name: "로그인" }).click();
   await expect(page).toHaveURL(/\/admin\/posts$/);

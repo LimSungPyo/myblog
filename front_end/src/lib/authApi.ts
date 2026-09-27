@@ -90,7 +90,7 @@ export async function login(
   const data = await post<AuthResult>(
     "/auth/login",
     { username, password },
-    "아이디 또는 비밀번호가 올바르지 않습니다.",
+    "이메일 또는 비밀번호가 올바르지 않습니다.",
   );
   setSession(data);
   return data;

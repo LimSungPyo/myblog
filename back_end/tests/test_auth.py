@@ -32,6 +32,8 @@ def test_login_regular_returns_is_admin_false(client, regular_user):
 def test_login_wrong_password(client, admin_user):
     r = client.post("/auth/login", json={"username": "admin", "password": "wrong"})
     assert r.status_code == 401
+    # 회원은 닉네임이 아니라 이메일로 로그인한다. "아이디"라고 안내하면 닉네임을 넣게 된다.
+    assert r.json()["detail"] == "이메일 또는 비밀번호가 올바르지 않습니다."
 
 
 # ─────────────── 회원가입 + 이메일 인증 ───────────────

@@ -5,7 +5,7 @@ const ADMIN_PASS = process.env.E2E_ADMIN_PASS || "admin1234";
 
 test("관리자 로그인 → 관리자 페이지로 자동 이동", async ({ page }) => {
   await page.goto("/login");
-  await page.getByPlaceholder("아이디 또는 이메일").fill(ADMIN_USER);
+  await page.getByPlaceholder("이메일").fill(ADMIN_USER);
   await page.getByPlaceholder("비밀번호").fill(ADMIN_PASS);
   await page.getByRole("button", { name: "로그인" }).click();
   await expect(page).toHaveURL(/\/admin\/posts/);

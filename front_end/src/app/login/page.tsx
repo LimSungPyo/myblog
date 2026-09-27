@@ -79,7 +79,7 @@ function LoginForm() {
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="아이디 또는 이메일"
+          placeholder="이메일"
           autoComplete="username"
           className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
           required

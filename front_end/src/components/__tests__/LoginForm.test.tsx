@@ -29,13 +29,21 @@ describe("로그인 페이지", () => {
     resendVerification.mockReset();
   });
 
+  it("입력칸은 '이메일'로 안내하지만, 이메일 전용 칸은 아니다", () => {
+    // 일반 회원은 닉네임이 아니라 이메일로 로그인한다. 그런데 관리자는 같은 칸에
+    // 아이디(admin)를 넣는다. type="email"로 바꾸면 브라우저가 @ 없는 입력을 막아서
+    // 관리자가 로그인할 수 없게 된다. 아래 관리자 로그인 테스트도 이걸 간접적으로
+    // 잡지만, 실패했을 때 이유가 바로 보이도록 형식을 직접 확인한다.
+    render(<LoginPage />);
+    const input = screen.getByPlaceholderText("이메일");
+    expect(input).not.toHaveAttribute("type", "email");
+    expect(input).toHaveAttribute("autocomplete", "username");
+  });
+
   it("관리자 로그인 성공 → /admin/posts 이동", async () => {
     login.mockResolvedValue({ accessToken: "t", isAdmin: true });
     render(<LoginPage />);
-    await userEvent.type(
-      screen.getByPlaceholderText("아이디 또는 이메일"),
-      "admin",
-    );
+    await userEvent.type(screen.getByPlaceholderText("이메일"), "admin");
     await userEvent.type(screen.getByPlaceholderText("비밀번호"), "pw");
     await userEvent.click(screen.getByRole("button", { name: "로그인" }));
 
@@ -47,7 +55,7 @@ describe("로그인 페이지", () => {
     login.mockResolvedValue({ accessToken: "t", isAdmin: false });
     render(<LoginPage />);
     await userEvent.type(
-      screen.getByPlaceholderText("아이디 또는 이메일"),
+      screen.getByPlaceholderText("이메일"),
       "user@example.com",
     );
     await userEvent.type(screen.getByPlaceholderText("비밀번호"), "pw");
@@ -58,18 +66,15 @@ describe("로그인 페이지", () => {
 
   it("로그인 실패 시 에러 메시지 표시", async () => {
     login.mockRejectedValue(
-      new Error("아이디 또는 비밀번호가 올바르지 않습니다."),
+      new Error("이메일 또는 비밀번호가 올바르지 않습니다."),
     );
     render(<LoginPage />);
-    await userEvent.type(
-      screen.getByPlaceholderText("아이디 또는 이메일"),
-      "x",
-    );
+    await userEvent.type(screen.getByPlaceholderText("이메일"), "x");
     await userEvent.type(screen.getByPlaceholderText("비밀번호"), "y");
     await userEvent.click(screen.getByRole("button", { name: "로그인" }));
 
     expect(
-      await screen.findByText("아이디 또는 비밀번호가 올바르지 않습니다."),
+      await screen.findByText("이메일 또는 비밀번호가 올바르지 않습니다."),
     ).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
   });
@@ -81,7 +86,7 @@ describe("로그인 페이지", () => {
     resendVerification.mockResolvedValue({ message: "ok" });
     render(<LoginPage />);
     await userEvent.type(
-      screen.getByPlaceholderText("아이디 또는 이메일"),
+      screen.getByPlaceholderText("이메일"),
       "new@example.com",
     );
     await userEvent.type(screen.getByPlaceholderText("비밀번호"), "pw");
@@ -101,17 +106,14 @@ describe("로그인 페이지", () => {
 
   it("일반 실패(401)에는 재발송 버튼이 뜨지 않음", async () => {
     login.mockRejectedValue(
-      new ApiError("아이디 또는 비밀번호가 올바르지 않습니다.", 401),
+      new ApiError("이메일 또는 비밀번호가 올바르지 않습니다.", 401),
     );
     render(<LoginPage />);
-    await userEvent.type(
-      screen.getByPlaceholderText("아이디 또는 이메일"),
-      "x",
-    );
+    await userEvent.type(screen.getByPlaceholderText("이메일"), "x");
     await userEvent.type(screen.getByPlaceholderText("비밀번호"), "y");
     await userEvent.click(screen.getByRole("button", { name: "로그인" }));
 
-    await screen.findByText("아이디 또는 비밀번호가 올바르지 않습니다.");
+    await screen.findByText("이메일 또는 비밀번호가 올바르지 않습니다.");
     expect(
       screen.queryByRole("button", { name: "인증 메일 다시 받기" }),
     ).toBeNull();

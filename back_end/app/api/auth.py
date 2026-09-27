@@ -122,7 +122,7 @@ def login(
         record(ip_key, LOGIN_BY_IP)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="아이디 또는 비밀번호가 올바르지 않습니다.",
+            detail="이메일 또는 비밀번호가 올바르지 않습니다.",
         )
     # 비밀번호를 아는 게 증명됐으니 이 계정의 실패 기록은 지운다.
     # IP 축은 남긴다. 자기 계정에 로그인하는 것만으로 IP 카운터를 지울 수 있으면
