@@ -52,9 +52,28 @@ export default function AdminGuestbookPage() {
                       {formatDate(e.createdAt)}
                     </time>
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap text-sm">
-                    {e.content}
-                  </p>
+                  {e.content && (
+                    <p className="mt-1 whitespace-pre-wrap text-sm">
+                      {e.content}
+                    </p>
+                  )}
+                  {e.imageUrl && (
+                    // 부적절한 사진을 바로 알아보고 지울 수 있게, 관리자 목록에도 사진을 보여준다
+                    <a
+                      href={e.imageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- 관리자 확인용 썸네일 */}
+                      <img
+                        src={e.imageUrl}
+                        alt={`${e.authorName}님이 올린 사진`}
+                        loading="lazy"
+                        className="h-24 w-auto rounded-lg border border-black/10 dark:border-white/15"
+                      />
+                    </a>
+                  )}
                 </div>
                 <button
                   onClick={() => remove(e.id)}

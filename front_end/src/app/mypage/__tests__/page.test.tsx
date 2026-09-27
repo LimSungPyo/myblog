@@ -69,6 +69,12 @@ const activity: MyActivity = {
   ],
   guestbook: [
     { id: 7, content: "방명록 인사", createdAt: "2026-09-03T00:00:00Z" },
+    {
+      id: 8,
+      content: "",
+      createdAt: "2026-09-04T00:00:00Z",
+      imageUrl: "https://cdn.test/guestbook/a.webp",
+    },
   ],
   scores: [
     { id: 9, gameKey: "2048", score: 4096, createdAt: "2026-09-04T00:00:00Z" },
@@ -106,6 +112,17 @@ describe("마이페이지", () => {
     );
     expect(screen.getByText("방명록 인사")).toBeInTheDocument();
     expect(screen.getByText("4,096점")).toBeInTheDocument();
+  });
+
+  it("사진만 올린 방명록은 사진을 보여주고, 삭제 버튼 이름도 비지 않는다", async () => {
+    render(<MyPage />);
+    expect(await screen.findByAltText("내가 올린 사진")).toHaveAttribute(
+      "src",
+      "https://cdn.test/guestbook/a.webp",
+    );
+    expect(
+      screen.getByRole("button", { name: "방명록 삭제: 사진" }),
+    ).toBeInTheDocument();
   });
 
   it("승인 전 댓글에는 '승인 대기'를 붙인다 (사라진 줄 오해하지 않게)", async () => {

@@ -46,8 +46,9 @@ export interface Comment {
 export interface GuestbookEntry {
   id: number;
   authorName: string;
-  content: string;
+  content: string; // 사진만 올린 방명록이면 빈 문자열
   createdAt: string;
+  imageUrl?: string | null;
 }
 
 export interface GameScore {

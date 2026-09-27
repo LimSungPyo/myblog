@@ -241,14 +241,25 @@ function ActivitySection({ userId }: { userId: string }) {
                   >
                     {formatDate(g.createdAt)}
                   </time>
-                  <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-                    {g.content}
-                  </p>
+                  {g.content && (
+                    <p className="mt-1 whitespace-pre-wrap break-words text-sm">
+                      {g.content}
+                    </p>
+                  )}
+                  {g.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element -- 내가 올린 사진 썸네일
+                    <img
+                      src={g.imageUrl}
+                      alt="내가 올린 사진"
+                      loading="lazy"
+                      className="mt-2 h-20 w-auto rounded-lg border border-black/10 dark:border-white/15"
+                    />
+                  )}
                 </div>
                 <button
                   type="button"
                   onClick={() => removeGuestbook(g.id)}
-                  aria-label={`방명록 삭제: ${g.content.slice(0, 20)}`}
+                  aria-label={`방명록 삭제: ${g.content.slice(0, 20) || "사진"}`}
                   className={smallButton}
                 >
                   삭제

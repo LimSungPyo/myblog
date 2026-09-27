@@ -69,9 +69,21 @@ export default async function GuestbookPage({
                             · {formatRelativeTime(e.createdAt)}
                           </time>
                         </div>
-                        <p className="mt-1.5 whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
-                          {e.content}
-                        </p>
+                        {e.content && (
+                          <p className="mt-1.5 whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+                            {e.content}
+                          </p>
+                        )}
+                        {e.imageUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element -- 저장소 주소를 그대로 쓴다. next/image는 이미지를 Vercel을 거쳐 다시 내보내서 그쪽 한도까지 쓰게 된다
+                          <img
+                            src={e.imageUrl}
+                            alt={`${e.authorName}님이 남긴 사진`}
+                            loading="lazy"
+                            decoding="async"
+                            className="mt-3 max-h-80 w-auto max-w-full rounded-xl border border-black/10 dark:border-white/10"
+                          />
+                        )}
                       </div>
                     </div>
                   </li>

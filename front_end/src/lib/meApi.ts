@@ -19,6 +19,7 @@ export interface MyGuestbookEntry {
   id: number;
   content: string;
   createdAt: string;
+  imageUrl?: string | null;
 }
 
 export interface MyScore {
