@@ -3,6 +3,7 @@ import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from sqlalchemy import or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -169,7 +170,17 @@ def signup(
         display_name=payload.display_name,
     )
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # 위의 중복 확인과 이 저장 사이에 같은 이메일 가입이 먼저 끝난 경우다(버튼을
+        # 빠르게 두 번 누르면 생긴다). 확인은 통과했어도 users.email의 UNIQUE 제약이
+        # 마지막으로 막는다. 그 거절을 500으로 흘리지 않고 같은 409로 돌려준다.
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 가입된 이메일입니다.",
+        ) from None
     db.refresh(user)
     _queue_verification_mail(background_tasks, user)
     return MessageOut(message="인증 메일을 보냈습니다. 메일함을 확인해주세요.")

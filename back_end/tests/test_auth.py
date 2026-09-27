@@ -1,3 +1,5 @@
+from sqlalchemy import func, select
+
 from app.core.config import settings
 from app.core.ratelimit import (
     LOGIN_BY_IDENTITY,
@@ -100,6 +102,28 @@ def test_signup_duplicate_email_conflict(client, mail_outbox):
     # 대소문자만 달라도 같은 이메일로 취급
     r = client.post("/auth/signup", json={**SIGNUP, "email": "NEW@example.com"})
     assert r.status_code == 409
+
+
+def test_signup_race_on_same_email_returns_409_not_500(
+    client, db_session, mail_outbox, monkeypatch
+):
+    """ "이미 있나 확인"과 "저장" 사이에 같은 이메일 가입이 먼저 끝나는 경우.
+
+    가입 버튼을 빠르게 두 번 누르면 생긴다. DB의 UNIQUE 제약이 막아서 계정은 하나만
+    생기지만, 그 거절을 처리하지 않으면 사용자는 500 에러를 본다.
+    """
+    assert client.post("/auth/signup", json=SIGNUP).status_code == 201
+    # 두 번째 요청이 확인 단계를 이미 통과한 상황: 확인이 "없음"을 돌려준다
+    monkeypatch.setattr("app.api.auth._find_user_by_email", lambda db, email: None)
+
+    r = client.post("/auth/signup", json=SIGNUP)
+
+    assert r.status_code == 409
+    assert r.json()["detail"] == "이미 가입된 이메일입니다."
+    count = db_session.scalar(
+        select(func.count()).select_from(User).where(User.email == SIGNUP["email"])
+    )
+    assert count == 1
 
 
 def test_signup_social_only_email_conflict(client, db_session, mail_outbox):
