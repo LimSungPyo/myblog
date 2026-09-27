@@ -11,7 +11,8 @@ class GuestbookEntry(Base):
     __tablename__ = "guestbook"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    # 탈퇴해도 글은 남기고, author_name은 작성 시점 닉네임 스냅샷
+    # author_name은 작성 시점 닉네임 스냅샷. 탈퇴하면 방명록은 함께 지운다(crud/me.py
+    # withdraw). ON DELETE SET NULL은 그 삭제를 거치지 않고 계정이 지워질 때의 안전망이다.
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="SET NULL"), index=True
     )

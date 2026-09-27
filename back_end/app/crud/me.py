@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.models import Comment, GameScore, GuestbookEntry, User
@@ -89,18 +89,25 @@ def get_my_guestbook(
     )
 
 
-# 탈퇴한 사람이 남긴 글에 찍힐 이름. 글은 남겨서 다른 사람과 주고받은 흐름은 지키고,
-# 누가 썼는지는 알 수 없게 한다.
+# 탈퇴한 사람이 남긴 댓글·게임 기록에 찍힐 이름. 글은 남겨서 다른 사람과 주고받은
+# 흐름은 지키고, 누가 썼는지는 알 수 없게 한다. (방명록은 남기지 않고 지운다)
 WITHDRAWN_NAME = "탈퇴한 사용자"
 
 
 def withdraw(db: Session, user: User) -> None:
-    """계정을 지운다. 남긴 글은 남기되 이름과 계정 연결을 끊는다.
+    """계정을 지운다. 댓글·게임 기록은 남기되 이름과 계정 연결을 끊고, 방명록은 지운다.
+
+    댓글은 다른 사람과 주고받은 대화라, 한쪽 말만 사라지면 남은 답글이 무슨 뜻인지
+    알 수 없게 된다. 게임 기록도 지우면 순위표가 과거로 거슬러 바뀐다. 그래서 둘은 남기고
+    "탈퇴한 사용자"로 익명화한다.
+
+    방명록은 대화가 아니라 한 사람의 인사라서, 남겨도 지켜줄 흐름이 없다. 사진을 붙일 수
+    있게 되면 얼굴 같은 개인정보가 담길 수도 있다. 그래서 탈퇴하면 함께 지운다.
 
     외래 키가 `ON DELETE SET NULL`이라 계정만 지워도 연결은 끊기지만, 글에 복사해둔
-    닉네임은 그대로 남는다. 계정은 없는데 이름은 계속 보이면 "지워달라"는 요청에
-    온전히 응한 게 아니라서 복사본을 먼저 덮어쓴다. 연결 끊기도 DB에 맡기지 않고 여기서
-    명시적으로 한다. 이 함수만 읽어도 탈퇴가 무엇을 하는지 다 보이게 하려는 것이다.
+    닉네임은 그대로 남는다. 그래서 복사본을 먼저 덮어쓴다. 연결 끊기와 방명록 삭제도
+    DB 규칙에 맡기지 않고 여기서 명시적으로 한다. 이 함수만 읽어도 탈퇴가 무엇을 하는지
+    다 보이게 하려는 것이다.
 
     소셜 로그인 연결(social_accounts)은 `ON DELETE CASCADE`라 계정과 함께 지워진다.
     전부 한 커밋이라, 중간에 실패하면 계정도 글도 원래대로 남는다.
@@ -112,14 +119,10 @@ def withdraw(db: Session, user: User) -> None:
         .values(author_name=WITHDRAWN_NAME, **anonymized)
     )
     db.execute(
-        update(GuestbookEntry)
-        .where(GuestbookEntry.user_id == user.id)
-        .values(author_name=WITHDRAWN_NAME, **anonymized)
-    )
-    db.execute(
         update(GameScore)
         .where(GameScore.user_id == user.id)
         .values(player_name=WITHDRAWN_NAME, **anonymized)
     )
+    db.execute(delete(GuestbookEntry).where(GuestbookEntry.user_id == user.id))
     db.delete(user)
     db.commit()

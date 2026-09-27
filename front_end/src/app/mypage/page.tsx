@@ -336,9 +336,10 @@ function WithdrawSection({ user }: { user: AuthUser }) {
       </h2>
       <div className="mt-2 space-y-1 text-sm text-neutral-600 dark:text-neutral-300">
         <p>탈퇴하면 계정과 로그인 정보가 바로 지워지고 되돌릴 수 없어요.</p>
+        <p>남긴 방명록은 함께 지워져요.</p>
         <p>
-          남긴 댓글·방명록·게임 기록은 지워지지 않고, 작성자가 &lsquo;탈퇴한
-          사용자&rsquo;로 바뀌어요. 지우고 싶은 글이 있다면 탈퇴 전에 위에서
+          댓글과 게임 기록은 지워지지 않고, 작성자가 &lsquo;탈퇴한
+          사용자&rsquo;로 바뀌어요. 지우고 싶은 댓글이 있다면 탈퇴 전에 위에서
           직접 지워주세요.
         </p>
       </div>

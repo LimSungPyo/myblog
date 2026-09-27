@@ -207,6 +207,16 @@ describe("마이페이지", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
+  it("탈퇴 전에 무엇이 지워지고 무엇이 남는지 알려준다", () => {
+    render(<MyPage />);
+    expect(
+      screen.getByText("남긴 방명록은 함께 지워져요."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/댓글과 게임 기록은 지워지지 않고/),
+    ).toBeInTheDocument();
+  });
+
   it("관리자에게는 탈퇴 입력칸 대신 안내만 보여준다", () => {
     authState.user = {
       ...member,

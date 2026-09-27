@@ -186,13 +186,12 @@ def withdraw(client, headers, body=WITHDRAW):
     return client.post("/me/withdraw", json=body, headers=headers)
 
 
-def test_withdraw_deletes_account_but_keeps_posts_anonymized(
+def test_withdraw_keeps_comments_and_scores_anonymized(
     client, db_session, make_post, regular_user, user_headers
 ):
-    """글은 남겨서 대화 흐름은 지키고, 누가 썼는지는 알 수 없게 한다."""
+    """댓글·게임 기록은 남겨서 대화 흐름과 순위표는 지키고, 누가 썼는지는 알 수 없게 한다."""
     post = make_post(slug="a")
     c = add_comment(db_session, post, regular_user, "남길 댓글")
-    g = add_guestbook(db_session, regular_user, "남길 방명록")
     s = add_score(db_session, regular_user, 2048)
     user_id = regular_user.id
 
@@ -200,12 +199,42 @@ def test_withdraw_deletes_account_but_keeps_posts_anonymized(
 
     db_session.expire_all()
     assert db_session.get(User, user_id) is None
-    for obj, name_attr in ((c, "author_name"), (g, "author_name"), (s, "player_name")):
+    for obj, name_attr in ((c, "author_name"), (s, "player_name")):
         db_session.refresh(obj)
         assert getattr(obj, name_attr) == "탈퇴한 사용자"
         assert obj.user_id is None
     assert c.content == "남길 댓글"
     assert s.score == 2048
+
+
+def test_withdraw_deletes_my_guestbook_entries(
+    client, db_session, regular_user, user_headers
+):
+    """방명록은 대화가 이어지는 곳이 아니라 개인의 인사라서, 탈퇴하면 함께 지운다.
+    (이미지가 붙으면 얼굴 같은 개인정보가 담길 수도 있다)"""
+    mine = [
+        add_guestbook(db_session, regular_user, f"내 인사 {i}").id for i in range(2)
+    ]
+
+    assert withdraw(client, user_headers).status_code == 204
+
+    db_session.expire_all()
+    for entry_id in mine:
+        assert db_session.get(GuestbookEntry, entry_id) is None
+
+
+def test_withdraw_leaves_other_and_legacy_guestbook_entries(
+    client, db_session, regular_user, other_user, user_headers
+):
+    """지우는 건 탈퇴한 사람의 방명록뿐이다. 남의 글과 계정 연동 전 익명 글은 그대로다."""
+    theirs = add_guestbook(db_session, other_user, "남의 인사")
+    legacy = add_guestbook(db_session, None, "옛날 익명 인사")
+
+    withdraw(client, user_headers)
+
+    db_session.expire_all()
+    assert db_session.get(GuestbookEntry, theirs.id) is not None
+    assert db_session.get(GuestbookEntry, legacy.id) is not None
 
 
 def test_withdraw_leaves_other_users_untouched(
