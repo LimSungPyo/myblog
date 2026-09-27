@@ -12,9 +12,15 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL")
     @classmethod
     def normalize_db_url(cls, v: str) -> str:
-        # Render/Heroku/Supabase 등은 postgres:// 로 주는데 SQLAlchemy 2.0은 미인식 → 정규화
-        if v.startswith("postgres://"):
-            v = v.replace("postgres://", "postgresql+psycopg2://", 1)
+        # 드라이버를 항상 psycopg2로 못박는다. 설치된 드라이버가 psycopg2뿐이라서다.
+        # - postgres://   : Render/Heroku/Supabase가 주는 형식. SQLAlchemy 2.x는 이 이름을 모른다.
+        # - postgresql:// : 드라이버를 안 적으면 SQLAlchemy가 기본값을 고르는데, 그 기본값이
+        #   2.1부터 psycopg2 → psycopg(3)로 바뀌었다. requirements가 ">=2.0"이라 배포 때
+        #   2.1이 설치되면서, 설치되지 않은 psycopg를 찾다가 서버가 기동 중에 죽었다.
+        for bare in ("postgres://", "postgresql://"):
+            if v.startswith(bare):
+                v = "postgresql+psycopg2://" + v[len(bare) :]
+                break
         if not v.startswith("postgresql"):
             raise ValueError(
                 "이 프로젝트는 PostgreSQL 전용입니다. DATABASE_URL은 postgresql:// 형식이어야 합니다."
