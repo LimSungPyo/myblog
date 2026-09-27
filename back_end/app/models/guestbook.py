@@ -18,6 +18,10 @@ class GuestbookEntry(Base):
     )
     author_name: Mapped[str] = mapped_column(String(80))
     content: Mapped[str] = mapped_column(Text)
+    # 사진 저장 경로(키). 주소가 아니라 키를 둔다. 지울 때 필요한 건 키이고, 주소는
+    # 저장소 설정(로컬 폴더/Supabase)에 따라 키로부터 만들면 된다.
+    # 회원이 주소를 적어 넣는 칸이 아니다. 서버가 직접 올린 파일의 키만 들어간다.
+    image_key: Mapped[str | None] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

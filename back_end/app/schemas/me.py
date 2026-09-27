@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from pydantic import Field, field_validator
+from pydantic import Field, computed_field, field_validator
 
+from app.core.storage import public_image_url
 from app.schemas.base import CamelModel
 
 
@@ -20,6 +21,12 @@ class MyGuestbookOut(CamelModel):
     id: int
     content: str
     created_at: datetime
+    image_key: str | None = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def image_url(self) -> str | None:
+        return public_image_url(self.image_key)
 
 
 class MyScoreOut(CamelModel):

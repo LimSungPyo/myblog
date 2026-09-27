@@ -84,7 +84,7 @@ def test_comment_and_guestbook_quotas_are_separate(client, make_post, user_heade
     assert write_comment(client, user_headers).status_code == 429
     assert (
         client.post(
-            "/guestbook", json={"content": "안녕"}, headers=user_headers
+            "/guestbook", data={"content": "안녕"}, headers=user_headers
         ).status_code
         == 201
     )

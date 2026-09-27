@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.storage import delete_image_quietly
 from app.models import Comment, GameScore, GuestbookEntry, User
 
 # 마이페이지 목록 상한. 한 사람이 수백 개를 쓰는 블로그가 아니라 페이지를 나누지 않았다.
@@ -123,6 +124,18 @@ def withdraw(db: Session, user: User) -> None:
         .where(GameScore.user_id == user.id)
         .values(player_name=WITHDRAWN_NAME, **anonymized)
     )
+    # 지우기 전에 사진 경로부터 챙긴다. 글이 지워지면 어떤 파일을 지워야 할지 알 길이 없다.
+    image_keys = list(
+        db.scalars(
+            select(GuestbookEntry.image_key).where(
+                GuestbookEntry.user_id == user.id,
+                GuestbookEntry.image_key.is_not(None),
+            )
+        )
+    )
     db.execute(delete(GuestbookEntry).where(GuestbookEntry.user_id == user.id))
     db.delete(user)
     db.commit()
+    # 파일은 DB가 확정된 뒤에 지운다 (storage.delete_image_quietly 참고)
+    for key in image_keys:
+        delete_image_quietly(key)

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
+from app.crud import guestbook as guestbook_crud
 from app.crud import me as crud
 from app.db.session import get_db
 from app.models import User
@@ -83,8 +84,8 @@ def delete_my_guestbook(
     entry = crud.get_my_guestbook(db, user.id, entry_id)
     if entry is None:
         raise _NOT_FOUND
-    db.delete(entry)
-    db.commit()
+    # 사진 파일까지 지우는 경로를 관리자 삭제와 같이 쓴다
+    guestbook_crud.delete(db, entry)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

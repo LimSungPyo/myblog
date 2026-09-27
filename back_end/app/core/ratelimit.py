@@ -76,6 +76,12 @@ MAIL_BY_IP = Rule(limit=10, window=60 * 60)
 # IP 축을 덧붙이면 같은 공유기를 쓰는 사람들이 서로의 몫을 깎아먹는다.
 WRITE_BY_USER = Rule(limit=5, window=10 * 60)
 
+# 방명록 사진 — 계정당 하루 5장. 저장 공간(1GB)과 전송량을 글 이미지와 같이 쓰므로,
+# 한 사람이 쏟아부으면 관리자도 글에 사진을 못 올리게 된다. 실제로 한도를 지키는 건
+# 파일 크기가 아니라 이 장수다(서버가 어차피 작게 줄여서 저장하기 때문).
+# 창은 첫 업로드 시점부터 24시간이다.
+IMAGE_BY_USER = Rule(limit=5, window=24 * 60 * 60)
+
 
 class RateLimitStore(Protocol):
     """카운터 저장소. 인메모리 → Redis 교체 지점."""

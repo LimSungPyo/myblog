@@ -1,13 +1,9 @@
 from datetime import datetime
 
-from pydantic import Field
+from pydantic import Field, computed_field
 
+from app.core.storage import public_image_url
 from app.schemas.base import CamelModel
-
-
-class GuestbookCreate(CamelModel):
-    # 작성자 이름은 클라이언트가 보내지 않는다 — 서버가 로그인 사용자의 닉네임을 쓴다
-    content: str = Field(min_length=1, max_length=1000)
 
 
 class GuestbookOut(CamelModel):
@@ -15,6 +11,13 @@ class GuestbookOut(CamelModel):
     author_name: str
     content: str
     created_at: datetime
+    # 저장 경로는 응답에 싣지 않고, 화면에 필요한 주소만 계산해서 내보낸다
+    image_key: str | None = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def image_url(self) -> str | None:
+        return public_image_url(self.image_key)
 
 
 class PaginatedGuestbook(CamelModel):

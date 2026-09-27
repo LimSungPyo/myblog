@@ -18,6 +18,9 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_WIDTH = 1600
+# 방명록 카드는 글 본문보다 좁아서 1000px이면 충분하다. 회원 누구나 올리는 곳이라
+# 한 장이라도 작게 저장해야 저장 공간(1GB)과 전송량 한도를 글 이미지와 나눠 쓸 수 있다.
+GUESTBOOK_MAX_WIDTH = 1000
 # 압축 폭탄 방지. 파일은 몇 KB인데 풀면 수십억 픽셀이 되는 이미지가 있다. 파일 크기
 # 검사로는 못 잡고, 헤더에 적힌 가로·세로를 디코딩 전에 봐야 잡힌다.
 # 5천만 픽셀은 4800만 화소 폰 사진(8064×6048)까지 받는 선이다. 이걸 풀면 메모리를
@@ -50,7 +53,7 @@ def _has_alpha(img: Image.Image) -> bool:
     )
 
 
-def process_image(raw: bytes) -> ProcessedImage:
+def process_image(raw: bytes, max_width: int = MAX_WIDTH) -> ProcessedImage:
     if len(raw) > MAX_UPLOAD_BYTES:
         raise ImageRejected("이미지는 10MB 이하만 올릴 수 있어요.", 413)
 
@@ -86,9 +89,9 @@ def process_image(raw: bytes) -> ProcessedImage:
     if img.mode not in ("RGB", "RGBA"):
         img = img.convert("RGBA" if _has_alpha(img) else "RGB")
 
-    if img.width > MAX_WIDTH:
-        height = round(img.height * MAX_WIDTH / img.width)
-        img = img.resize((MAX_WIDTH, height), Image.Resampling.LANCZOS)
+    if img.width > max_width:
+        height = round(img.height * max_width / img.width)
+        img = img.resize((max_width, height), Image.Resampling.LANCZOS)
 
     out = io.BytesIO()
     # exif를 넘기지 않으면 새 파일에는 EXIF가 아예 안 들어간다. 이게 위치정보 제거다.

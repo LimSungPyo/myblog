@@ -1,8 +1,8 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.storage import delete_image_quietly
 from app.models import GuestbookEntry, User
-from app.schemas.guestbook import GuestbookCreate
 
 
 def list_entries(
@@ -34,9 +34,14 @@ def get_by_id(db: Session, entry_id: int) -> GuestbookEntry | None:
     return db.get(GuestbookEntry, entry_id)
 
 
-def create(db: Session, data: GuestbookCreate, author: User) -> GuestbookEntry:
+def create(
+    db: Session, *, content: str, author: User, image_key: str | None = None
+) -> GuestbookEntry:
     entry = GuestbookEntry(
-        user_id=author.id, author_name=author.display_name, content=data.content
+        user_id=author.id,
+        author_name=author.display_name,
+        content=content,
+        image_key=image_key,
     )
     db.add(entry)
     db.commit()
@@ -45,5 +50,12 @@ def create(db: Session, data: GuestbookCreate, author: User) -> GuestbookEntry:
 
 
 def delete(db: Session, entry: GuestbookEntry) -> None:
+    """글과 붙어 있던 사진 파일을 함께 지운다.
+
+    글만 지우고 파일을 남기면, 주소를 아는 사람은 계속 그 사진을 볼 수 있다.
+    부적절한 사진을 내렸는데 링크로는 살아 있는 게 가장 곤란한 상황이다.
+    """
+    image_key = entry.image_key
     db.delete(entry)
     db.commit()
+    delete_image_quietly(image_key)

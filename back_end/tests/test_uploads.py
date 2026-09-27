@@ -264,3 +264,60 @@ def test_local_folder_is_disabled_when_not_allowed(monkeypatch):
     monkeypatch.setattr(settings, "SUPABASE_URL", "https://p.supabase.co")
     monkeypatch.setattr(settings, "SUPABASE_SECRET_KEY", "sb_secret_x")
     assert isinstance(storage_module._build_storage(), SupabaseImageStorage)
+
+
+# ─────────────── 저장소 삭제 ───────────────
+def test_local_storage_delete_removes_file_and_ignores_missing(tmp_path):
+    local = LocalImageStorage(tmp_path, "http://localhost:8000")
+    local.save("guestbook/a.webp", b"data", "image/webp")
+    local.delete("guestbook/a.webp")
+    assert not (tmp_path / "guestbook/a.webp").exists()
+    local.delete("guestbook/a.webp")  # 이미 없어도 에러가 아니다
+
+
+def capture_httpx_delete(monkeypatch, status_code: int = 200):
+    calls = []
+
+    def fake_delete(url, *, headers, timeout):
+        calls.append({"url": url, "headers": headers})
+        return httpx.Response(
+            status_code, request=httpx.Request("DELETE", url), text="body"
+        )
+
+    monkeypatch.setattr(storage_module.httpx, "delete", fake_delete)
+    return calls
+
+
+def test_supabase_delete_sends_apikey(monkeypatch):
+    calls = capture_httpx_delete(monkeypatch)
+    SupabaseImageStorage("https://p.supabase.co", "sb_secret_x", "b").delete(
+        "guestbook/a.webp"
+    )
+    assert (
+        calls[0]["url"] == "https://p.supabase.co/storage/v1/object/b/guestbook/a.webp"
+    )
+    assert calls[0]["headers"] == {"apikey": "sb_secret_x"}
+
+
+def test_supabase_delete_treats_missing_file_as_done(monkeypatch):
+    """이미 지워진 파일이면 목적은 달성된 것이다."""
+    capture_httpx_delete(monkeypatch, status_code=404)
+    SupabaseImageStorage("https://p.supabase.co", "sb_secret_x", "b").delete("k.webp")
+
+
+def test_supabase_delete_failure_raises(monkeypatch):
+    capture_httpx_delete(monkeypatch, status_code=403)
+    with pytest.raises(StorageError):
+        SupabaseImageStorage("https://p.supabase.co", "sb_secret_x", "b").delete("k")
+
+
+def test_quiet_delete_never_raises(monkeypatch):
+    """글은 이미 지워졌으니, 파일 삭제 실패 때문에 요청 전체를 실패시키지 않는다."""
+
+    class Broken:
+        def delete(self, key):
+            raise StorageError
+
+    monkeypatch.setattr(storage_module, "_storage", Broken())
+    storage_module.delete_image_quietly("guestbook/a.webp")
+    storage_module.delete_image_quietly(None)
