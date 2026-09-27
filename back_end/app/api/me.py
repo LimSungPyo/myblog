@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
+from app.core.names import RESERVED_NAME_MESSAGE, is_reserved_name
 from app.crud import guestbook as guestbook_crud
 from app.crud import me as crud
 from app.db.session import get_db
@@ -58,6 +59,11 @@ def update_me(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> User:
+    # 관리자 본인은 예외다. 어차피 댓글·방명록에는 "관리자"로 찍힌다.
+    if not user.is_admin and is_reserved_name(payload.display_name):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=RESERVED_NAME_MESSAGE
+        )
     return crud.rename(db, user, payload.display_name)
 
 

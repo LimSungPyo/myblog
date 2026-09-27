@@ -13,6 +13,7 @@ from app.core.mailer import (
     send_password_reset_email,
     send_verification_email,
 )
+from app.core.names import RESERVED_NAME_MESSAGE, is_reserved_name
 from app.core.ratelimit import (
     LOGIN_BY_IDENTITY,
     LOGIN_BY_IP,
@@ -147,6 +148,11 @@ def signup(
     db: Session = Depends(get_db),
 ) -> MessageOut:
     _require_mail_configured()
+    # 메일 발송 한도를 쓰기 전에 확인한다. 이름 때문에 거절될 요청이 한도를 깎으면 안 된다.
+    if is_reserved_name(payload.display_name):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=RESERVED_NAME_MESSAGE
+        )
     _spend_mail_quota(request, payload.email)
     email = payload.email.lower()
     existing = _find_user_by_email(db, email)

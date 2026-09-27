@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.http_errors import describe_http_error
+from app.core.names import is_reserved_name
 from app.core.oauth import PROVIDERS, OAuthProvider, OAuthUserInfo
 from app.core.security import (
     create_access_token,
@@ -89,7 +90,7 @@ def _get_or_create_user(db: Session, info: OAuthUserInfo) -> User:
         user = User(
             email=email if verified else None,
             email_verified=verified,
-            display_name=(info.name or email or f"{info.provider} 사용자")[:80],
+            display_name=_signup_display_name(info, email),
             avatar_url=info.picture,
         )
         db.add(user)
@@ -106,6 +107,17 @@ def _get_or_create_user(db: Session, info: OAuthUserInfo) -> User:
     db.commit()
     db.refresh(user)
     return user
+
+
+def _signup_display_name(info: OAuthUserInfo, email: str | None) -> str:
+    """소셜 가입 때 쓸 닉네임. 제공자가 준 이름이 관리자처럼 보이면 기본 이름으로 바꾼다.
+
+    이메일 가입은 이름을 직접 입력하니 거절하고 다시 입력받으면 되지만, 소셜 가입은
+    사용자가 이름을 고른 게 아니라서 가입 자체를 막을 이유가 없다.
+    """
+    fallback = f"{info.provider} 사용자"
+    name = (info.name or email or fallback)[:80]
+    return fallback if is_reserved_name(name) else name
 
 
 @router.get("/{provider}/login")
