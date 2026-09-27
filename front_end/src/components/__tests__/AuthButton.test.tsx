@@ -43,6 +43,14 @@ describe("AuthButton", () => {
     expect(screen.queryByRole("link", { name: "로그인" })).toBeNull();
   });
 
+  it("관리자 → 관리자 대시보드로 간다", async () => {
+    fetchMe.mockResolvedValue({ ...user, username: "admin", isAdmin: true });
+    render(<AuthButton />);
+    const link = await screen.findByRole("link", { name: "관리자 페이지" });
+    expect(link).toHaveAttribute("href", "/admin");
+    expect(screen.queryByRole("link", { name: "마이페이지" })).toBeNull();
+  });
+
   it("헤더에서 바로 로그아웃되지 않는다 (로그아웃은 마이페이지 안에 있다)", async () => {
     fetchMe.mockResolvedValue(user);
     render(<AuthButton />);

@@ -7,7 +7,7 @@ import { AUTH_CHANGED_EVENT, fetchMe } from "@/lib/authApi";
 import { UserIcon } from "@/components/ui/icons";
 
 /**
- * 헤더의 계정 버튼 — 비로그인: /login, 로그인: /mypage.
+ * 헤더의 계정 버튼 — 비로그인: /login, 로그인: /mypage, 관리자: /admin.
  *
  * 로그아웃은 마이페이지 안으로 옮겼다. 예전엔 로그인 상태에서 이 자리가 곧 로그아웃
  * 버튼이라, 상태를 확인하려고 눌렀다가 로그아웃되는 일을 막으려 확인 창까지 띄웠다.
@@ -53,12 +53,23 @@ export default function AuthButton() {
     );
   }
 
+  // 관리자는 관리자 대시보드로 보낸다. 관리자가 헤더에서 찾는 건 글·댓글 관리지
+  // 자기 댓글 목록이 아니고, 관리자 화면에 로그아웃 버튼도 따로 있다.
+  // (관리자의 마이페이지는 /mypage로 직접 들어가면 여전히 볼 수 있다)
+  const target = user.isAdmin
+    ? { href: "/admin", label: "관리자 페이지", title: "관리자 페이지" }
+    : {
+        href: "/mypage",
+        label: "마이페이지",
+        title: `${user.displayName}님의 마이페이지`,
+      };
+
   // 같은 사람 아이콘이라 로그인 여부가 한눈에 안 보이므로, 로그인 상태는 색으로 구분한다
   return (
     <Link
-      href="/mypage"
-      aria-label="마이페이지"
-      title={`${user.displayName}님의 마이페이지`}
+      href={target.href}
+      aria-label={target.label}
+      title={target.title}
       className={`${buttonStyle} border-blue-500/40 text-blue-600 dark:border-blue-400/40 dark:text-blue-400`}
     >
       <UserIcon className="h-5 w-5" />
