@@ -74,14 +74,14 @@ function LoginForm() {
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-6 text-2xl font-bold">로그인</h1>
+      <h1 className="mb-6 font-serif text-[28px] font-bold">로그인</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="이메일"
           autoComplete="username"
-          className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="w-full rounded-lg bg-surface px-3 py-2.5 text-sm shadow-card outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]"
           required
         />
         <input
@@ -90,7 +90,7 @@ function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="비밀번호"
           autoComplete="current-password"
-          className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="w-full rounded-lg bg-surface px-3 py-2.5 text-sm shadow-card outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]"
           required
         />
         {error && (
@@ -109,7 +109,7 @@ function LoginForm() {
             <button
               type="button"
               onClick={onResend}
-              className="text-sm text-blue-500 hover:underline"
+              className="text-sm text-accent hover:underline"
             >
               인증 메일 다시 받기
             </button>
@@ -117,7 +117,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading || cooldown > 0}
-          className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          className="press w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background disabled:opacity-50"
         >
           {loading
             ? "로그인 중…"
@@ -128,7 +128,7 @@ function LoginForm() {
         <p className="text-right">
           <Link
             href="/forgot-password"
-            className="text-sm text-neutral-500 hover:text-blue-500 hover:underline"
+            className="text-sm text-muted hover:text-accent hover:underline"
           >
             비밀번호를 잊으셨나요?
           </Link>
@@ -137,14 +137,14 @@ function LoginForm() {
 
       {googleUrl && (
         <>
-          <div className="my-6 flex items-center gap-3 text-xs text-neutral-400">
-            <span className="h-px flex-1 bg-black/10 dark:bg-white/15" />
+          <div className="my-6 flex items-center gap-3 text-xs text-muted">
+            <span className="h-px flex-1 bg-line" />
             또는
-            <span className="h-px flex-1 bg-black/10 dark:bg-white/15" />
+            <span className="h-px flex-1 bg-line" />
           </div>
           <a
             href={googleUrl}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-black/10 px-4 py-2 text-sm transition hover:bg-neutral-100 dark:border-white/20 dark:hover:bg-white/10"
+            className="press flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 text-sm shadow-card hover:shadow-card-hover"
           >
             <GoogleIcon className="h-4 w-4" />
             Google로 계속하기
@@ -152,9 +152,9 @@ function LoginForm() {
         </>
       )}
 
-      <p className="mt-6 text-center text-sm text-neutral-500">
+      <p className="mt-6 text-center text-sm text-muted">
         아직 계정이 없나요?{" "}
-        <Link href="/signup" className="text-blue-500 hover:underline">
+        <Link href="/signup" className="text-accent hover:underline">
           회원가입
         </Link>
       </p>

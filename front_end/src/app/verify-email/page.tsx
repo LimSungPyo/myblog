@@ -39,13 +39,15 @@ function VerifyEmail() {
   if (!token || error) {
     return (
       <div className="mx-auto w-full max-w-sm text-center">
-        <h1 className="mb-4 text-2xl font-bold">이메일 인증 실패</h1>
-        <p className="mb-6 text-sm text-neutral-500">
+        <h1 className="mb-4 font-serif text-[28px] font-bold">
+          이메일 인증 실패
+        </h1>
+        <p className="mb-6 text-sm text-muted">
           {error ?? "인증 링크가 올바르지 않습니다."}
         </p>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-muted">
           링크가 만료되었다면{" "}
-          <Link href="/login" className="text-blue-500 hover:underline">
+          <Link href="/login" className="text-accent hover:underline">
             로그인 페이지
           </Link>
           에서 로그인을 시도하면 인증 메일을 다시 받을 수 있습니다.
@@ -55,8 +57,6 @@ function VerifyEmail() {
   }
 
   return (
-    <p className="py-16 text-center text-sm text-neutral-500">
-      이메일 인증 중…
-    </p>
+    <p className="py-16 text-center text-sm text-muted">이메일 인증 중…</p>
   );
 }

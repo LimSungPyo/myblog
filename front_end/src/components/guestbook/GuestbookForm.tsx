@@ -116,7 +116,7 @@ export default function GuestbookForm({
 
   if (!user) {
     return (
-      <div className="flex flex-col gap-3 rounded-[14px] bg-chip p-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5 sm:pr-4 sm:pl-5">
+      <div className="flex flex-col gap-3 rounded-[4px] bg-chip p-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5 sm:pr-4 sm:pl-5">
         <p className="text-sm text-muted">
           방명록은 로그인 후 남길 수 있습니다.
         </p>

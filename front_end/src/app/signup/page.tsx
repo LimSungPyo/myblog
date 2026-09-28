@@ -54,11 +54,11 @@ export default function SignupPage() {
   if (sentTo) {
     return (
       <div className="mx-auto w-full max-w-sm text-center">
-        <h1 className="mb-4 text-2xl font-bold">메일을 확인해주세요</h1>
-        <p className="text-sm text-neutral-500">
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">
-            {sentTo}
-          </span>
+        <h1 className="mb-4 font-serif text-[28px] font-bold">
+          메일을 확인해주세요
+        </h1>
+        <p className="text-sm text-muted">
+          <span className="font-medium text-foreground">{sentTo}</span>
           로 인증 메일을 보냈습니다.
           <br />
           메일의 링크를 열면 가입이 완료되고 바로 로그인됩니다.
@@ -71,7 +71,7 @@ export default function SignupPage() {
         ) : (
           <button
             onClick={onResend}
-            className="mt-6 text-sm text-blue-500 hover:underline"
+            className="mt-6 text-sm text-accent hover:underline"
           >
             메일이 안 왔나요? 다시 보내기
           </button>
@@ -82,7 +82,7 @@ export default function SignupPage() {
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-6 text-2xl font-bold">회원가입</h1>
+      <h1 className="mb-6 font-serif text-[28px] font-bold">회원가입</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <input
           value={displayName}
@@ -90,7 +90,7 @@ export default function SignupPage() {
           placeholder="닉네임"
           autoComplete="nickname"
           maxLength={80}
-          className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="w-full rounded-lg bg-surface px-3 py-2.5 text-sm shadow-card outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]"
           required
         />
         <input
@@ -99,7 +99,7 @@ export default function SignupPage() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="이메일"
           autoComplete="email"
-          className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="w-full rounded-lg bg-surface px-3 py-2.5 text-sm shadow-card outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]"
           required
         />
         <input
@@ -109,22 +109,22 @@ export default function SignupPage() {
           placeholder="비밀번호 (8자 이상)"
           autoComplete="new-password"
           minLength={8}
-          className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="w-full rounded-lg bg-surface px-3 py-2.5 text-sm shadow-card outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]"
           required
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
         {taken && (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted">
             <Link
               href={`/login?from=/`}
-              className="text-blue-500 hover:underline"
+              className="text-accent hover:underline"
             >
               로그인
             </Link>
             하거나{" "}
             <Link
               href="/forgot-password"
-              className="text-blue-500 hover:underline"
+              className="text-accent hover:underline"
             >
               비밀번호 설정
             </Link>
@@ -134,7 +134,7 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          className="press w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background disabled:opacity-50"
         >
           {loading ? "가입 중…" : "회원가입"}
         </button>
@@ -142,14 +142,14 @@ export default function SignupPage() {
 
       {googleUrl && (
         <>
-          <div className="my-6 flex items-center gap-3 text-xs text-neutral-400">
-            <span className="h-px flex-1 bg-black/10 dark:bg-white/15" />
+          <div className="my-6 flex items-center gap-3 text-xs text-muted">
+            <span className="h-px flex-1 bg-line" />
             또는
-            <span className="h-px flex-1 bg-black/10 dark:bg-white/15" />
+            <span className="h-px flex-1 bg-line" />
           </div>
           <a
             href={googleUrl}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-black/10 px-4 py-2 text-sm transition hover:bg-neutral-100 dark:border-white/20 dark:hover:bg-white/10"
+            className="press flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 text-sm shadow-card hover:shadow-card-hover"
           >
             <GoogleIcon className="h-4 w-4" />
             Google로 계속하기
@@ -157,9 +157,9 @@ export default function SignupPage() {
         </>
       )}
 
-      <p className="mt-6 text-center text-sm text-neutral-500">
+      <p className="mt-6 text-center text-sm text-muted">
         이미 계정이 있나요?{" "}
-        <Link href="/login" className="text-blue-500 hover:underline">
+        <Link href="/login" className="text-accent hover:underline">
           로그인
         </Link>
       </p>

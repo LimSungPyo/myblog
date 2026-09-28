@@ -32,18 +32,16 @@ export default function AuthCallbackPage() {
   if (error) {
     return (
       <div className="mx-auto w-full max-w-sm text-center">
-        <h1 className="mb-4 text-2xl font-bold">로그인 실패</h1>
-        <p className="mb-6 text-sm text-neutral-500">
+        <h1 className="mb-4 font-serif text-[28px] font-bold">로그인 실패</h1>
+        <p className="mb-6 text-sm text-muted">
           소셜 로그인이 취소되었거나 오류가 발생했습니다. ({error})
         </p>
-        <Link href="/login" className="text-sm text-blue-500 hover:underline">
+        <Link href="/login" className="text-sm text-accent hover:underline">
           로그인 페이지로 돌아가기
         </Link>
       </div>
     );
   }
 
-  return (
-    <p className="py-16 text-center text-sm text-neutral-500">로그인 중…</p>
-  );
+  return <p className="py-16 text-center text-sm text-muted">로그인 중…</p>;
 }

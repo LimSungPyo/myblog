@@ -30,7 +30,7 @@ export default function MinigamePage() {
           <Link
             key={g.href}
             href={g.href}
-            className="group flex items-center gap-4 rounded-[14px] bg-surface p-[18px] shadow-card transition-[box-shadow,scale] duration-[160ms] ease-out-strong hover:shadow-card-hover active:scale-[0.99] sm:p-5 motion-reduce:active:scale-100"
+            className="group flex items-center gap-4 rounded-[4px] bg-surface p-[18px] shadow-card transition-[box-shadow,scale] duration-[160ms] ease-out-strong hover:shadow-card-hover active:scale-[0.99] sm:p-5 motion-reduce:active:scale-100"
           >
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-chip text-2xl">
               {g.emoji}

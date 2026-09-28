@@ -5,6 +5,7 @@ import type { GameScore } from "@/types";
 import { fetchTopScores, submitScore } from "@/lib/minigameApi";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import {
+  emptyBoard,
   initBoard,
   isGameOver,
   move,
@@ -44,7 +45,10 @@ export default function Game2048({
   // 게임은 로그인 없이 바로 시작. 로그인 상태는 점수 등록에만 쓰인다.
   const { user } = useAuthUser();
   const [phase, setPhase] = useState<Phase>("playing");
-  const [board, setBoard] = useState<BoardType>(() => initBoard());
+  // 처음 그림은 서버와 똑같아야 한다. 무작위로 만든 판을 첫 그림에 쓰면 서버와 브라우저의 판이 달라
+  // 하이드레이션이 깨지고, React가 페이지 전체를 다시 그리면서 다크 모드 표시까지 지워졌다.
+  // 그래서 빈 판으로 시작하고, 화면이 뜬 직후(다음 프레임) 첫 타일 두 개를 놓는다.
+  const [board, setBoard] = useState<BoardType>(emptyBoard);
   const [score, setScore] = useState(0);
 
   const [scores, setScores] = useState<GameScore[]>(initialScores);
@@ -55,9 +59,18 @@ export default function Game2048({
 
   // 비로그인 상태로 끝난 게임의 점수. 로그인하러 갔다 돌아오면 이 페이지가
   // 다시 마운트되므로, 그때 보관소에서 꺼내 등록 여부를 물어본다.
-  const [pendingScore, setPendingScore] = useState<number | null>(() =>
-    loadPendingScore(),
-  );
+  // 보관 점수도 브라우저 저장소(sessionStorage)에만 있어서 서버와 다를 수 있다. 판과 같이 화면이 뜬 뒤에 읽는다.
+  const [pendingScore, setPendingScore] = useState<number | null>(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setBoard((prev) =>
+        prev.every((row) => row.every((v) => v === 0)) ? initBoard() : prev,
+      );
+      setPendingScore(loadPendingScore());
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   // 비로그인 게임 오버 → 점수를 보관해 둔다
   useEffect(() => {
@@ -154,10 +167,10 @@ export default function Game2048({
       <div>
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-muted">
               {user ? `${user.displayName}님` : "플레이어"}
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-muted">
               방향키 또는 스와이프로 같은 숫자를 합쳐 2048을 만드세요.
             </p>
           </div>
@@ -172,7 +185,7 @@ export default function Game2048({
             </div>
             <button
               onClick={restart}
-              className="rounded-xl bg-[#10213a] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3157] dark:bg-white dark:text-slate-900 dark:hover:bg-neutral-200"
+              className="press rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background"
             >
               새 게임
             </button>

@@ -11,11 +11,11 @@ export default function Leaderboard({
   highlightId?: number | null;
 }) {
   return (
-    <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_6px_16px_rgba(0,0,0,0.05)] dark:border-white/10 dark:bg-neutral-900 dark:shadow-none">
+    <div className="rounded-[4px] bg-surface p-5 shadow-card">
       <h2 className="flex items-center gap-2 text-lg font-bold">🏆 순위</h2>
 
       {scores.length === 0 ? (
-        <p className="mt-4 text-sm text-neutral-500">
+        <p className="mt-4 text-sm text-muted">
           아직 등록된 점수가 없어요.
           <br />첫 기록의 주인공이 되어보세요!
         </p>
@@ -27,9 +27,7 @@ export default function Leaderboard({
               <li
                 key={s.id}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm ${
-                  isMe
-                    ? "bg-[#10213a] text-white dark:bg-white dark:text-slate-900"
-                    : "bg-neutral-50 dark:bg-white/5"
+                  isMe ? "bg-foreground text-background" : "bg-chip"
                 }`}
               >
                 <span className="w-6 shrink-0 text-center font-bold">

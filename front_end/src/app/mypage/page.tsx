@@ -9,11 +9,11 @@ import { formatDate } from "@/lib/format";
 import { meApi, WITHDRAW_CONFIRMATION, type MyActivity } from "@/lib/meApi";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
-const card = "rounded-xl border border-black/10 p-5 dark:border-white/15";
+const card = "rounded-[4px] bg-surface p-5 shadow-card";
 const input =
-  "w-full rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500 dark:border-white/20";
+  "w-full rounded-lg bg-background px-3 py-2.5 text-sm shadow-card outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]";
 const smallButton =
-  "shrink-0 rounded-md border border-black/10 px-3 py-1.5 text-xs transition hover:bg-neutral-100 disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10";
+  "press shrink-0 rounded-md px-3 py-1.5 text-xs text-muted shadow-card hover:text-foreground disabled:opacity-50";
 
 const GAME_NAMES: Record<string, string> = { "2048": "2048" };
 
@@ -24,11 +24,11 @@ export default function MyPage() {
   if (!user) {
     // 보통은 proxy가 로그인 화면으로 먼저 보내지만, 토큰이 만료된 채로 들어오면 여기까지 온다
     return (
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-muted">
         로그인이 필요해요.{" "}
         <Link
           href="/login?from=/mypage"
-          className="font-medium text-blue-500 hover:underline"
+          className="font-medium text-accent hover:underline"
         >
           로그인
         </Link>
@@ -38,7 +38,7 @@ export default function MyPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">마이페이지</h1>
+      <h1 className="font-serif text-[28px] font-bold">마이페이지</h1>
       <ProfileSection user={user} />
       <ActivitySection userId={user.id} />
       <WithdrawSection user={user} />
@@ -84,7 +84,7 @@ function ProfileSection({ user }: { user: AuthUser }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">{user.displayName}</h2>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted">
             {user.email ?? `관리자 계정 (${user.username})`}
           </p>
         </div>
@@ -94,7 +94,7 @@ function ProfileSection({ user }: { user: AuthUser }) {
       </div>
 
       <form onSubmit={onRename} className="mt-4 space-y-2">
-        <label htmlFor="display-name" className="text-sm text-neutral-500">
+        <label htmlFor="display-name" className="text-sm text-muted">
           닉네임
         </label>
         <div className="flex gap-2">
@@ -108,7 +108,7 @@ function ProfileSection({ user }: { user: AuthUser }) {
           <button
             type="submit"
             disabled={saving || unchanged || trimmed === ""}
-            className="shrink-0 rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+            className="press shrink-0 rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50"
           >
             {saving ? "바꾸는 중…" : "바꾸기"}
           </button>
@@ -174,25 +174,23 @@ function ActivitySection({ userId }: { userId: string }) {
 
   if (error) return <p className="text-sm text-red-500">{error}</p>;
   if (!activity)
-    return <p className="text-sm text-neutral-500">불러오는 중이에요…</p>;
+    return <p className="text-sm text-muted">불러오는 중이에요…</p>;
 
   return (
     <>
       <section className={card}>
         <h2 className="font-semibold">내 댓글 {activity.comments.length}</h2>
         {activity.comments.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-500">
-            아직 남긴 댓글이 없어요.
-          </p>
+          <p className="mt-2 text-sm text-muted">아직 남긴 댓글이 없어요.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-black/5 dark:divide-white/10">
+          <ul className="mt-3 divide-y divide-line">
             {activity.comments.map((c) => (
               <li key={c.id} className="flex items-start gap-3 py-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
                     <Link
                       href={`/posts/${c.postSlug}`}
-                      className="font-medium text-blue-500 hover:underline"
+                      className="font-medium text-accent hover:underline"
                     >
                       {c.postTitle}
                     </Link>
@@ -227,18 +225,13 @@ function ActivitySection({ userId }: { userId: string }) {
       <section className={card}>
         <h2 className="font-semibold">내 방명록 {activity.guestbook.length}</h2>
         {activity.guestbook.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-500">
-            아직 남긴 방명록이 없어요.
-          </p>
+          <p className="mt-2 text-sm text-muted">아직 남긴 방명록이 없어요.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-black/5 dark:divide-white/10">
+          <ul className="mt-3 divide-y divide-line">
             {activity.guestbook.map((g) => (
               <li key={g.id} className="flex items-start gap-3 py-3">
                 <div className="min-w-0 flex-1">
-                  <time
-                    dateTime={g.createdAt}
-                    className="text-xs text-neutral-500"
-                  >
+                  <time dateTime={g.createdAt} className="text-xs text-muted">
                     {formatDate(g.createdAt)}
                   </time>
                   {g.content && (
@@ -252,7 +245,7 @@ function ActivitySection({ userId }: { userId: string }) {
                       src={g.imageUrl}
                       alt="내가 올린 사진"
                       loading="lazy"
-                      className="mt-2 h-20 w-auto rounded-lg border border-black/10 dark:border-white/15"
+                      className="mt-2 h-20 w-auto rounded-lg shadow-card"
                     />
                   )}
                 </div>
@@ -273,14 +266,14 @@ function ActivitySection({ userId }: { userId: string }) {
       <section className={card}>
         <h2 className="font-semibold">내 게임 기록 {activity.scores.length}</h2>
         {activity.scores.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-muted">
             아직 등록한 기록이 없어요.{" "}
-            <Link href="/minigame" className="text-blue-500 hover:underline">
+            <Link href="/minigame" className="text-accent hover:underline">
               게임하러 가기
             </Link>
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-black/5 dark:divide-white/10">
+          <ul className="mt-3 divide-y divide-line">
             {activity.scores.map((s) => (
               <li
                 key={s.id}
@@ -291,10 +284,7 @@ function ActivitySection({ userId }: { userId: string }) {
                   <span className="font-semibold tabular-nums">
                     {s.score.toLocaleString("ko-KR")}점
                   </span>
-                  <time
-                    dateTime={s.createdAt}
-                    className="text-xs text-neutral-500"
-                  >
+                  <time dateTime={s.createdAt} className="text-xs text-muted">
                     {formatDate(s.createdAt)}
                   </time>
                 </span>
@@ -317,7 +307,7 @@ function WithdrawSection({ user }: { user: AuthUser }) {
     return (
       <section className={card}>
         <h2 className="font-semibold">회원 탈퇴</h2>
-        <p className="mt-2 text-sm text-neutral-500">
+        <p className="mt-2 text-sm text-muted">
           관리자 계정은 탈퇴할 수 없어요. 관리자가 사라지면 관리자 페이지에
           들어갈 방법이 없어져서요.
         </p>
@@ -345,7 +335,7 @@ function WithdrawSection({ user }: { user: AuthUser }) {
       <h2 className="font-semibold text-red-600 dark:text-red-400">
         회원 탈퇴
       </h2>
-      <div className="mt-2 space-y-1 text-sm text-neutral-600 dark:text-neutral-300">
+      <div className="mt-2 space-y-1 text-sm text-muted">
         <p>탈퇴하면 계정과 로그인 정보가 바로 지워지고 되돌릴 수 없어요.</p>
         <p>남긴 방명록은 함께 지워져요.</p>
         <p>

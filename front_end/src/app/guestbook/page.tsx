@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 // 카드 공통: 글 카드와 같은 반투명 그림자 테두리
-const cardClass = "rounded-[14px] bg-surface shadow-card";
+const cardClass = "rounded-[4px] bg-surface shadow-card";
 
 export default async function GuestbookPage({
   searchParams,
@@ -43,7 +43,7 @@ export default async function GuestbookPage({
 
             <ul className="flex flex-col gap-3">
               {items.length === 0 ? (
-                <li className="rounded-[14px] border border-dashed border-line p-10 text-center text-sm text-muted">
+                <li className="rounded-[4px] border border-dashed border-line p-10 text-center text-sm text-muted">
                   아직 방명록이 없어요. 첫 인사를 남겨보세요!
                 </li>
               ) : (

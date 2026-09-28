@@ -18,13 +18,15 @@ export default async function Game2048Page() {
     <div className="mx-auto w-full max-w-4xl">
       <Link
         href="/minigame"
-        className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:underline"
+        className="inline-flex items-center gap-1 text-sm text-muted hover:underline"
       >
         <ArrowRightIcon className="h-4 w-4 rotate-180" />
         미니게임 목록
       </Link>
 
-      <h1 className="mb-6 mt-2 text-3xl font-bold tracking-tight">2048</h1>
+      <h1 className="mb-6 mt-2 font-serif text-[32px] font-bold tracking-tight">
+        2048
+      </h1>
 
       <Game2048 initialScores={initialScores} />
     </div>

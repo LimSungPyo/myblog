@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { AuthUser } from "@/types";
 
@@ -23,7 +23,16 @@ vi.mock("@/lib/minigameApi", () => ({
 }));
 
 import Game2048 from "../Game2048";
+import { renderToString } from "react-dom/server";
 import { loadPendingScore, savePendingScore } from "../pendingScore";
+
+/** 첫 타일과 보관 점수는 화면이 뜬 다음 프레임에 채워진다. 그 프레임을 기다린다 */
+async function nextFrame() {
+  await act(
+    () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+  );
+}
 
 const user: AuthUser = {
   id: "uuid-1",
@@ -49,17 +58,20 @@ describe("Game2048 — 로그인 전 기록 등록 제안", () => {
     api.fetchTopScores.mockReset().mockResolvedValue([]);
   });
 
-  it("비로그인이면 보관된 점수가 있어도 제안 팝업이 뜨지 않음", () => {
+  it("비로그인이면 보관된 점수가 있어도 제안 팝업이 뜨지 않음", async () => {
     savePendingScore(1234);
     render(<Game2048 initialScores={[]} />);
+    await nextFrame();
     expect(screen.queryByText(/로그인 전 기록이 있어요/)).toBeNull();
   });
 
-  it("로그인 상태로 돌아오면 보관된 점수의 등록 여부를 물어봄", () => {
+  it("로그인 상태로 돌아오면 보관된 점수의 등록 여부를 물어봄", async () => {
     savePendingScore(1234);
     authState.user = user;
     render(<Game2048 initialScores={[]} />);
-    expect(screen.getByText(/로그인 전 기록이 있어요/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/로그인 전 기록이 있어요/),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/홍길동님, 방금 끝난 게임의 점수를 순위에 등록할까요/),
     ).toBeInTheDocument();
@@ -71,7 +83,9 @@ describe("Game2048 — 로그인 전 기록 등록 제안", () => {
     authState.user = user;
     render(<Game2048 initialScores={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "순위에 등록" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "순위에 등록" }),
+    );
 
     await waitFor(() =>
       expect(api.submitScore).toHaveBeenCalledWith("2048", 1234),
@@ -88,7 +102,7 @@ describe("Game2048 — 로그인 전 기록 등록 제안", () => {
     render(<Game2048 initialScores={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "등록하지 않기" }),
+      await screen.findByRole("button", { name: "등록하지 않기" }),
     );
 
     expect(api.submitScore).not.toHaveBeenCalled();
@@ -96,9 +110,38 @@ describe("Game2048 — 로그인 전 기록 등록 제안", () => {
     expect(loadPendingScore()).toBeNull();
   });
 
-  it("보관된 점수가 없으면 로그인 상태여도 팝업이 뜨지 않음", () => {
+  it("보관된 점수가 없으면 로그인 상태여도 팝업이 뜨지 않음", async () => {
     authState.user = user;
     render(<Game2048 initialScores={[]} />);
+    await nextFrame();
     expect(screen.queryByText(/로그인 전 기록이 있어요/)).toBeNull();
+  });
+});
+
+describe("Game2048 — 서버 그림과 첫 그림 맞추기", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    authState.user = null;
+  });
+
+  it("서버에서는 빈 판과 보관 점수 없음으로 그린다(무작위·저장소 값이 들어가지 않는다)", () => {
+    savePendingScore(1234);
+    authState.user = user;
+    const html = renderToString(<Game2048 initialScores={[]} />);
+    // 타일 숫자(2·4)가 없고, 보관 점수 팝업도 없다
+    expect(html).not.toMatch(/>(2|4)</);
+    expect(html).not.toContain("로그인 전 기록이 있어요");
+  });
+
+  it("화면이 뜬 다음 프레임에 첫 타일 두 개를 놓는다", async () => {
+    const { container } = render(<Game2048 initialScores={[]} />);
+    const tiles = () =>
+      Array.from(container.querySelectorAll("div")).filter(
+        (el) =>
+          /^(2|4)$/.test(el.textContent ?? "") && el.children.length === 0,
+      );
+    expect(tiles()).toHaveLength(0);
+    await nextFrame();
+    expect(tiles()).toHaveLength(2);
   });
 });

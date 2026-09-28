@@ -27,12 +27,12 @@ export default function GameOverDialog({
 }) {
   return (
     <div className="absolute inset-0 z-20 grid place-items-center rounded-2xl bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-xs rounded-2xl bg-white p-6 text-center shadow-xl dark:bg-neutral-900">
+      <div className="w-full max-w-xs rounded-[4px] bg-surface p-6 text-center shadow-card-hover">
         <h2 className="text-xl font-bold">게임 오버!</h2>
-        <p className="mt-2 text-sm text-neutral-500">
+        <p className="mt-2 text-sm text-muted">
           {playerName ? `${playerName}님의 최종 점수` : "최종 점수"}
         </p>
-        <p className="mt-1 text-4xl font-extrabold tabular-nums text-[#10213a] dark:text-white">
+        <p className="mt-1 text-4xl font-extrabold tabular-nums text-foreground">
           {score.toLocaleString()}
         </p>
 
@@ -45,7 +45,7 @@ export default function GameOverDialog({
             </p>
             <button
               onClick={onRestart}
-              className="mt-3 w-full rounded-xl bg-[#10213a] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3157] dark:bg-white dark:text-slate-900 dark:hover:bg-neutral-200"
+              className="mt-3 press w-full rounded-xl bg-foreground px-6 py-2.5 text-sm font-semibold text-background"
             >
               다시 하기
             </button>
@@ -55,24 +55,24 @@ export default function GameOverDialog({
             <button
               onClick={onRegister}
               disabled={submitting}
-              className="w-full rounded-xl bg-[#10213a] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3157] disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-neutral-200"
+              className="press w-full rounded-xl bg-foreground px-6 py-2.5 text-sm font-semibold text-background disabled:opacity-50"
             >
               {submitting ? "등록 중…" : "순위에 등록"}
             </button>
             <button
               onClick={onSkip}
               disabled={submitting}
-              className="w-full rounded-xl border border-black/10 px-6 py-2.5 text-sm font-semibold text-neutral-600 transition hover:bg-neutral-100 disabled:opacity-50 dark:border-white/15 dark:text-neutral-300 dark:hover:bg-white/10"
+              className="press w-full rounded-xl bg-surface px-6 py-2.5 text-sm font-semibold text-muted shadow-card hover:text-foreground disabled:opacity-50"
             >
               등록 안 하고 다시 하기
             </button>
           </div>
         ) : (
           <div className="mt-5 flex flex-col gap-2">
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-muted">
               <Link
                 href="/login?from=/minigame/2048"
-                className="font-medium text-blue-500 hover:underline"
+                className="font-medium text-accent hover:underline"
               >
                 로그인
               </Link>
@@ -80,7 +80,7 @@ export default function GameOverDialog({
             </p>
             <button
               onClick={onRestart}
-              className="w-full rounded-xl bg-[#10213a] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3157] dark:bg-white dark:text-slate-900 dark:hover:bg-neutral-200"
+              className="press w-full rounded-xl bg-foreground px-6 py-2.5 text-sm font-semibold text-background"
             >
               다시 하기
             </button>

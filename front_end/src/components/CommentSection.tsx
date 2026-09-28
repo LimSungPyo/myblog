@@ -89,7 +89,7 @@ export default function CommentSection({
         {comments.map((c) => (
           <li
             key={c.id}
-            className="flex gap-3 rounded-[14px] bg-surface p-4 shadow-card lg:px-5 lg:py-[18px]"
+            className="flex gap-3 rounded-[4px] bg-surface p-4 shadow-card lg:px-5 lg:py-[18px]"
           >
             <span
               aria-hidden
@@ -150,7 +150,7 @@ export default function CommentSection({
         </form>
       ) : (
         !loading && (
-          <div className="flex flex-col gap-3 rounded-[14px] bg-chip p-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5 sm:pr-4 sm:pl-5">
+          <div className="flex flex-col gap-3 rounded-[4px] bg-chip p-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5 sm:pr-4 sm:pl-5">
             <p className="text-sm text-muted">
               댓글은 로그인 후 작성할 수 있습니다.
             </p>
