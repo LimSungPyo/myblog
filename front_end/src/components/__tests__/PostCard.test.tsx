@@ -36,9 +36,19 @@ describe("PostCard", () => {
     );
   });
 
-  it("날짜와 읽기 시간을 함께 표시", () => {
+  it("날짜와 읽기 시간을 한국어로 함께 표시", () => {
     render(<PostCard post={post} />);
     expect(screen.getByText(/2026\.07\.08/)).toBeInTheDocument();
-    expect(screen.getByText(/min read/)).toBeInTheDocument();
+    // 본문 "본문 " × 300 = 900자 → 분당 500자 기준으로 2분
+    expect(screen.getByText("2분")).toBeInTheDocument();
+  });
+
+  it("글로 가는 링크는 제목 하나뿐이다 (카드 전체 누름 영역은 제목 링크가 맡는다)", () => {
+    render(<PostCard post={post} />);
+    const toPost = screen
+      .getAllByRole("link")
+      .filter((a) => a.getAttribute("href") === "/posts/hello-world");
+    expect(toPost).toHaveLength(1);
+    expect(toPost[0]).toHaveAccessibleName("안녕 세계");
   });
 });

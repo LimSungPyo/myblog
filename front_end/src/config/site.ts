@@ -10,7 +10,8 @@ export const site = {
 
 /** 히어로(홈 상단) 문구 */
 export const hero = {
-  title: "SlowNSteady",
+  // 헤더에 이미 사이트 이름이 있어서, 첫 화면 맨 위에는 이름 대신 무엇을 적는 곳인지 적는다
+  eyebrow: "개발과 일상 기록",
   headline: ["천천히,", "하지만 꾸준히."],
   subline: ["기록하고, 배우고,", "만들어 갑니다."],
 };

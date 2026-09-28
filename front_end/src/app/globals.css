@@ -58,6 +58,7 @@
   --color-accent-soft: var(--accent-soft);
   --color-hover: var(--hover);
   --color-scrim: var(--scrim);
+  --color-compass: var(--compass);
   --shadow-card: var(--card-shadow);
   --shadow-card-hover: var(--card-shadow-hover);
   --ease-out-strong: var(--ease-out-strong);
@@ -168,8 +169,9 @@ summary,
   }
 }
 
-/* 푸터 로고: ∞ 없는 컴퍼스를 마스크로 → 현재 글자색(bg-*)으로 틴트해 워드마크와 정확히 일치 */
-.footer-logo-mark {
+/* 푸터 로고·첫 화면 컴퍼스: ∞ 없는 컴퍼스를 마스크로 → 칠한 배경색(bg-*)으로 틴트 */
+.footer-logo-mark,
+.hero-compass {
   -webkit-mask: url("/images/logo-hero.png") center / contain no-repeat;
   mask: url("/images/logo-hero.png") center / contain no-repeat;
 }

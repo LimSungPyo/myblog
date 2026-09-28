@@ -11,22 +11,24 @@ export default async function Home() {
     <div>
       <Hero />
 
-      <section className="border-t border-black/10 pt-10 dark:border-white/10">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">최근 글</h2>
+      <section className="flex flex-col gap-4 border-t border-line pt-7 lg:gap-6 lg:pt-10">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-xl font-bold tracking-tight lg:text-[22px]">
+            최근 글
+          </h2>
           <Link
             href="/posts"
-            className="flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
+            className="flex min-h-11 items-center gap-1 text-sm font-medium text-accent hover:underline hover:underline-offset-4"
           >
-            더 보기
-            <ArrowRightIcon className="h-4 w-4" />
+            전체 글 보기
+            <ArrowRightIcon className="h-[15px] w-[15px]" />
           </Link>
         </div>
 
         {items.length === 0 ? (
-          <p className="text-neutral-500">아직 발행된 글이 없습니다.</p>
+          <p className="text-muted">아직 발행된 글이 없습니다.</p>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-5">
             {items.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
