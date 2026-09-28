@@ -138,12 +138,16 @@ def regular_user(db_session) -> User:
 
 @pytest.fixture
 def admin_headers(admin_user) -> dict[str, str]:
-    return {"Authorization": f"Bearer {create_access_token(str(admin_user.id))}"}
+    return {
+        "Authorization": f"Bearer {create_access_token(str(admin_user.id), admin_user.session_id)}"
+    }
 
 
 @pytest.fixture
 def user_headers(regular_user) -> dict[str, str]:
-    return {"Authorization": f"Bearer {create_access_token(str(regular_user.id))}"}
+    return {
+        "Authorization": f"Bearer {create_access_token(str(regular_user.id), regular_user.session_id)}"
+    }
 
 
 # ─────────────── 데이터 팩토리 ───────────────

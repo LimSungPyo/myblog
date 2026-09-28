@@ -34,7 +34,8 @@ app.add_middleware(
     allow_headers=["*"],
     # 브라우저는 기본적으로 몇 개의 표준 헤더 외에는 자바스크립트에서 못 읽게 막는다.
     # 여기에 명시하지 않으면 429 응답의 Retry-After가 프론트에서 null로 보인다.
-    expose_headers=["Retry-After"],
+    # X-Auth-Reason은 "다른 곳에서 로그인해서 튕겼다"를 알려주는 401의 표시다.
+    expose_headers=["Retry-After", "X-Auth-Reason"],
 )
 
 app.include_router(auth.router)

@@ -154,7 +154,7 @@ def test_reset_with_garbage_token_400(client):
 
 
 def test_reset_rejects_access_token(client, email_user):
-    token = create_access_token(str(email_user.id))
+    token = create_access_token(str(email_user.id), email_user.session_id)
     r = client.post(
         "/auth/reset-password", json={"token": token, "password": "newpass123"}
     )

@@ -1,5 +1,7 @@
 import hashlib
+import secrets
 from datetime import UTC, datetime, timedelta
+from typing import NamedTuple
 
 import bcrypt
 import jwt
@@ -31,21 +33,42 @@ def verify_password(plain: str, hashed: str | None) -> bool:
         return False
 
 
-def create_access_token(subject: str) -> str:
+def new_session_id() -> str:
+    """로그인할 때마다 새로 뽑는 로그인 번호. 추측할 수 없어야 해서 무작위 값을 쓴다."""
+    return secrets.token_urlsafe(16)
+
+
+def create_access_token(subject: str, session_id: str | None) -> str:
+    """API 인증 토큰. `sid`에는 발급 시점의 로그인 번호를 담는다.
+
+    서버는 계정마다 "지금 유효한 로그인 번호" 하나만 기억한다. 다른 곳에서 로그인하면
+    번호가 바뀌고, 옛 번호를 든 토큰은 서명과 만료가 멀쩡해도 거절된다.
+    """
     expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": subject, "exp": expire}
+    payload: dict = {"sub": subject, "exp": expire}
+    if session_id is not None:
+        payload["sid"] = session_id
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
-def decode_access_token(token: str) -> str | None:
-    """유효하면 subject 반환, 아니면 None."""
+class AccessToken(NamedTuple):
+    subject: str
+    # 로그인 번호가 생기기 전에 발급된 토큰에는 없다
+    session_id: str | None
+
+
+def decode_access_token(token: str) -> AccessToken | None:
+    """유효하면 (subject, 로그인 번호) 반환, 아니면 None."""
     payload = _decode(token)
     if payload is None:
         return None
     # typ이 있으면 다른 용도(OAuth state·메일 링크 등)의 토큰 → API 인증에 사용 불가
     if payload.get("typ") is not None:
         return None
-    return payload.get("sub")
+    sub, sid = payload.get("sub"), payload.get("sid")
+    if not isinstance(sub, str) or not (sid is None or isinstance(sid, str)):
+        return None
+    return AccessToken(sub, sid)
 
 
 # ─────────────── OAuth state 토큰 ───────────────

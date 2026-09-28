@@ -94,7 +94,7 @@ def test_verify_email_garbage_token_400(client):
 
 def test_verify_email_rejects_access_token(client, regular_user):
     # 용도가 다른 토큰(API 인증용)은 typ이 달라 인증 링크로 쓸 수 없다
-    token = create_access_token(str(regular_user.id))
+    token = create_access_token(str(regular_user.id), regular_user.session_id)
     r = client.post("/auth/verify-email", json={"token": token})
     assert r.status_code == 400
 

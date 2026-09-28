@@ -30,12 +30,27 @@ def test_overlong_password_rejected():
 
 
 def test_token_roundtrip():
-    token = create_access_token("alice")
-    assert decode_access_token(token) == "alice"
+    token = create_access_token("alice", "sid-1")
+    assert decode_access_token(token) == ("alice", "sid-1")
+
+
+def test_token_without_session_id_decodes_with_none():
+    # 로그인 번호가 생기기 전에 발급된 토큰과 같은 모양
+    token = create_access_token("alice", None)
+    assert decode_access_token(token) == ("alice", None)
+
+
+def test_non_string_session_id_rejected():
+    forged = jwt.encode(
+        {"sub": "alice", "sid": 123, "exp": datetime.now(UTC) + timedelta(minutes=1)},
+        settings.JWT_SECRET,
+        algorithm=settings.JWT_ALGORITHM,
+    )
+    assert decode_access_token(forged) is None
 
 
 def test_tampered_token_rejected():
-    token = create_access_token("alice")
+    token = create_access_token("alice", "sid-1")
     assert decode_access_token(token + "tampered") is None
 
 

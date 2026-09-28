@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.deps import get_current_user
+from app.core.login_session import start_login_session
 from app.core.mailer import (
     is_mail_configured,
     send_password_reset_email,
@@ -25,7 +26,6 @@ from app.core.ratelimit import (
     record,
 )
 from app.core.security import (
-    create_access_token,
     create_email_verify_token,
     create_password_reset_token,
     decode_password_reset_token,
@@ -136,7 +136,8 @@ def login(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="이메일 인증이 필요합니다. 메일함을 확인해주세요.",
         )
-    token = create_access_token(subject=str(user.id))
+    # 나중에 로그인한 쪽이 이긴다. 다른 기기에 남아 있던 로그인은 여기서 끊긴다.
+    token = start_login_session(db, user)
     return TokenOut(access_token=token, is_admin=user.is_admin)
 
 
@@ -225,10 +226,8 @@ def verify_email(
             detail="인증 링크가 유효하지 않거나 만료되었습니다.",
         )
     # 이미 인증된 계정이 링크를 다시 열어도 그대로 로그인시킨다 (멱등)
-    if not user.email_verified:
-        user.email_verified = True
-        db.commit()
-    token = create_access_token(subject=str(user.id))
+    user.email_verified = True
+    token = start_login_session(db, user)
     return TokenOut(access_token=token, is_admin=user.is_admin)
 
 
@@ -271,9 +270,10 @@ def reset_password(
     user.hashed_password = hash_password(payload.password)
     # 재설정 메일을 받았다는 것 자체가 이메일 소유 증명이므로 인증도 함께 처리
     user.email_verified = True
-    db.commit()
+    # 새 로그인 번호를 받으면서 다른 기기의 로그인이 전부 끊긴다. 비밀번호가 새서
+    # 바꾸는 경우라면, 그 비밀번호로 들어와 있던 쪽도 여기서 쫓겨난다.
+    token = start_login_session(db, user)
     logger.info("password reset for user %s", user.id)
-    token = create_access_token(subject=str(user.id))
     return TokenOut(access_token=token, is_admin=user.is_admin)
 
 

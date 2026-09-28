@@ -9,13 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.http_errors import describe_http_error
+from app.core.login_session import start_login_session
 from app.core.names import is_reserved_name
 from app.core.oauth import PROVIDERS, OAuthProvider, OAuthUserInfo
-from app.core.security import (
-    create_access_token,
-    create_state_token,
-    verify_state_token,
-)
+from app.core.security import create_state_token, verify_state_token
 from app.db.session import get_db
 from app.models import SocialAccount, User
 
@@ -167,7 +164,7 @@ def oauth_callback(
         )
 
     user = _get_or_create_user(db, info)
-    token = create_access_token(subject=str(user.id))
+    token = start_login_session(db, user)
     # 토큰은 query가 아닌 fragment로 전달 → 서버 로그·Referer에 남지 않음
     fragment = urlencode(
         {"token": token, "isAdmin": "1" if user.is_admin else "0", "next": next_path}

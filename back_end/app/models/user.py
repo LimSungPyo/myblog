@@ -21,3 +21,7 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(80))
     avatar_url: Mapped[str | None] = mapped_column(String(512))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    # 지금 유효한 로그인 번호. 토큰의 sid와 같아야 통과한다(한 계정 한 곳 로그인).
+    # 로그인할 때마다 새로 바뀌어 이전 기기의 토큰이 무효가 된다.
+    # 이 칸이 생기기 전부터 있던 계정은 다음 로그인 전까지 비어 있다.
+    session_id: Mapped[str | None] = mapped_column(String(64))

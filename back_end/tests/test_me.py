@@ -22,7 +22,9 @@ def other_user(db_session) -> User:
 
 @pytest.fixture
 def other_headers(other_user) -> dict[str, str]:
-    return {"Authorization": f"Bearer {create_access_token(str(other_user.id))}"}
+    return {
+        "Authorization": f"Bearer {create_access_token(str(other_user.id), other_user.session_id)}"
+    }
 
 
 def add_comment(db, post, user, content="댓글", approved=True) -> Comment:
