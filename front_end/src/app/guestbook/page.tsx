@@ -10,9 +10,8 @@ export const metadata: Metadata = {
   description: "가볍게 인사를 남겨주세요.",
 };
 
-// 카드 공통: 흰 카드 + 부드러운 그림자 (연회색 배경 위에서 뜨도록)
-const cardClass =
-  "rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_6px_16px_rgba(0,0,0,0.05)] dark:bg-neutral-900 dark:shadow-none dark:ring-1 dark:ring-white/10";
+// 카드 공통: 글 카드와 같은 반투명 그림자 테두리
+const cardClass = "rounded-[14px] bg-surface shadow-card";
 
 export default async function GuestbookPage({
   searchParams,
@@ -24,53 +23,52 @@ export default async function GuestbookPage({
   const { items, totalPages } = await getGuestbook(page);
 
   return (
-    // 헤더 아래 전체 폭 연회색 배경 (full-bleed).
-    // main을 세로 flex로 만들고 grow로 남은 높이를 채움 → 콘텐츠가 짧아도 푸터까지 회색.
-    // -my-8은 main의 py-8을 상쇄해 헤더/푸터 경계까지 닿게 함.
-    <div className="relative left-1/2 -my-8 w-screen grow -translate-x-1/2 bg-[#f7f7f9] dark:bg-neutral-950">
-      <div className="mx-auto max-w-5xl px-4 py-12">
-        <div className="grid gap-8 md:grid-cols-[minmax(0,220px)_1fr]">
-          <aside className="md:pt-1">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+    // 예전엔 방명록만 전체 폭 회색 바탕이라 다른 사이트처럼 보였다. 다른 화면과 같은 바탕에 같은 카드를 쓴다
+    <div className="pt-2 lg:pt-6">
+      <div>
+        <div className="grid gap-6 md:grid-cols-[minmax(0,220px)_1fr] md:gap-12">
+          <aside className="flex flex-col gap-3 md:gap-3.5">
+            <h1 className="text-4xl font-extrabold tracking-[-0.035em] lg:text-[44px] lg:leading-[1.15]">
               방명록
             </h1>
-            <p className="mt-4 text-sm leading-relaxed text-neutral-500">
+            <p className="text-sm leading-relaxed text-muted">
               방문해 주셔서 감사합니다.
               <br />
               따뜻한 한마디 남겨주세요 :)
             </p>
           </aside>
 
-          <div>
+          <div className="flex flex-col gap-3">
             <GuestbookForm cardClass={cardClass} />
 
-            <ul className="mt-4 space-y-4">
+            <ul className="flex flex-col gap-3">
               {items.length === 0 ? (
-                <li className="rounded-2xl border border-dashed border-black/15 p-10 text-center text-sm text-neutral-500 dark:border-white/20">
+                <li className="rounded-[14px] border border-dashed border-line p-10 text-center text-sm text-muted">
                   아직 방명록이 없어요. 첫 인사를 남겨보세요!
                 </li>
               ) : (
                 items.map((e) => (
-                  <li key={e.id} className={`${cardClass} p-5`}>
+                  <li
+                    key={e.id}
+                    className={`${cardClass} p-4 lg:px-5 lg:py-[18px]`}
+                  >
                     <div className="flex items-start gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-neutral-200 text-neutral-400 dark:bg-neutral-700 dark:text-neutral-500">
-                        <UserIcon className="h-5 w-5" />
+                      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full bg-chip text-muted">
+                        <UserIcon className="h-[18px] w-[18px]" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-                            {e.authorName}
-                          </span>
+                          <span className="font-semibold">{e.authorName}</span>
                           <time
-                            className="text-neutral-400"
+                            className="text-muted"
                             dateTime={e.createdAt}
                             suppressHydrationWarning
                           >
-                            · {formatRelativeTime(e.createdAt)}
+                            {formatRelativeTime(e.createdAt)}
                           </time>
                         </div>
                         {e.content && (
-                          <p className="mt-1.5 whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+                          <p className="mt-1 text-[15px] leading-relaxed whitespace-pre-wrap">
                             {e.content}
                           </p>
                         )}
@@ -81,7 +79,7 @@ export default async function GuestbookPage({
                             alt={`${e.authorName}님이 남긴 사진`}
                             loading="lazy"
                             decoding="async"
-                            className="mt-3 max-h-80 w-auto max-w-full rounded-xl border border-black/10 dark:border-white/10"
+                            className="mt-3 max-h-80 w-auto max-w-full rounded-xl shadow-card"
                           />
                         )}
                       </div>

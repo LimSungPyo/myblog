@@ -24,25 +24,28 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-4 text-2xl font-bold tracking-tight">검색</h1>
+      <h1 className="mb-4 text-[28px] font-extrabold tracking-[-0.03em] lg:pt-6 lg:text-[32px]">
+        검색
+      </h1>
       <div className="mb-6">
-        <SearchBar />
+        <SearchBar className="w-full" />
       </div>
 
       {!query ? (
-        <p className="text-neutral-500">
+        <p className="text-muted">
           검색어를 입력하세요.{" "}
-          <span className="text-neutral-400">
+          <span className="text-muted">
             (<code>#태그명</code>으로 태그 검색)
           </span>
         </p>
       ) : (
         <>
-          <p className="mb-4 text-sm text-neutral-500">
+          <p className="mb-4 text-sm text-muted">
             {isTagSearch ? (
               <>
-                태그 <span className="text-blue-600">#{tagTerm}</span> 검색 결과{" "}
-                {total}건
+                태그{" "}
+                <span className="font-semibold text-accent">#{tagTerm}</span>{" "}
+                검색 결과 {total}건
               </>
             ) : (
               <>
@@ -51,9 +54,9 @@ export default async function SearchPage({
             )}
           </p>
           {items.length === 0 ? (
-            <p className="text-neutral-500">일치하는 글이 없습니다.</p>
+            <p className="text-muted">일치하는 글이 없습니다.</p>
           ) : (
-            <div className="space-y-5">
+            <div className="flex flex-col gap-3.5 sm:gap-4">
               {items.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}

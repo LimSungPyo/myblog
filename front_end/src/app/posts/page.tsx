@@ -20,12 +20,14 @@ export default async function PostsPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-8 text-2xl font-bold tracking-tight">전체 글</h1>
+      <h1 className="mb-6 text-[28px] font-extrabold tracking-[-0.03em] lg:mb-8 lg:pt-6 lg:text-[32px]">
+        전체 글
+      </h1>
 
       {items.length === 0 ? (
-        <p className="text-neutral-500">아직 발행된 글이 없습니다.</p>
+        <p className="text-muted">아직 발행된 글이 없습니다.</p>
       ) : (
-        <div className="space-y-5">
+        <div className="flex flex-col gap-3.5 sm:gap-4">
           {items.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}

@@ -20,26 +20,28 @@ const games = [
 export default function MinigamePage() {
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">미니게임</h1>
-      <p className="mb-8 text-neutral-500">잠깐 머리좀 식히고 가세요!!</p>
+      <h1 className="mb-2 text-[28px] font-extrabold tracking-[-0.03em] lg:pt-6 lg:text-[32px]">
+        미니게임
+      </h1>
+      <p className="mb-6 text-muted lg:mb-8">잠깐 머리좀 식히고 가세요!!</p>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {games.map((g) => (
           <Link
             key={g.href}
             href={g.href}
-            className="group flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-neutral-900 dark:shadow-none"
+            className="group flex items-center gap-4 rounded-[14px] bg-surface p-[18px] shadow-card transition-[box-shadow,scale] duration-[160ms] ease-out-strong hover:shadow-card-hover active:scale-[0.99] sm:p-5 motion-reduce:active:scale-100"
           >
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-neutral-100 text-2xl dark:bg-white/10">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-chip text-2xl">
               {g.emoji}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-bold">{g.title}</span>
-              <span className="block text-sm text-neutral-500">
+              <span className="block text-sm break-keep text-muted">
                 {g.description}
               </span>
             </span>
-            <ArrowRightIcon className="h-5 w-5 shrink-0 text-neutral-400 transition group-hover:translate-x-0.5 group-hover:text-neutral-600 dark:group-hover:text-neutral-300" />
+            <ArrowRightIcon className="h-[18px] w-[18px] shrink-0 text-muted transition-[translate,color] duration-200 ease-out-strong group-hover:translate-x-0.5 group-hover:text-foreground" />
           </Link>
         ))}
       </div>

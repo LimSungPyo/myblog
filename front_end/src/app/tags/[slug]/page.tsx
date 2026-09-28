@@ -32,12 +32,15 @@ export default async function TagPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">#{tag.name}</h1>
+      <h1 className="mb-6 text-[28px] font-extrabold tracking-[-0.03em] lg:mb-8 lg:pt-6 lg:text-[32px]">
+        <span className="text-muted">#</span>
+        {tag.name}
+      </h1>
 
       {items.length === 0 ? (
-        <p className="text-neutral-500">이 태그의 글이 없습니다.</p>
+        <p className="text-muted">이 태그의 글이 없습니다.</p>
       ) : (
-        <div className="space-y-5">
+        <div className="flex flex-col gap-3.5 sm:gap-4">
           {items.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}

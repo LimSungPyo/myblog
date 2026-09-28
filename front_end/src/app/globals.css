@@ -150,6 +150,26 @@ summary,
   }
 }
 
+/* 방명록 이모지 창. 누른 버튼이 있는 왼쪽 아래에서 커지며 나타난다(가끔 여는 작은 창이라 0.15초).
+   화면에 붙는 순간의 모습은 @starting-style로 정한다 */
+.emoji-pop {
+  transform-origin: bottom left;
+  transition:
+    opacity 150ms var(--ease-out-strong),
+    transform 150ms var(--ease-out-strong);
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .emoji-pop {
+    @starting-style {
+      transform: none;
+    }
+  }
+}
+
 /* 로고를 모양 틀(mask)로 쓰고 글자색(bg-current)으로 칠한다 → 라이트·다크 어디서나 글자와 같은 색 */
 .logo-mark {
   -webkit-mask: url("/images/logo-mark.png") center / contain no-repeat;

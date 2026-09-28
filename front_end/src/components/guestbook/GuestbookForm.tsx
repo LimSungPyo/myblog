@@ -116,11 +116,13 @@ export default function GuestbookForm({
 
   if (!user) {
     return (
-      <div className={`${cardClass} p-5 text-sm text-neutral-500`}>
-        방명록은 로그인 후 남길 수 있습니다.{" "}
+      <div className="flex flex-col gap-3 rounded-[14px] bg-chip p-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5 sm:pr-4 sm:pl-5">
+        <p className="text-sm text-muted">
+          방명록은 로그인 후 남길 수 있습니다.
+        </p>
         <Link
           href="/login?from=/guestbook"
-          className="font-medium text-blue-500 hover:underline"
+          className="press grid h-11 place-items-center rounded-[10px] bg-foreground px-4 text-[15px] font-semibold text-background sm:h-9 sm:text-sm"
         >
           로그인
         </Link>
@@ -129,7 +131,7 @@ export default function GuestbookForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className={`${cardClass} p-5`}>
+    <form onSubmit={onSubmit} className={`${cardClass} p-4 sm:p-5`}>
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -141,7 +143,7 @@ export default function GuestbookForm({
         rows={3}
         maxLength={1000}
         aria-label="메시지"
-        className="w-full resize-y rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 dark:border-white/15 dark:bg-white/5"
+        className="w-full resize-y rounded-xl bg-chip px-4 py-3 text-[15px] leading-relaxed outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]"
       />
 
       {preview && (
@@ -150,13 +152,13 @@ export default function GuestbookForm({
           <img
             src={preview}
             alt="올릴 사진 미리보기"
-            className="max-h-40 rounded-xl border border-black/10 dark:border-white/15"
+            className="max-h-40 rounded-xl shadow-card"
           />
           <button
             type="button"
             onClick={() => pickImage(null)}
             aria-label="사진 빼기"
-            className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-sm text-white hover:bg-black/80"
+            className="press absolute top-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-sm text-white hover:bg-black/80"
           >
             ✕
           </button>
@@ -164,7 +166,7 @@ export default function GuestbookForm({
       )}
 
       {error && (
-        <p className="mt-2 text-sm text-red-500">
+        <p className="mt-2 text-sm text-red-600 dark:text-red-400">
           {cooldown > 0
             ? `너무 잦은 요청입니다. ${cooldown}초 후에 다시 시도해주세요.`
             : error}
@@ -172,13 +174,13 @@ export default function GuestbookForm({
       )}
 
       <div className="mt-3 flex items-center justify-between">
-        <div className="relative flex gap-2">
+        <div className="relative flex gap-1">
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
             aria-label="사진 넣기"
             title="사진 넣기 (하루 5장까지)"
-            className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 text-neutral-500 transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/10"
+            className="press grid h-11 w-11 place-items-center rounded-xl text-muted hover:bg-hover hover:text-foreground"
           >
             <ImageIcon className="h-5 w-5" />
           </button>
@@ -197,12 +199,13 @@ export default function GuestbookForm({
             type="button"
             onClick={() => setEmojiOpen((o) => !o)}
             aria-label="이모지"
-            className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 text-neutral-500 transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/10"
+            className="press grid h-11 w-11 place-items-center rounded-xl text-muted hover:bg-hover hover:text-foreground"
           >
             <SmileIcon className="h-5 w-5" />
           </button>
           {emojiOpen && (
-            <div className="absolute bottom-full left-0 z-10 mb-2 grid w-[228px] grid-cols-6 gap-1 rounded-xl border border-black/10 bg-white p-2 shadow-md dark:border-white/15 dark:bg-neutral-800">
+            // 이모지 버튼 위로 뜨는 작은 창. 버튼 쪽(왼쪽 아래)에서 커지며 나타난다(.emoji-pop)
+            <div className="emoji-pop absolute bottom-full left-0 z-10 mb-2 grid w-[228px] grid-cols-6 gap-1 rounded-xl bg-surface p-2 shadow-card-hover">
               {EMOJIS.map((em) => (
                 <button
                   key={em}
@@ -211,7 +214,7 @@ export default function GuestbookForm({
                     setContent((c) => c + em);
                     setEmojiOpen(false);
                   }}
-                  className="grid h-8 w-8 place-items-center rounded-lg text-lg hover:bg-neutral-100 dark:hover:bg-white/10"
+                  className="press grid h-8 w-8 place-items-center rounded-lg text-lg hover:bg-hover"
                 >
                   {em}
                 </button>
@@ -223,7 +226,7 @@ export default function GuestbookForm({
         <button
           type="submit"
           disabled={submitting || cooldown > 0}
-          className="rounded-xl bg-[#10213a] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3157] disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-neutral-200"
+          className="press h-11 rounded-[10px] bg-foreground px-5 text-sm font-semibold text-background disabled:opacity-50"
         >
           {submitting
             ? "등록 중…"

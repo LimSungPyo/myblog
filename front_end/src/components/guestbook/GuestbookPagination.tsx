@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/icons";
 
-const boxBase =
-  "grid h-11 w-11 place-items-center rounded-xl text-sm transition";
-const boxIdle =
-  "bg-white text-neutral-700 shadow-[0_1px_2px_rgba(0,0,0,0.05),0_2px_6px_rgba(0,0,0,0.04)] hover:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:shadow-none dark:ring-1 dark:ring-white/10 dark:hover:bg-neutral-800";
-const boxActive =
-  "bg-[#10213a] font-semibold text-white shadow-[0_4px_12px_rgba(16,33,58,0.35)] dark:bg-white dark:text-slate-900";
+const boxBase = "press grid h-11 w-11 place-items-center rounded-xl text-sm";
+const boxIdle = "bg-surface text-foreground shadow-card hover:bg-hover";
+const boxActive = "bg-foreground font-semibold text-background";
 
 function pageHref(p: number) {
   return p <= 1 ? "/guestbook" : `/guestbook?page=${p}`;
