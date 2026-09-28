@@ -44,3 +44,19 @@ test("동작 줄이기를 켜면 떠오르지 않고 옅게만 나타난다", as
   await expect(firstCard).toHaveCSS("translate", "none");
   await expect(firstCard).toHaveCSS("filter", "none");
 });
+
+test("걸음 눈금자는 보이기 전엔 눈금이 누워 있고, 보이면 모두 선다", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const ruler = page.locator("section[data-reveal]", {
+    has: page.getByRole("heading", { name: "지난 1년의 걸음" }),
+  });
+  const lastTick = ruler.locator(".ruler-tick").last();
+  await expect(lastTick).toHaveCSS("scale", "1 0");
+
+  await ruler.scrollIntoViewIfNeeded();
+  await expect(ruler).toHaveAttribute("data-shown", "");
+  // 마지막 눈금은 가장 늦게(240ms + 51×12ms 뒤) 자라기 시작한다
+  await expect(lastTick).toHaveCSS("scale", "none", { timeout: 3000 });
+});

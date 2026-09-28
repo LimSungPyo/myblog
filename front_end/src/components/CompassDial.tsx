@@ -16,6 +16,9 @@ const SIZE = 460;
 const C = SIZE / 2;
 
 /** 위쪽(0°)부터 시계 방향으로 메뉴를 놓는다. 개발이 맨 위에 오도록 소개를 맨 뒤로 돌린다 */
+/** 처음 보일 때 바늘이 몇 도 떨어진 곳에서 돌아오는지(반대쪽 조금 앞) */
+const SWING_FROM = 160;
+
 const items = [...nav.slice(1), nav[0]].map((item, i) => ({
   ...item,
   bearing: i * STEP,
@@ -62,6 +65,12 @@ export default function CompassDial() {
       setNeedle(s.angle);
       return;
     }
+    spin();
+  }
+
+  /** 바늘을 목표(sim.target)까지 스프링으로 돌린다. 이미 돌고 있으면 목표만 바뀐 채 이어서 돈다 */
+  function spin() {
+    const s = sim.current;
     const tick = () => {
       s.frame = 0;
       const next = springStep(s.angle, s.velocity, s.target);
@@ -72,6 +81,16 @@ export default function CompassDial() {
     };
     if (!s.frame) s.frame = window.requestAnimationFrame(tick);
   }
+
+  // 다이얼이 처음 보이면 바늘이 반대쪽에서 휙 돌아와 지금 방향(처음엔 북쪽 = 개발)에 스프링처럼 멈춘다.
+  // 나침반을 꺼내 들었을 때 바늘이 자리를 찾는 모습이다. 동작 줄이기면 돌지 않는다
+  useEffect(() => {
+    if (!shown || reduceRef.current) return;
+    const s = sim.current;
+    s.angle = s.target - SWING_FROM;
+    s.velocity = 0;
+    spin();
+  }, [shown]);
 
   const current = items[selected];
 

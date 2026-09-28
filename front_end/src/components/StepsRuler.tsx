@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRevealOnce } from "@/hooks/useRevealOnce";
 import { revealOrder } from "@/lib/reveal";
+import type { CSSProperties } from "react";
 import { formatKoreanDay, type StepWeek } from "@/lib/steps";
 
 type Open = { index: number; x: number; y: number };
@@ -16,6 +17,11 @@ type Open = { index: number; x: number; y: number };
  * 위아래로도 잘라 버려서, 창은 상자 밖에 화면 기준(fixed)으로 띄우고 스크롤하면 닫는다.
  * 창은 누른 눈금 쪽(아래 가운데)에서 커지며 나타난다. 가끔 여는 작은 창이라 0.15초.
  */
+/** 몇 번째 눈금인지. 왼쪽(오래된 주)부터 globals.css의 간격만큼 늦게 자란다 */
+function tickOrder(i: number): CSSProperties {
+  return { "--t": i } as CSSProperties;
+}
+
 export default function StepsRuler({ weeks }: { weeks: StepWeek[] }) {
   const [open, setOpen] = useState<Open | null>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -90,21 +96,24 @@ export default function StepsRuler({ weeks }: { weeks: StepWeek[] }) {
               <li key={week.start} className="relative flex-1">
                 {/* 눈금: 달이 바뀌는 칸은 조금 길고, 글이 있는 칸은 길고 파랗다 */}
                 <div className="relative flex h-[68px] items-end justify-center border-b border-line">
+                  {/* 처음 보일 때 눈금이 왼쪽부터 차례로 자라고(ruler-tick), 점은 제 눈금이 선 뒤에 찍힌다(ruler-pin) */}
                   {count > 0 && (
                     <span
                       aria-hidden
-                      className={`absolute top-1 rounded-full bg-accent ${count > 1 ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
+                      style={tickOrder(i)}
+                      className={`ruler-pin absolute top-1 rounded-full bg-accent ${count > 1 ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
                     />
                   )}
                   <span
                     aria-hidden
-                    className={
+                    style={tickOrder(i)}
+                    className={`ruler-tick ${
                       count > 0
                         ? "h-12 w-[2.5px] rounded-full bg-accent"
                         : week.month
                           ? "h-6 w-px bg-muted"
                           : "h-3 w-px bg-faint"
-                    }
+                    }`}
                   />
                   {count > 0 && (
                     <button

@@ -88,4 +88,23 @@ describe("지난 1년의 걸음", () => {
     expect(scroller.scrollLeft).toBe(900);
     width.mockRestore();
   });
+
+  it("처음 보일 때 눈금이 왼쪽부터 자라도록 순서를 달고, 점은 제 눈금과 같은 순서를 쓴다", () => {
+    const { container } = render(<StepsRuler weeks={weeks} />);
+    const ticks = [...container.querySelectorAll<HTMLElement>(".ruler-tick")];
+    expect(ticks).toHaveLength(52);
+    ticks.forEach((t, i) =>
+      expect(t.style.getPropertyValue("--t")).toBe(String(i)),
+    );
+    // 글이 있는 두 주의 점은 그 주 눈금과 같은 칸(li) 안에서 같은 순서를 갖는다
+    const pins = [...container.querySelectorAll<HTMLElement>(".ruler-pin")];
+    expect(pins).toHaveLength(2);
+    for (const pin of pins) {
+      const tick =
+        pin.parentElement!.querySelector<HTMLElement>(".ruler-tick")!;
+      expect(pin.style.getPropertyValue("--t")).toBe(
+        tick.style.getPropertyValue("--t"),
+      );
+    }
+  });
 });

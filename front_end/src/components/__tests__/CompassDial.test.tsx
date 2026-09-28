@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import CompassDial from "@/components/CompassDial";
 
 function stubReducedMotion(reduce: boolean) {
@@ -76,5 +76,84 @@ describe("어디로 갈까요? 다이얼", () => {
     expect(links).toHaveLength(6);
     expect(links[0]).toHaveTextContent("개발");
     expect(links[5]).toHaveTextContent("소개");
+  });
+
+  describe("처음 보일 때 바늘이 자리를 찾는다", () => {
+    // 다이얼 구역이 화면에 들어왔다고 알릴 수 있게 관찰자를 흉내 낸다.
+    // 링크 미리 불러오기(next/link)도 관찰자를 쓰므로, 다이얼 구역을 보는 관찰자에게만 알린다
+    let watchers: {
+      cb: (e: { isIntersecting: boolean }[]) => void;
+      el?: Element;
+    }[] = [];
+    function installObserver() {
+      watchers = [];
+      vi.stubGlobal(
+        "IntersectionObserver",
+        class {
+          private w: (typeof watchers)[number];
+          constructor(cb: (e: { isIntersecting: boolean }[]) => void) {
+            this.w = { cb };
+            watchers.push(this.w);
+          }
+          observe(el: Element) {
+            this.w.el = el;
+          }
+          unobserve() {}
+          disconnect() {}
+        },
+      );
+    }
+    function reveal() {
+      const dial = screen.getByTestId("dial-needle").closest("section");
+      const w = watchers.find((x) => x.el === dial);
+      expect(w).toBeDefined();
+      w!.cb([{ isIntersecting: true }]);
+    }
+    // 예약된 프레임을 붙잡아 두었다가 한 장씩 돌린다
+    let frames: FrameRequestCallback[] = [];
+    function holdFrames() {
+      frames = [];
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+        frames.push(cb);
+        return frames.length;
+      });
+    }
+    function step(n: number) {
+      for (let i = 0; i < n && frames.length; i++) {
+        const cb = frames.shift()!;
+        act(() => cb(0));
+      }
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("반대쪽에서 돌아와 북쪽(개발)에 멈춘다", () => {
+      stubReducedMotion(false);
+      installObserver();
+      holdFrames();
+      render(<CompassDial />);
+      expect(needleAngle()).toBe(0);
+
+      act(() => reveal());
+      step(1);
+      // 첫 프레임: 북쪽에서 한참 떨어진 곳(-160° 근처)에서 출발한다
+      expect(needleAngle()).toBeLessThan(-120);
+
+      step(300);
+      expect(frames).toHaveLength(0);
+      expect(needleAngle()).toBe(0);
+    });
+
+    it("동작 줄이기를 켜면 돌지 않고 제자리에 있다", () => {
+      stubReducedMotion(true);
+      installObserver();
+      holdFrames();
+      render(<CompassDial />);
+      act(() => reveal());
+      expect(frames).toHaveLength(0);
+      expect(needleAngle()).toBe(0);
+    });
   });
 });

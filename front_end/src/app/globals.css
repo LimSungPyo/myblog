@@ -302,7 +302,32 @@ summary,
     opacity: 0;
   }
 }
+/* 걸음 눈금자: 눈금자 상자가 떠오르는 동안 눈금이 바닥에서 왼쪽부터 12ms씩 차례로 자라고,
+   글을 쓴 주의 점은 제 눈금이 다 선 뒤에 살짝 커지며 찍힌다. 눈금은 선이라 "그려지는" 것이므로 0에서 시작한다 */
+.ruler-tick {
+  transform-origin: bottom;
+  transition: scale 500ms var(--ease-out-strong);
+  transition-delay: calc(240ms + var(--t, 0) * 12ms);
+}
+.js [data-reveal]:not([data-shown]) .ruler-tick {
+  scale: 1 0;
+}
+.ruler-pin {
+  transition:
+    opacity 300ms var(--ease-out-strong),
+    scale 400ms var(--ease-out-strong);
+  transition-delay: calc(640ms + var(--t, 0) * 12ms);
+}
+.js [data-reveal]:not([data-shown]) .ruler-pin {
+  opacity: 0;
+  scale: 0.6;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .js [data-reveal]:not([data-shown]) .ruler-tick,
+  .js [data-reveal]:not([data-shown]) .ruler-pin {
+    scale: none;
+  }
   .js [data-reveal]:not([data-shown]) .reveal {
     translate: none;
     filter: none;
