@@ -1,6 +1,7 @@
 "use client";
 
 import { MoonIcon, SunIcon } from "@/components/ui/icons";
+import { applyThemeColor } from "@/lib/theme";
 
 /**
  * 다크모드 토글. `.dark` 클래스를 <html>에 토글하고 선택을 localStorage에 저장.
@@ -11,6 +12,7 @@ export default function ThemeToggle() {
   function toggle() {
     const apply = () => {
       const isDark = document.documentElement.classList.toggle("dark");
+      applyThemeColor(isDark);
       try {
         localStorage.setItem("theme", isDark ? "dark" : "light");
       } catch {

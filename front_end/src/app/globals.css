@@ -3,27 +3,124 @@
 /* dark: 변형을 .dark 클래스 기반으로 (기본 media 기반 대신) */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ---- 색 체계 ----
+   아주 살짝 따뜻한 흰색·검은색을 바탕으로, 파란색(accent)은 링크와 "지금 위치" 표시에만 쓴다.
+   테두리는 진한 선 대신 반투명 선·그림자(card-shadow)로 그어 배경에 자연스럽게 섞이게 한다. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdfdfc;
+  --foreground: #1a1a19;
+  --muted: #6b6b66;
+  --line: rgba(20, 20, 15, 0.09);
+  --surface: #ffffff;
+  --chip: #f2f2ef;
+  --chip-foreground: #55554f;
+  --accent: #2457d6;
+  --accent-soft: rgba(36, 87, 214, 0.1);
+  --hover: rgba(20, 20, 15, 0.05);
+  --scrim: rgba(20, 20, 15, 0.22);
+  --compass: rgba(20, 20, 15, 0.075);
+  --card-shadow:
+    0 0 0 1px rgba(20, 20, 15, 0.08), 0 1px 2px rgba(20, 20, 15, 0.04);
+  --card-shadow-hover:
+    0 0 0 1px rgba(20, 20, 15, 0.11), 0 8px 20px -8px rgba(20, 20, 15, 0.14);
+  /* 들어오는 움직임용 곡선. 처음이 빨라서 누르자마자 반응하는 느낌을 준다 */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  color-scheme: light;
+}
+
+.dark {
+  --background: #0d0d0e;
+  --foreground: #ececea;
+  --muted: #a3a39d;
+  --line: rgba(255, 255, 250, 0.1);
+  --surface: #151517;
+  --chip: rgba(255, 255, 250, 0.07);
+  --chip-foreground: #c9c9c3;
+  --accent: #7aa2ff;
+  --accent-soft: rgba(122, 162, 255, 0.14);
+  --hover: rgba(255, 255, 250, 0.07);
+  --scrim: rgba(0, 0, 0, 0.5);
+  --compass: rgba(255, 255, 250, 0.07);
+  --card-shadow: 0 0 0 1px rgba(255, 255, 250, 0.09);
+  --card-shadow-hover: 0 0 0 1px rgba(255, 255, 250, 0.17);
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-chip: var(--chip);
+  --color-chip-foreground: var(--chip-foreground);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-hover: var(--hover);
+  --color-scrim: var(--scrim);
+  --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
+  --ease-out-strong: var(--ease-out-strong);
+  /* 영문·숫자는 Geist, 한글은 Pretendard. Geist에 한글이 없어서 한글 글자는 자연히 Pretendard로 넘어간다 */
+  --font-sans:
+    var(--font-geist-sans), "Pretendard Variable", -apple-system,
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+html {
+  /* 휴대폰에서 누를 때 번쩍이는 회색 칸을 없앤다. 대신 누를 수 있는 것마다 press로 반응을 준다 */
+  -webkit-tap-highlight-color: transparent;
+  /* 가로로 돌렸을 때 브라우저가 글자를 멋대로 키우지 않게 한다 */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* 누르면 바로 반응하게: 두 번 눌러 확대를 기다리는 지연을 없앤다 */
+a,
+button,
+summary,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* iOS는 16px보다 작은 입력칸을 누르면 화면을 확대하고 되돌리지 않는다.
+   터치 기기에서만 16px로 올린다. text-sm 같은 클래스보다 앞서야 해서 !important를 쓴다 */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* 누를 수 있는 것에 붙이는 눌림 반응. 손가락이 닿는 순간 살짝 작아졌다가 떼면 돌아온다.
+   transition을 이 안에서 정하므로 같은 요소에 Tailwind transition 클래스를 함께 쓰지 않는다 */
+@utility press {
+  transition-property: scale, background-color, color, border-color, box-shadow;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out-strong);
+  -webkit-user-select: none;
+  user-select: none;
+  &:active {
+    scale: 0.97;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      scale: none;
+    }
+  }
+}
+
+/* 로고를 모양 틀(mask)로 쓰고 글자색(bg-current)으로 칠한다 → 라이트·다크 어디서나 글자와 같은 색 */
+.logo-mark {
+  -webkit-mask: url("/images/logo-mark.png") center / contain no-repeat;
+  mask: url("/images/logo-mark.png") center / contain no-repeat;
 }
 
 /* 테마 전환: View Transitions API로 페이지 전체를 하나로 크로스페이드 → 요소별 속도 차 없이 물흐르듯 균일하게 */
