@@ -19,12 +19,21 @@ export default function ThemeToggle() {
         // localStorage 접근 불가 시 무시 (그래도 이번 세션 전환은 동작)
       }
     };
-    // 지원 브라우저는 페이지 전체를 한 번에 크로스페이드(물흐르듯), 미지원은 즉시 전환
+    // 지원 브라우저는 페이지 전체를 한 번에 크로스페이드(물흐르듯), 미지원은 즉시 전환.
+    // 전환 동안 data-theme-switching을 달아 페이지 이동 전환(짧게)과 다른 속도를 쓴다(globals.css)
     const doc = document as Document & {
-      startViewTransition?: (cb: () => void) => void;
+      startViewTransition?: (cb: () => void) => { finished: Promise<void> };
     };
-    if (doc.startViewTransition) doc.startViewTransition(apply);
-    else apply();
+    if (!doc.startViewTransition) {
+      apply();
+      return;
+    }
+    const root = document.documentElement;
+    root.dataset.themeSwitching = "";
+    doc
+      .startViewTransition(apply)
+      .finished.catch(() => {})
+      .finally(() => delete root.dataset.themeSwitching);
   }
 
   return (

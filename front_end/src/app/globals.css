@@ -264,16 +264,41 @@ summary,
   mask: url("/images/logo-mark.png") center / contain no-repeat;
 }
 
-/* 테마 전환: View Transitions API로 페이지 전체를 하나로 크로스페이드 → 요소별 속도 차 없이 물흐르듯 균일하게 */
+/* View Transitions — 페이지 전체(root)를 한 장으로 크로스페이드한다.
+   페이지 이동: 제목이 날아가는 동안 나머지는 짧게 바뀐다(자주 쓰는 동작이라 빠르게).
+   테마 전환: ThemeToggle이 전환 동안 html에 data-theme-switching을 달아, 요소별 속도 차 없이 천천히 균일하게. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease-out-strong);
+}
+html[data-theme-switching]::view-transition-old(root),
+html[data-theme-switching]::view-transition-new(root) {
   animation-duration: 0.4s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* 글 카드 제목 → 글 상세 제목(PostTitleMorph). 화면 위를 옮겨 가는 움직임이라 강한 ease-in-out,
+   크기가 크게 바뀌며 글자가 뭉개져 보이는 중간을 살짝 흐리게 가린다 */
+::view-transition-group(.post-title) {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+}
+::view-transition-image-pair(.post-title) {
+  animation: post-title-blur 300ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+@keyframes post-title-blur {
+  40% {
+    filter: blur(3px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 

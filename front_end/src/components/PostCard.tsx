@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Post } from "@/types";
 import { formatShortDate, readingMinutes } from "@/lib/format";
 import { ArrowRightIcon } from "@/components/ui/icons";
+import PostTitleMorph from "@/components/PostTitleMorph";
 
 /** 도면 모서리의 재단 표시. 마우스를 올리면 바깥으로 살짝 벌어지며 파랗게 된다 */
 const cropMarks = [
@@ -53,14 +54,16 @@ export default function PostCard({ post, no }: { post: Post; no?: number }) {
         <span>{readingMinutes(post.content)}분</span>
       </div>
 
-      <h2 className="text-[17px] leading-snug font-bold tracking-tight sm:text-lg">
-        <Link
-          href={`/posts/${post.slug}`}
-          className="after:absolute after:inset-0 after:rounded-[4px] after:content-['']"
-        >
-          {post.title}
-        </Link>
-      </h2>
+      <PostTitleMorph postId={post.id}>
+        <h2 className="text-[17px] leading-snug font-bold tracking-tight sm:text-lg">
+          <Link
+            href={`/posts/${post.slug}`}
+            className="after:absolute after:inset-0 after:rounded-[4px] after:content-['']"
+          >
+            {post.title}
+          </Link>
+        </h2>
+      </PostTitleMorph>
 
       <p className="line-clamp-2 text-[14.5px] leading-relaxed text-muted">
         {post.excerpt}

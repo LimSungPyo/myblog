@@ -11,6 +11,7 @@ import ViewCounter from "@/components/ViewCounter";
 import TableOfContents from "@/components/TableOfContents";
 import ReadingCompass, { POST_BODY_ID } from "@/components/ReadingCompass";
 import PostNav from "@/components/PostNav";
+import PostTitleMorph from "@/components/PostTitleMorph";
 import { ArrowLeftIcon } from "@/components/ui/icons";
 
 // 제목이 하나뿐이면 목차가 있어도 갈 곳이 없어서, 이보다 적으면 목차를 두지 않는다
@@ -105,9 +106,11 @@ export default async function PostPage({
             <span aria-hidden>·</span>
             <ViewCounter slug={post.slug} initial={post.viewCount} />
           </div>
-          <h1 className="text-[32px] leading-[1.25] font-extrabold tracking-[-0.03em] break-keep text-balance lg:text-[48px] lg:leading-[1.2]">
-            {post.title}
-          </h1>
+          <PostTitleMorph postId={post.id}>
+            <h1 className="text-[32px] leading-[1.25] font-extrabold tracking-[-0.03em] break-keep text-balance lg:text-[48px] lg:leading-[1.2]">
+              {post.title}
+            </h1>
+          </PostTitleMorph>
           {post.excerpt && (
             <p className="text-[17px] leading-relaxed text-muted lg:text-lg">
               {post.excerpt}

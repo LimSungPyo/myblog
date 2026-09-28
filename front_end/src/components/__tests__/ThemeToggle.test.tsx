@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -43,5 +43,33 @@ describe("ThemeToggle", () => {
     for (const meta of metas) expect(meta.content).toBe(THEME_COLOR.light);
 
     for (const meta of metas) meta.remove();
+  });
+
+  it("전환하는 동안만 <html>에 data-theme-switching을 달아 천천히 바뀌는 속도를 쓴다", async () => {
+    let finish!: () => void;
+    const finished = new Promise<void>((r) => (finish = r));
+    const doc = document as Document & { startViewTransition?: unknown };
+    doc.startViewTransition = vi.fn((cb: () => void) => {
+      // 브라우저처럼 옛 화면을 찍을 때 표시가 이미 달려 있어야 한다
+      expect(document.documentElement.dataset.themeSwitching).toBe("");
+      cb();
+      return { finished };
+    });
+
+    render(<ThemeToggle />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "다크모드 전환" }),
+    );
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement).toHaveAttribute("data-theme-switching");
+
+    finish();
+    await finished;
+    await Promise.resolve();
+    expect(document.documentElement).not.toHaveAttribute(
+      "data-theme-switching",
+    );
+
+    delete doc.startViewTransition;
   });
 });
