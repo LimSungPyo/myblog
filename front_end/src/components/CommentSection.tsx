@@ -75,7 +75,7 @@ export default function CommentSection({
 
   return (
     <section className="mt-14 flex flex-col gap-4 border-t border-line pt-7 lg:mt-[72px] lg:pt-9">
-      <h2 className="font-serif text-[22px] font-bold lg:text-[26px]">
+      <h2 className="text-[22px] font-bold lg:text-[26px]">
         댓글{" "}
         <span className="font-mono text-base font-medium text-muted">
           {comments.length}

@@ -24,9 +24,7 @@ export default async function Game2048Page() {
         미니게임 목록
       </Link>
 
-      <h1 className="mb-6 mt-2 font-serif text-[32px] font-bold tracking-tight">
-        2048
-      </h1>
+      <h1 className="mb-6 mt-2 text-[32px] font-bold tracking-tight">2048</h1>
 
       <Game2048 initialScores={initialScores} />
     </div>

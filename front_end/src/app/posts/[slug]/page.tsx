@@ -105,7 +105,7 @@ export default async function PostPage({
             <span aria-hidden>·</span>
             <ViewCounter slug={post.slug} initial={post.viewCount} />
           </div>
-          <h1 className="font-serif text-[32px] leading-[1.25] font-bold tracking-[-0.03em] break-keep text-balance lg:text-[48px] lg:leading-[1.2]">
+          <h1 className="text-[32px] leading-[1.25] font-extrabold tracking-[-0.03em] break-keep text-balance lg:text-[48px] lg:leading-[1.2]">
             {post.title}
           </h1>
           {post.excerpt && (

@@ -73,7 +73,7 @@ export default function CompassDial() {
 
   return (
     <section className="flex flex-col gap-5">
-      <h2 className="font-serif text-[26px] font-bold tracking-[-0.02em] lg:hidden">
+      <h2 className="text-[26px] font-bold tracking-[-0.02em] lg:hidden">
         어디로 갈까요?
       </h2>
 
@@ -166,7 +166,7 @@ export default function CompassDial() {
           <p className="font-mono text-[13px] text-muted">
             어디로 갈까요? · 방위 {bearingLabel(current.bearing)}°
           </p>
-          <p className="font-serif text-[52px] leading-tight font-bold tracking-[-0.03em]">
+          <p className="text-[52px] leading-tight font-extrabold tracking-[-0.03em]">
             {current.label}
           </p>
           <p className="max-w-md text-lg leading-relaxed text-muted">

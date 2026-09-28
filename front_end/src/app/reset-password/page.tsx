@@ -40,7 +40,7 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="mx-auto w-full max-w-sm text-center">
-        <h1 className="mb-4 font-serif text-[28px] font-bold">잘못된 접근</h1>
+        <h1 className="mb-4 text-[28px] font-bold">잘못된 접근</h1>
         <p className="mb-6 text-sm text-muted">
           재설정 링크가 올바르지 않습니다.
         </p>
@@ -56,9 +56,7 @@ function ResetPasswordForm() {
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-2 font-serif text-[28px] font-bold">
-        새 비밀번호 설정
-      </h1>
+      <h1 className="mb-2 text-[28px] font-bold">새 비밀번호 설정</h1>
       <p className="mb-6 text-sm text-muted">
         새로 사용할 비밀번호를 입력해주세요. 설정이 끝나면 바로 로그인됩니다.
       </p>

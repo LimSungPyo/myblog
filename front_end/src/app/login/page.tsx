@@ -74,7 +74,7 @@ function LoginForm() {
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-6 font-serif text-[28px] font-bold">로그인</h1>
+      <h1 className="mb-6 text-[28px] font-bold">로그인</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <input
           value={username}

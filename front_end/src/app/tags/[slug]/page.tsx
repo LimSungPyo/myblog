@@ -32,7 +32,7 @@ export default async function TagPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-6 font-serif text-[30px] font-bold tracking-[-0.02em] lg:mb-8 lg:pt-6 lg:text-[36px]">
+      <h1 className="mb-6 text-[30px] font-bold tracking-[-0.02em] lg:mb-8 lg:pt-6 lg:text-[36px]">
         <span className="text-muted">#</span>
         {tag.name}
       </h1>

@@ -151,7 +151,7 @@ export default function CompassHero() {
         <p className="font-mono text-xs tracking-[0.04em] text-muted lg:text-[13px]">
           {hero.eyebrow}
         </p>
-        <h1 className="font-serif text-[44px] leading-[1.15] font-bold tracking-[-0.03em] lg:text-[76px] lg:leading-[1.12]">
+        <h1 className="text-[44px] leading-[1.15] font-extrabold tracking-[-0.03em] lg:text-[76px] lg:leading-[1.12]">
           {hero.headline.map((line) => (
             <span key={line} className="block">
               {line}
@@ -197,7 +197,7 @@ export default function CompassHero() {
         {/* 한 바퀴를 다 그린 순간 알린다. 화면 낭독기에도 전한다 */}
         <p
           aria-live="polite"
-          className="min-h-[1.5em] font-serif text-lg text-accent lg:text-[22px]"
+          className="min-h-[1.5em] text-lg font-semibold text-accent lg:text-[22px]"
         >
           {done && (
             <span className="compass-hello block">

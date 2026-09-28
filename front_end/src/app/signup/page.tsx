@@ -54,9 +54,7 @@ export default function SignupPage() {
   if (sentTo) {
     return (
       <div className="mx-auto w-full max-w-sm text-center">
-        <h1 className="mb-4 font-serif text-[28px] font-bold">
-          메일을 확인해주세요
-        </h1>
+        <h1 className="mb-4 text-[28px] font-bold">메일을 확인해주세요</h1>
         <p className="text-sm text-muted">
           <span className="font-medium text-foreground">{sentTo}</span>
           로 인증 메일을 보냈습니다.
@@ -82,7 +80,7 @@ export default function SignupPage() {
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-6 font-serif text-[28px] font-bold">회원가입</h1>
+      <h1 className="mb-6 text-[28px] font-bold">회원가입</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <input
           value={displayName}

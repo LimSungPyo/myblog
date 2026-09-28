@@ -54,7 +54,7 @@ export default function StepsRuler({ weeks }: { weeks: StepWeek[] }) {
   return (
     <section ref={rootRef} className="flex flex-col gap-4 lg:gap-5">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="font-serif text-[26px] font-bold tracking-[-0.02em] lg:text-[34px]">
+        <h2 className="text-[26px] font-bold tracking-[-0.02em] lg:text-[34px]">
           지난 1년의 걸음
         </h2>
         <p className="font-mono text-xs text-muted">

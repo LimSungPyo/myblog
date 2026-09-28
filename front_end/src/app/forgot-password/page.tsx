@@ -35,9 +35,7 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <div className="mx-auto w-full max-w-sm text-center">
-        <h1 className="mb-4 font-serif text-[28px] font-bold">
-          메일을 확인해주세요
-        </h1>
+        <h1 className="mb-4 text-[28px] font-bold">메일을 확인해주세요</h1>
         <p className="text-sm text-muted">
           가입된 이메일이라면{" "}
           <span className="font-medium text-foreground">{email}</span>
@@ -57,7 +55,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-2 font-serif text-[28px] font-bold">비밀번호 찾기</h1>
+      <h1 className="mb-2 text-[28px] font-bold">비밀번호 찾기</h1>
       <p className="mb-6 text-sm text-muted">
         가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
       </p>

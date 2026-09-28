@@ -20,7 +20,7 @@ export default async function PostsPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-6 font-serif text-[30px] font-bold tracking-[-0.02em] lg:mb-8 lg:pt-6 lg:text-[36px]">
+      <h1 className="mb-6 text-[30px] font-bold tracking-[-0.02em] lg:mb-8 lg:pt-6 lg:text-[36px]">
         전체 글
       </h1>
 

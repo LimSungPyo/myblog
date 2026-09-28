@@ -1,5 +1,5 @@
 /** 휴대폰 상태 표시줄·주소창 색. globals.css의 --background와 같은 값이어야 한다 */
-export const THEME_COLOR = { light: "#f4f1ea", dark: "#0b1322" } as const;
+export const THEME_COLOR = { light: "#f6f7f9", dark: "#0b1322" } as const;
 
 /**
  * 사용자가 고른 테마에 맞춰 theme-color 메타 태그를 모두 같은 색으로 바꾼다.

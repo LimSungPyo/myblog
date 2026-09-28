@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Gowun_Batang } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 // 한글 글꼴. 글자 묶음별로 나뉜 파일이라 화면에 나온 글자가 든 묶음만 받는다
@@ -22,15 +22,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-// 제목용 한글 세리프. 한글은 글자 묶음별 파일로 나뉘어 있어서, 미리 받기(preload) 대신
-// 화면에 나온 글자의 묶음만 그때그때 받는다
-const gowunBatang = Gowun_Batang({
-  variable: "--font-gowun-batang",
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -67,7 +58,7 @@ export default function RootLayout({
     <html
       lang="ko"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${gowunBatang.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden">
         {/* 페인트 전에 테마 적용 → 새로고침 시 라이트/다크 깜빡임(FOUC) 방지.

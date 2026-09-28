@@ -39,9 +39,7 @@ function VerifyEmail() {
   if (!token || error) {
     return (
       <div className="mx-auto w-full max-w-sm text-center">
-        <h1 className="mb-4 font-serif text-[28px] font-bold">
-          이메일 인증 실패
-        </h1>
+        <h1 className="mb-4 text-[28px] font-bold">이메일 인증 실패</h1>
         <p className="mb-6 text-sm text-muted">
           {error ?? "인증 링크가 올바르지 않습니다."}
         </p>

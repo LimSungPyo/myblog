@@ -194,7 +194,7 @@ export default function ReadingCompass({
           <span className="font-mono text-xs text-muted">읽은 거리</span>
         </span>
       </div>
-      <p aria-live="polite" className="font-serif text-[15px] text-accent">
+      <p aria-live="polite" className="text-[15px] font-semibold text-accent">
         {done && (
           <span className="compass-hello block">
             끝까지 읽어 주셔서 고마워요.

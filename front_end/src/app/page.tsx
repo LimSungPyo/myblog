@@ -33,7 +33,7 @@ export default async function Home() {
 
       <section className="flex flex-col gap-5 lg:gap-7">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-serif text-[26px] font-bold tracking-[-0.02em] lg:text-[34px]">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em] lg:text-[34px]">
             최근 기록
           </h2>
           <Link

@@ -38,7 +38,7 @@ export default function MyPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
-      <h1 className="font-serif text-[28px] font-bold">마이페이지</h1>
+      <h1 className="text-[28px] font-bold">마이페이지</h1>
       <ProfileSection user={user} />
       <ActivitySection userId={user.id} />
       <WithdrawSection user={user} />
