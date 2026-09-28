@@ -9,21 +9,19 @@ const links = [
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-black/10 dark:border-white/10">
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-6 text-sm text-neutral-500 sm:flex-row sm:justify-between">
-        <div className="flex items-center gap-2">
+    <footer className="border-t border-line">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-2.5 px-4 pt-6 pb-7 text-[13px] text-muted sm:flex-row sm:justify-between sm:gap-4 sm:py-5">
+        <div className="flex items-center gap-2 text-foreground">
           <span
             aria-hidden
-            className="footer-logo-mark block h-6 w-[21px] shrink-0 bg-neutral-700 dark:bg-neutral-300"
+            className="footer-logo-mark block h-[22px] w-[19px] shrink-0 bg-current"
           />
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">
-            {site.name}
-          </span>
+          <span className="font-semibold">{site.name}</span>
         </div>
 
-        <p className="text-neutral-400">{site.tagline}</p>
+        <p>{site.tagline}</p>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           {links.map(({ key, href, label, Icon }) => (
             <a
               key={key}
@@ -31,9 +29,9 @@ export default function SiteFooter() {
               aria-label={label}
               target={href.startsWith("http") ? "_blank" : undefined}
               rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-              className="rounded-full p-1.5 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-white/10 dark:hover:text-white"
+              className="press grid h-11 w-11 place-items-center rounded-xl hover:bg-hover hover:text-foreground sm:h-9 sm:w-9 sm:rounded-[9px]"
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-[18px] w-[18px]" />
             </a>
           ))}
         </div>

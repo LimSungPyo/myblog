@@ -41,6 +41,16 @@ describe("SiteNav", () => {
     );
   });
 
+  it("세로 목록(menu)에서도 현재 메뉴 표시와 누름 콜백이 동작한다", () => {
+    mockUsePathname.mockReturnValue("/guestbook");
+    const onNavigate = vi.fn();
+    render(<SiteNav variant="menu" onNavigate={onNavigate} />);
+    const link = screen.getByRole("link", { name: "방명록" });
+    expect(link).toHaveAttribute("aria-current", "page");
+    link.click();
+    expect(onNavigate).toHaveBeenCalledTimes(1);
+  });
+
   it("하위 경로(startsWith)도 활성 처리된다", () => {
     mockUsePathname.mockReturnValue("/about/team");
     render(<SiteNav />);

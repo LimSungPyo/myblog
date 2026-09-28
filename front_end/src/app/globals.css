@@ -117,6 +117,38 @@ summary,
   }
 }
 
+/* 휴대폰 펼침 메뉴. 가끔 여닫는 것이라 짧게 움직인다.
+   열릴 때: 위에서 살짝 내려오며 나타난다(0.2초). 닫힐 때: 더 빨리 사라진다(0.15초).
+   transition이라 여닫는 도중에 다시 눌러도 그 자리에서 되돌아간다.
+   visibility는 다 사라진 뒤에 숨겨야 해서, 닫힐 때만 사라지는 시간만큼 늦춘다 */
+.mobile-menu,
+.mobile-menu-scrim {
+  transition:
+    opacity 200ms var(--ease-out-strong),
+    transform 200ms var(--ease-out-strong),
+    visibility 0s;
+}
+.mobile-menu {
+  transform-origin: top center;
+}
+.mobile-menu[data-open="false"],
+.mobile-menu-scrim[data-open="false"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-duration: 150ms, 150ms, 0s;
+  transition-delay: 0s, 0s, 150ms;
+}
+.mobile-menu[data-open="false"] {
+  transform: translateY(-8px) scale(0.985);
+}
+/* 움직임 줄이기: 위치 변화는 빼고 나타나고 사라지는 것만 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu[data-open="false"] {
+    transform: none;
+  }
+}
+
 /* 로고를 모양 틀(mask)로 쓰고 글자색(bg-current)으로 칠한다 → 라이트·다크 어디서나 글자와 같은 색 */
 .logo-mark {
   -webkit-mask: url("/images/logo-mark.png") center / contain no-repeat;

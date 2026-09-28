@@ -10,6 +10,7 @@ import { THEME_COLOR } from "@/lib/theme";
 import SearchBar from "@/components/SearchBar";
 import AuthButton from "@/components/AuthButton";
 import SiteNav from "@/components/SiteNav";
+import MobileMenu from "@/components/MobileMenu";
 import ThemeToggle from "@/components/ThemeToggle";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -67,32 +68,34 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');if(t){var c=d?'${THEME_COLOR.dark}':'${THEME_COLOR.light}';document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}}catch(e){}})();`,
           }}
         />
-        <header>
-          <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3">
+        {/* relative: 휴대폰 펼침 메뉴가 헤더 바로 아래에 붙는 기준. z-40: 펼친 메뉴가 본문 위에 뜬다 */}
+        <header className="relative z-40 bg-background">
+          <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-4 py-2 pr-1.5 pl-4 lg:px-4 lg:py-4">
             <Link
               href="/"
               aria-label={site.name}
-              className="flex shrink-0 items-center gap-2"
+              className="flex shrink-0 items-center gap-2 lg:gap-2.5"
             >
               <span
                 aria-hidden
-                className="logo-mark block h-9 w-9 shrink-0 bg-current"
+                className="logo-mark block h-8 w-8 shrink-0 bg-current lg:h-9 lg:w-9"
               />
-              <span className="text-xl font-bold tracking-tight">
+              <span className="text-[17px] font-bold tracking-tight lg:text-[19px]">
                 {site.name}
               </span>
             </Link>
 
-            <SiteNav className="hidden justify-self-center md:flex" />
+            <SiteNav className="hidden justify-self-center lg:flex" />
 
-            <div className="flex items-center gap-2 justify-self-end">
-              <div className="hidden sm:block">
+            <div className="flex items-center justify-self-end lg:gap-2">
+              <div className="hidden lg:block">
                 <Suspense fallback={null}>
-                  <SearchBar />
+                  <SearchBar className="w-[232px]" />
                 </Suspense>
               </div>
               <ThemeToggle />
               <AuthButton />
+              <MobileMenu />
             </div>
           </div>
         </header>

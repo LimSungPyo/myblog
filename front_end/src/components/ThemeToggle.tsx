@@ -33,7 +33,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label="다크모드 전환"
       title="다크모드 전환"
-      className="inline-flex items-center rounded-lg border border-black/10 p-2 text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 dark:border-white/15 dark:text-neutral-300 dark:hover:bg-white/10 dark:hover:text-white"
+      className="press grid h-11 w-11 place-items-center rounded-xl text-muted hover:bg-hover hover:text-foreground lg:h-[38px] lg:w-[38px] lg:rounded-[10px]"
     >
       <MoonIcon className="h-5 w-5 dark:hidden" />
       <SunIcon className="hidden h-5 w-5 dark:block" />

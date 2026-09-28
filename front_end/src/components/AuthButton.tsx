@@ -57,7 +57,7 @@ export default function AuthButton() {
   }, []);
 
   const buttonStyle =
-    "inline-flex items-center rounded-lg border p-2 transition hover:bg-neutral-100 dark:hover:bg-white/10";
+    "press grid h-11 w-11 place-items-center rounded-xl lg:h-[38px] lg:w-[38px] lg:rounded-[10px]";
 
   if (!user) {
     return (
@@ -65,7 +65,7 @@ export default function AuthButton() {
         href="/login"
         aria-label="로그인"
         title="로그인"
-        className={`${buttonStyle} border-black/10 text-neutral-600 hover:text-neutral-900 dark:border-white/15 dark:text-neutral-300 dark:hover:text-white`}
+        className={`${buttonStyle} text-muted hover:bg-hover hover:text-foreground`}
       >
         <UserIcon className="h-5 w-5" />
       </Link>
@@ -89,7 +89,7 @@ export default function AuthButton() {
       href={target.href}
       aria-label={target.label}
       title={target.title}
-      className={`${buttonStyle} border-blue-500/40 text-blue-600 dark:border-blue-400/40 dark:text-blue-400`}
+      className={`${buttonStyle} bg-accent-soft text-accent`}
     >
       <UserIcon className="h-5 w-5" />
     </Link>
