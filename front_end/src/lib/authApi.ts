@@ -40,8 +40,6 @@ export function getToken(): string | null {
 
 export function setSession({ accessToken, isAdmin }: AuthResult) {
   const maxAge = 60 * 60 * 24 * 7; // 7일
-  // 다시 로그인했으니 "다른 곳에서 로그인해서 튕겼다"는 안내는 더 보여줄 필요가 없다
-  takeLogoutNotice();
   document.cookie = `${TOKEN_COOKIE}=${encodeURIComponent(accessToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
   document.cookie = `${ADMIN_COOKIE}=${isAdmin ? "1" : "0"}; path=/; max-age=${maxAge}; SameSite=Lax`;
   notifyAuthChanged();
@@ -60,7 +58,6 @@ export function clearToken() {
 // 서버가 문구를 다듬어도 여기가 조용히 깨지지 않게 하려는 것이다.
 const AUTH_REASON_HEADER = "X-Auth-Reason";
 const SESSION_REPLACED = "session_replaced";
-const LOGOUT_NOTICE_KEY = "auth:logout-notice";
 
 export const SESSION_REPLACED_MESSAGE =
   "다른 곳에서 로그인해서 로그아웃됐어요. 다시 로그인해주세요.";
@@ -74,33 +71,18 @@ export function isSessionReplaced(res: Response): boolean {
 
 /**
  * 401을 받았을 때의 공통 처리. 더 쓸 수 없는 토큰을 버리고, 사용자에게 보여줄
- * 메시지를 돌려준다. 다른 곳에서 로그인해서 튕긴 거라면 그 사실을 탭에 남겨두고,
- * 로그인 화면에서 한 번 보여준다. 헤더 아이콘만 조용히 바뀌면 왜 로그아웃됐는지
- * 알 수 없고, 본인이 한 로그인이 아니라면 계정 도용을 눈치챌 기회도 사라진다.
+ * 메시지를 돌려준다. 다른 곳에서 로그인해서 튕긴 거라면 그 자리에서 알림창을
+ * 띄운다. 헤더 아이콘만 조용히 바뀌면 왜 로그아웃됐는지 알 수 없고, 본인이 한
+ * 로그인이 아니라면 계정 도용을 눈치챌 기회도 사라진다.
  */
 export function endSession(res: Response, fallback: string): string {
   const replaced = isSessionReplaced(res);
-  if (replaced) {
-    try {
-      window.sessionStorage.setItem(LOGOUT_NOTICE_KEY, SESSION_REPLACED);
-    } catch {
-      // 저장이 막힌 환경(프라이빗 모드 등)이면 로그인 화면 안내만 빠진다
-    }
-  }
+  // 토큰이 아직 있을 때만 알린다. 페이지를 열면 헤더와 본문이 동시에 요청을 보내서
+  // 401이 여러 개 돌아오는데, 첫 번째가 토큰을 지우고 나면 나머지는 조용히 넘어간다.
+  const shouldAlert = replaced && getToken() !== null;
   clearToken();
+  if (shouldAlert) window.alert(SESSION_REPLACED_MESSAGE);
   return replaced ? SESSION_REPLACED_MESSAGE : fallback;
-}
-
-/** 남겨둔 로그아웃 안내를 꺼낸다. 한 번 꺼내면 지워져서 다시 뜨지 않는다. */
-export function takeLogoutNotice(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const reason = window.sessionStorage.getItem(LOGOUT_NOTICE_KEY);
-    window.sessionStorage.removeItem(LOGOUT_NOTICE_KEY);
-    return reason === SESSION_REPLACED ? SESSION_REPLACED_MESSAGE : null;
-  } catch {
-    return null;
-  }
 }
 
 /* ---------------- helpers ---------------- */

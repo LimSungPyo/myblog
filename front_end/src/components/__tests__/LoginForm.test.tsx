@@ -20,38 +20,13 @@ vi.mock("@/lib/authApi", async (importOriginal) => {
 });
 
 import LoginPage from "@/app/login/page";
-import { ApiError, endSession } from "@/lib/authApi";
+import { ApiError } from "@/lib/authApi";
 
 describe("로그인 페이지", () => {
   beforeEach(() => {
     push.mockClear();
     login.mockReset();
     resendVerification.mockReset();
-    window.sessionStorage.clear();
-  });
-
-  it("다른 곳에서 로그인해서 튕겨 왔으면 이유를 한 번 보여준다", async () => {
-    endSession(
-      new Response("", {
-        status: 401,
-        headers: { "X-Auth-Reason": "session_replaced" },
-      }),
-      "",
-    );
-    const { unmount } = render(<LoginPage />);
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      "다른 곳에서 로그인해서 로그아웃됐어요",
-    );
-    unmount();
-
-    // 다시 열면 안내는 사라져 있다
-    render(<LoginPage />);
-    expect(screen.queryByRole("status")).toBeNull();
-  });
-
-  it("그냥 로그인하러 왔으면 안내가 없다", () => {
-    render(<LoginPage />);
-    expect(screen.queryByRole("status")).toBeNull();
   });
 
   it("입력칸은 '이메일'로 안내하지만, 이메일 전용 칸은 아니다", () => {

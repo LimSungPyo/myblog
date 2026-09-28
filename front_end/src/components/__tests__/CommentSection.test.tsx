@@ -114,8 +114,11 @@ describe("CommentSection", () => {
       await userEvent.click(screen.getByRole("button", { name: /댓글 등록/ }));
     }
 
-    it("다른 곳에서 로그인해서 튕겼으면 그 이유를 보여준다", async () => {
+    it("다른 곳에서 로그인해서 튕겼으면 알림창과 함께 이유를 보여준다", async () => {
       authState.user = user;
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+      // 알림은 브라우저에 실제로 토큰이 남아 있을 때만 뜬다(mock한 getToken과 별개)
+      document.cookie = "auth_token=tok; path=/";
       vi.stubGlobal(
         "fetch",
         vi.fn(
@@ -132,6 +135,8 @@ describe("CommentSection", () => {
       expect(
         await screen.findByText(/다른 곳에서 로그인해서 로그아웃됐어요/),
       ).toBeInTheDocument();
+      expect(alertSpy).toHaveBeenCalledTimes(1);
+      alertSpy.mockRestore();
     });
 
     it("429면 남은 대기 시간을 안내하고 등록 버튼을 잠근다", async () => {

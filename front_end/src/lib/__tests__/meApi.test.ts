@@ -63,6 +63,7 @@ describe("meApi", () => {
   });
 
   it("다른 곳에서 로그인해서 튕긴 401이면 그 이유를 알린다", async () => {
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     stubFetch(
       new Response("", {
         status: 401,
@@ -71,6 +72,8 @@ describe("meApi", () => {
     );
     await expect(meApi.activity()).rejects.toThrow("다른 곳에서 로그인해서");
     expect(getToken()).toBeNull();
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    alertSpy.mockRestore();
   });
 
   it("본문 없는 요청에는 Content-Type을 붙이지 않는다", async () => {

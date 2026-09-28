@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -9,7 +9,6 @@ import {
   login,
   resendVerification,
   safeNext,
-  takeLogoutNotice,
 } from "@/lib/authApi";
 import { deadlineFrom, useCountdown } from "@/hooks/useCountdown";
 import { GoogleIcon } from "@/components/ui/icons";
@@ -35,17 +34,6 @@ function LoginForm() {
   // 429(요청 제한)면 남은 대기 시간을 세어 보여주고 그때까지 제출을 막는다
   const [retryAt, setRetryAt] = useState<number | null>(null);
   const cooldown = useCountdown(retryAt);
-  // 다른 곳에서 로그인해서 튕겨 온 경우의 안내. 한 번 보여주면 지워진다.
-  const [notice, setNotice] = useState<string | null>(null);
-
-  useEffect(() => {
-    // sessionStorage는 브라우저에서만 읽을 수 있어서 마운트 뒤에 꺼낸다.
-    // 꺼낸 게 있을 때만 넣는다. 개발 모드는 effect를 두 번 돌리는데, 두 번째는
-    // 이미 지워진 뒤라 null이 나오고, 그걸 그대로 넣으면 안내가 바로 사라진다.
-    const message = takeLogoutNotice();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (message) setNotice(message);
-  }, []);
 
   const from = safeNext(params.get("from"));
   const googleUrl = googleLoginUrl(from ?? "/");
@@ -87,14 +75,6 @@ function LoginForm() {
   return (
     <div className="mx-auto w-full max-w-sm">
       <h1 className="mb-6 text-2xl font-bold">로그인</h1>
-      {notice && (
-        <p
-          role="status"
-          className="mb-4 rounded-md border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
-        >
-          {notice}
-        </p>
-      )}
       <form onSubmit={onSubmit} className="space-y-4">
         <input
           value={username}

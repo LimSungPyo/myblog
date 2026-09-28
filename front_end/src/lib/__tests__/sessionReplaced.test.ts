@@ -1,12 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   AUTH_CHANGED_EVENT,
   SESSION_REPLACED_MESSAGE,
   endSession,
   fetchMe,
   getToken,
-  setSession,
-  takeLogoutNotice,
 } from "@/lib/authApi";
 
 function replacedResponse() {
@@ -17,13 +15,19 @@ function replacedResponse() {
 }
 
 describe("다른 곳에서 로그인해서 튕겼을 때", () => {
+  let alertSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.unstubAllGlobals();
-    window.sessionStorage.clear();
     document.cookie = "auth_token=tok; path=/";
+    alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
   });
 
-  it("표시가 붙은 401이면 토큰을 버리고 안내 문구를 돌려준다", () => {
+  afterEach(() => {
+    alertSpy.mockRestore();
+  });
+
+  it("표시가 붙은 401이면 토큰을 버리고 그 자리에서 알림창을 띄운다", () => {
     const heard = vi.fn();
     window.addEventListener(AUTH_CHANGED_EVENT, heard);
 
@@ -31,31 +35,38 @@ describe("다른 곳에서 로그인해서 튕겼을 때", () => {
       SESSION_REPLACED_MESSAGE,
     );
     expect(getToken()).toBeNull();
+    expect(alertSpy).toHaveBeenCalledWith(SESSION_REPLACED_MESSAGE);
     // 헤더 아이콘이 로그아웃 상태로 바뀌도록 알린다
     expect(heard).toHaveBeenCalled();
     window.removeEventListener(AUTH_CHANGED_EVENT, heard);
   });
 
-  it("표시 없는 401은 그냥 만료로 보고 로그인 화면 안내도 남기지 않는다", () => {
+  it("알림창이 뜰 때는 이미 로그아웃 상태다", () => {
+    // 알림창이 떠 있는 동안 뒤의 화면이 아직 로그인 상태로 보이면 어색하다
+    alertSpy.mockImplementation(() => {
+      expect(getToken()).toBeNull();
+    });
+    endSession(replacedResponse(), "기본 문구");
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("표시 없는 401은 그냥 만료로 보고 알림창을 띄우지 않는다", () => {
     const res = new Response("", { status: 401 });
     expect(endSession(res, "기본 문구")).toBe("기본 문구");
     expect(getToken()).toBeNull();
-    expect(takeLogoutNotice()).toBeNull();
+    expect(alertSpy).not.toHaveBeenCalled();
   });
 
-  it("로그인 화면 안내는 한 번 꺼내면 사라진다", () => {
+  it("동시에 돌아온 401이 여러 개여도 알림창은 한 번만 뜬다", () => {
+    // 페이지를 열면 헤더와 본문이 함께 요청을 보내 401이 여러 개 올 수 있다
     endSession(replacedResponse(), "기본 문구");
-    expect(takeLogoutNotice()).toBe(SESSION_REPLACED_MESSAGE);
-    expect(takeLogoutNotice()).toBeNull();
+    expect(endSession(replacedResponse(), "기본 문구")).toBe(
+      SESSION_REPLACED_MESSAGE,
+    );
+    expect(alertSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("다시 로그인하면 남아 있던 안내를 지운다", () => {
-    endSession(replacedResponse(), "기본 문구");
-    setSession({ accessToken: "new", isAdmin: false });
-    expect(takeLogoutNotice()).toBeNull();
-  });
-
-  it("헤더가 로그인 상태를 확인하다 튕긴 걸 알게 되면 안내를 남긴다", async () => {
+  it("헤더가 로그인 상태를 확인하다 튕긴 걸 알게 되면 바로 알린다", async () => {
     // 페이지를 새로 열면 헤더가 /auth/me로 확인한다. 가장 먼저 튕김을 알아채는 곳이다.
     vi.stubGlobal(
       "fetch",
@@ -63,6 +74,6 @@ describe("다른 곳에서 로그인해서 튕겼을 때", () => {
     );
     expect(await fetchMe()).toBeNull();
     expect(getToken()).toBeNull();
-    expect(takeLogoutNotice()).toBe(SESSION_REPLACED_MESSAGE);
+    expect(alertSpy).toHaveBeenCalledWith(SESSION_REPLACED_MESSAGE);
   });
 });
