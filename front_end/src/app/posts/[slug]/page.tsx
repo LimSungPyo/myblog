@@ -64,11 +64,12 @@ export default async function PostPage({
     items[i] ? { slug: items[i].slug, title: items[i].title } : null;
   const publishedAt = post.publishedAt ?? post.createdAt;
 
-  // 넓은 화면(lg): 왼쪽 칸(읽기 진행 컴퍼스와 목차) + 본문.
-  // 더 넓은 화면(xl): 오른쪽에 "도면 정보" 칸을 더 둔다. 1180px라 main(992px)보다 넓어서 양옆으로 94px씩 빼낸다.
-  // 본문 칸은 어느 폭에서든 680px. 17px 글자로 한글이 한 줄에 40자 안팎 들어가 읽기 편한 폭이다.
+  // 칸들은 main(992px) 안에 딱 맞춰 헤더의 로고~아이콘 끝과 좌우를 맞춘다.
+  // 넓은 화면(lg): 왼쪽 칸(읽기 진행 컴퍼스와 목차)이 남는 폭을 갖고, 본문은 680px.
+  //   17px 글자로 한글이 한 줄에 40자 안팎 들어가 읽기 편한 폭이다.
+  // 더 넓은 화면(xl): 오른쪽에 "도면 정보" 칸을 더 둔다. 양옆 칸을 줄이고 본문이 남는 폭(약 550px)을 갖는다.
   return (
-    <div className="mx-auto w-full max-w-[680px] lg:grid lg:max-w-none lg:grid-cols-[200px_minmax(0,680px)] lg:justify-center lg:gap-12 xl:-mx-[94px] xl:grid-cols-[200px_minmax(0,680px)_220px] xl:gap-10">
+    <div className="mx-auto w-full max-w-[680px] lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1fr)_minmax(0,680px)] lg:gap-12 xl:grid-cols-[180px_minmax(0,1fr)_200px] xl:gap-8">
       <aside className="hidden lg:block lg:pt-6">
         <div className="sticky top-6 flex flex-col gap-6">
           <ReadingCompass variant="rail" />
