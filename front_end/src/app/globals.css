@@ -60,6 +60,10 @@ body {
   font-weight: 700;
   margin: 1.5rem 0 0.5rem;
 }
+/* 목차에서 눌러 이동했을 때 제목이 화면 맨 끝에 붙지 않게 조금 띄운다 */
+.prose-blog :is(h1, h2, h3, h4, h5, h6)[id] {
+  scroll-margin-top: 1.5rem;
+}
 .prose-blog p {
   margin: 1rem 0;
 }

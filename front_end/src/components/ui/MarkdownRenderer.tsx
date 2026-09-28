@@ -4,6 +4,7 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+import { remarkHeadingIds } from "@/lib/toc";
 import CodeBlock from "./CodeBlock";
 
 const components: Components = {
@@ -24,7 +25,8 @@ export default function MarkdownRenderer({ content }: { content: string }) {
   return (
     <div className="prose-blog">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        // 제목 id는 목차(extractToc)와 같은 규칙으로 단다. 순서도 같아야 해서 GFM 다음에 둔다.
+        remarkPlugins={[remarkGfm, remarkHeadingIds]}
         rehypePlugins={[rehypeHighlight]}
         components={components}
       >
