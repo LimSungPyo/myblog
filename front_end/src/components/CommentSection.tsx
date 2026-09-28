@@ -8,6 +8,7 @@ import { endSession, getToken } from "@/lib/authApi";
 import { ApiError, ensureOk } from "@/lib/apiError";
 import { deadlineFrom, useCountdown } from "@/hooks/useCountdown";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { UserIcon } from "@/components/ui/icons";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 
@@ -73,34 +74,46 @@ export default function CommentSection({
   }
 
   return (
-    <section className="mt-16">
-      <h2 className="text-lg font-semibold">댓글 {comments.length}</h2>
+    <section className="mt-14 flex flex-col gap-4 border-t border-line pt-7 lg:mt-[72px] lg:pt-9">
+      <h2 className="text-lg font-bold tracking-tight lg:text-[19px]">
+        댓글 <span className="font-semibold text-muted">{comments.length}</span>
+      </h2>
 
-      <ul className="mt-4 space-y-4">
+      <ul className="flex flex-col gap-3">
         {comments.length === 0 && (
-          <li className="text-sm text-neutral-500">첫 댓글을 남겨보세요.</li>
+          <li className="text-sm text-muted">첫 댓글을 남겨보세요.</li>
         )}
         {comments.map((c) => (
           <li
             key={c.id}
-            className="rounded-lg border border-black/10 dark:border-white/15 p-4"
+            className="flex gap-3 rounded-[14px] bg-surface p-4 shadow-card lg:px-5 lg:py-[18px]"
           >
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">{c.authorName}</span>
-              <time className="text-neutral-500" dateTime={c.createdAt}>
-                {formatDate(c.createdAt)}
-              </time>
+            <span
+              aria-hidden
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-chip text-muted"
+            >
+              <UserIcon className="h-[18px] w-[18px]" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 text-sm">
+                <span className="font-semibold">{c.authorName}</span>
+                <time className="text-muted" dateTime={c.createdAt}>
+                  {formatDate(c.createdAt)}
+                </time>
+              </div>
+              <p className="mt-1 text-[15px] leading-relaxed whitespace-pre-wrap">
+                {c.content}
+              </p>
             </div>
-            <p className="mt-2 text-sm whitespace-pre-wrap">{c.content}</p>
           </li>
         ))}
       </ul>
 
       {user ? (
-        <form onSubmit={onSubmit} className="mt-6 space-y-3">
-          <p className="text-sm text-neutral-500">
+        <form onSubmit={onSubmit} className="mt-2 flex flex-col gap-3">
+          <p className="text-sm text-muted">
             {/* 서버가 관리자 글은 "관리자"로 저장하므로 안내도 같게 맞춘다 */}
-            <span className="font-medium text-neutral-700 dark:text-neutral-300">
+            <span className="font-semibold text-foreground">
               {user.isAdmin ? "관리자" : user.displayName}
             </span>
             {user.isAdmin ? "로 작성" : "님으로 작성"}
@@ -110,11 +123,11 @@ export default function CommentSection({
             onChange={(e) => setContent(e.target.value)}
             placeholder="댓글을 입력하세요"
             rows={3}
-            className="w-full rounded-md border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-blue-500"
+            className="w-full rounded-xl bg-chip px-4 py-3 text-[15px] leading-relaxed outline-none transition-shadow duration-150 placeholder:text-muted focus:shadow-[0_0_0_1px_var(--accent),0_0_0_4px_var(--accent-soft)]"
             required
           />
           {error && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-red-600 dark:text-red-400">
               {cooldown > 0
                 ? `너무 잦은 요청입니다. ${cooldown}초 후에 다시 시도해주세요.`
                 : error}
@@ -123,7 +136,7 @@ export default function CommentSection({
           <button
             type="submit"
             disabled={submitting || cooldown > 0}
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+            className="press h-11 self-end rounded-[10px] bg-foreground px-5 text-sm font-semibold text-background disabled:opacity-50"
           >
             {submitting
               ? "등록 중…"
@@ -134,15 +147,17 @@ export default function CommentSection({
         </form>
       ) : (
         !loading && (
-          <p className="mt-6 rounded-lg border border-black/10 p-4 text-sm text-neutral-500 dark:border-white/15">
-            댓글은 로그인 후 작성할 수 있습니다.{" "}
+          <div className="flex flex-col gap-3 rounded-[14px] bg-chip p-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5 sm:pr-4 sm:pl-5">
+            <p className="text-sm text-muted">
+              댓글은 로그인 후 작성할 수 있습니다.
+            </p>
             <Link
               href={`/login?from=/posts/${slug}`}
-              className="font-medium text-blue-500 hover:underline"
+              className="press grid h-11 place-items-center rounded-[10px] bg-foreground px-4 text-[15px] font-semibold text-background sm:h-9 sm:text-sm"
             >
               로그인
             </Link>
-          </p>
+          </div>
         )
       )}
     </section>

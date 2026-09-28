@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentProps } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
+import { CheckIcon, CopyIcon } from "@/components/ui/icons";
 
 type CopyState = "idle" | "copied" | "failed";
 
@@ -8,6 +15,12 @@ const LABELS: Record<CopyState, string> = {
   idle: "복사",
   copied: "복사됨",
   failed: "복사 실패",
+};
+
+const ICONS: Record<CopyState, ReactNode> = {
+  idle: <CopyIcon className="h-[13px] w-[13px]" />,
+  copied: <CheckIcon className="h-[13px] w-[13px]" />,
+  failed: null,
 };
 
 // "복사됨" 표시를 얼마나 보여줄지
@@ -57,13 +70,27 @@ export default function CodeBlock({
       <pre ref={preRef} {...props}>
         {children}
       </pre>
+      {/* 세 상태의 글자를 한자리에 겹쳐 두고 지금 것만 보이게 한다. 바뀔 때 살짝 흐려지며
+          서로 스며들어서, 두 글자가 겹쳐 보이는 순간이 덜 거슬린다. 버튼 이름은 aria-label이 맡는다 */}
       <button
         type="button"
         onClick={copy}
         title="코드 복사"
+        aria-label={LABELS[state]}
+        data-state={state}
         className="code-copy"
       >
-        {LABELS[state]}
+        {(Object.keys(LABELS) as CopyState[]).map((key) => (
+          <span
+            key={key}
+            aria-hidden
+            data-shown={key === state}
+            className="code-copy-label"
+          >
+            {ICONS[key]}
+            {LABELS[key]}
+          </span>
+        ))}
       </button>
       {/* 버튼 글자가 바뀐 것을 화면 낭독기에도 알린다 */}
       <span className="sr-only" aria-live="polite">

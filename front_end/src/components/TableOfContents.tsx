@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { TocItem } from "@/lib/toc";
+import { ChevronRightIcon } from "@/components/ui/icons";
 
 /** 제목이 화면 위에서 이만큼 안쪽으로 들어오면 "지금 읽는 절"로 본다(px) */
 const ACTIVE_OFFSET = 96;
@@ -58,12 +59,19 @@ export function useActiveHeading(ids: string[]): string | null {
 function TocList({
   items,
   active,
+  rail,
 }: {
   items: TocItem[];
   active: string | null;
+  /** 넓은 화면 목차: 왼쪽 세로선 위에 지금 읽는 절을 파란 막대로 표시한다 */
+  rail: boolean;
 }) {
   return (
-    <ol className="space-y-1.5 text-sm">
+    <ol
+      className={`text-sm leading-normal ${
+        rail ? "border-l border-line" : "text-[15px]"
+      }`}
+    >
       {items.map((item) => {
         const isActive = item.id === active;
         return (
@@ -71,10 +79,14 @@ function TocList({
             <a
               href={`#${item.id}`}
               aria-current={isActive ? "location" : undefined}
-              className={`block border-l-2 py-0.5 pl-3 transition ${
+              className={`block transition-colors duration-150 ${
+                rail
+                  ? "-ml-px border-l-2 py-1.5 pl-3.5"
+                  : "flex min-h-10 items-center"
+              } ${
                 isActive
-                  ? "border-blue-500 font-medium text-blue-600 dark:text-blue-400"
-                  : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+                  ? "border-accent font-semibold text-foreground"
+                  : "border-transparent text-muted hover:text-foreground"
               }`}
             >
               {item.text}
@@ -101,11 +113,15 @@ export default function TableOfContents({
 
   if (variant === "inline") {
     // 휴대폰에서는 본문을 가리지 않게 접어 둔다. <details>라서 스크립트 없이도 열리고 닫힌다.
+    // 열고 닫을 때 오른쪽 화살표가 아래로 돌아 상태를 알려준다.
     return (
-      <details className="mb-8 rounded-lg border border-black/10 px-4 py-2 lg:hidden dark:border-white/15">
-        <summary className="cursor-pointer text-sm font-medium">목차</summary>
-        <nav aria-label="목차" className="mt-3 pb-1">
-          <TocList items={items} active={active} />
+      <details className="group mb-7 rounded-xl bg-chip lg:hidden">
+        <summary className="flex h-12 cursor-pointer list-none items-center justify-between px-4 text-[15px] font-semibold select-none [&::-webkit-details-marker]:hidden">
+          목차
+          <ChevronRightIcon className="h-4 w-4 text-muted transition-transform duration-200 ease-out-strong group-open:rotate-90 motion-reduce:transition-none" />
+        </summary>
+        <nav aria-label="목차" className="px-4 pb-3">
+          <TocList items={items} active={active} rail={false} />
         </nav>
       </details>
     );
@@ -116,10 +132,10 @@ export default function TableOfContents({
       aria-label="목차"
       className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto"
     >
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+      <p className="mb-3 text-xs font-semibold tracking-wide text-muted">
         목차
       </p>
-      <TocList items={items} active={active} />
+      <TocList items={items} active={active} rail />
     </nav>
   );
 }

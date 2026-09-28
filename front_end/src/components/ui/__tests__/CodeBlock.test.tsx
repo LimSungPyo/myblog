@@ -47,6 +47,24 @@ describe("코드 복사 버튼", () => {
     expect(screen.getByRole("button", { name: "복사" })).toBeInTheDocument();
   });
 
+  it("버튼에는 세 상태 글자가 겹쳐 있지만 지금 상태의 글자만 보인다", async () => {
+    stubClipboard(async () => {});
+    render(<MarkdownRenderer content={CODE} />);
+    const shown = () =>
+      Array.from(
+        document.querySelectorAll('.code-copy-label[data-shown="true"]'),
+      );
+
+    expect(shown()).toHaveLength(1);
+    expect(shown()[0]).toHaveTextContent("복사");
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "복사" }));
+    });
+    expect(shown()).toHaveLength(1);
+    expect(shown()[0]).toHaveTextContent("복사됨");
+  });
+
   it("클립보드가 막혀 있으면 실패했다고 알린다", async () => {
     stubClipboard(async () => {
       throw new Error("denied");

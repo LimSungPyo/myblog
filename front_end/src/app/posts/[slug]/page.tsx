@@ -9,6 +9,7 @@ import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
 import CommentSection from "@/components/CommentSection";
 import ViewCounter from "@/components/ViewCounter";
 import TableOfContents from "@/components/TableOfContents";
+import { ArrowLeftIcon } from "@/components/ui/icons";
 
 // 제목이 하나뿐이면 목차가 있어도 갈 곳이 없어서, 이보다 적으면 목차를 두지 않는다
 const MIN_TOC_ITEMS = 2;
@@ -50,47 +51,51 @@ export default async function PostPage({
   const showToc = toc.length >= MIN_TOC_ITEMS;
 
   // 목차가 있으면 넓은 화면에서 본문 오른쪽에 목차 칸을 하나 더 둔다.
-  // 본문 칸 너비는 목차가 없을 때(max-w-3xl)와 거의 같게 맞췄다.
+  // 본문 칸은 목차가 있든 없든 680px. 17px 글자로 한글이 한 줄에 40자 안팎 들어가 읽기 편한 폭이다.
   return (
     <div
       className={
         showToc
-          ? "mx-auto w-full max-w-3xl lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-10"
-          : "mx-auto w-full max-w-3xl"
+          ? "mx-auto w-full max-w-[680px] lg:grid lg:max-w-[936px] lg:grid-cols-[minmax(0,680px)_200px] lg:gap-14"
+          : "mx-auto w-full max-w-[680px]"
       }
     >
-      <article className="min-w-0">
-        <header className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-neutral-500">
+      <article className="min-w-0 lg:pt-6">
+        <header className="mb-7 flex flex-col gap-3 border-b border-line pb-6 lg:mb-9 lg:gap-3.5 lg:pb-9">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted lg:text-sm">
             {post.category && (
-              <Link
-                href={`/categories/${post.category.slug}`}
-                className="hover:underline"
-              >
-                {post.category.name}
-              </Link>
+              <>
+                <Link
+                  href={`/categories/${post.category.slug}`}
+                  className="font-semibold text-foreground hover:underline hover:underline-offset-2"
+                >
+                  {post.category.name}
+                </Link>
+                <span aria-hidden>·</span>
+              </>
             )}
-            <span>·</span>
             <time dateTime={post.publishedAt ?? post.createdAt}>
               {formatDate(post.publishedAt ?? post.createdAt)}
             </time>
-            <span>·</span>
+            <span aria-hidden>·</span>
             <ViewCounter slug={post.slug} initial={post.viewCount} />
           </div>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight">
+          <h1 className="text-[28px] leading-[1.3] font-extrabold tracking-[-0.03em] text-balance lg:text-[40px] lg:leading-[1.25]">
             {post.title}
           </h1>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {post.tags.map((t) => (
-              <Link
-                key={t.id}
-                href={`/tags/${t.slug}`}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                #{t.name}
-              </Link>
-            ))}
-          </div>
+          {post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {post.tags.map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/tags/${t.slug}`}
+                  className="rounded-[7px] bg-chip px-[9px] py-1 text-[13px] font-medium text-chip-foreground transition-colors hover:text-foreground"
+                >
+                  #{t.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </header>
 
         {showToc && <TableOfContents items={toc} variant="inline" />}
@@ -99,14 +104,18 @@ export default async function PostPage({
 
         <CommentSection slug={post.slug} initial={comments} />
 
-        <div className="mt-12">
-          <Link href="/" className="text-sm text-neutral-500 hover:underline">
-            ← 목록으로
+        <div className="mt-8 lg:mt-12">
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted hover:text-foreground"
+          >
+            <ArrowLeftIcon className="h-[15px] w-[15px]" />
+            목록으로
           </Link>
         </div>
       </article>
       {showToc && (
-        <aside className="hidden lg:block">
+        <aside className="hidden lg:block lg:pt-6">
           <TableOfContents items={toc} variant="sidebar" />
         </aside>
       )}

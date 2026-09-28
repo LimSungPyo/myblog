@@ -67,6 +67,15 @@ export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function ArrowLeftIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} aria-hidden {...props}>
+      <path d="M19 12H5" />
+      <path d="m11 6-6 6 6 6" />
+    </svg>
+  );
+}
+
 export function ChevronLeftIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} aria-hidden {...props}>
@@ -95,6 +104,23 @@ export function CloseIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} aria-hidden {...props}>
       <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  );
+}
+
+export function CopyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} aria-hidden {...props}>
+      <rect x="9" y="9" width="12" height="12" rx="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </svg>
+  );
+}
+
+export function CheckIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} aria-hidden {...props}>
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
     </svg>
   );
 }
