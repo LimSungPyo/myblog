@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { revealOrder } from "@/lib/reveal";
 import { hero } from "@/config/site";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -148,17 +149,28 @@ export default function CompassHero() {
       className="grid items-center gap-2 pt-6 pb-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] lg:gap-10 lg:pt-8 lg:pb-14"
     >
       <div className="relative z-10 flex flex-col gap-4 lg:gap-6">
-        <p className="font-mono text-xs tracking-[0.04em] text-muted lg:text-[13px]">
+        {/* 열자마자 위에서부터 한 줄씩 떠오른다(reveal-load, globals.css) */}
+        <p
+          className="reveal-load font-mono text-xs tracking-[0.04em] text-muted lg:text-[13px]"
+          style={revealOrder(0)}
+        >
           {hero.eyebrow}
         </p>
         <h1 className="text-[44px] leading-[1.15] font-extrabold tracking-[-0.03em] lg:text-[76px] lg:leading-[1.12]">
-          {hero.headline.map((line) => (
-            <span key={line} className="block">
+          {hero.headline.map((line, i) => (
+            <span
+              key={line}
+              className="reveal-load block"
+              style={revealOrder(1 + i)}
+            >
               {line}
             </span>
           ))}
         </h1>
-        <p className="text-base leading-relaxed text-muted lg:text-lg">
+        <p
+          className="reveal-load text-base leading-relaxed text-muted lg:text-lg"
+          style={revealOrder(1 + hero.headline.length)}
+        >
           {hero.subline.map((line) => (
             <span key={line} className="block">
               {line}
@@ -166,7 +178,10 @@ export default function CompassHero() {
           ))}
         </p>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+        <div
+          className="reveal-load flex flex-wrap items-center gap-x-4 gap-y-2 pt-1"
+          style={revealOrder(2 + hero.headline.length)}
+        >
           <Link
             href="/posts"
             className="press flex h-12 items-center gap-2 rounded-xl bg-foreground px-5 text-[15px] font-semibold text-background"
@@ -226,7 +241,8 @@ export default function CompassHero() {
         onPointerCancel={(e) => {
           if (e.pointerId === dragPointer.current) dragPointer.current = null;
         }}
-        className="mx-auto w-full max-w-[340px] touch-none select-none lg:max-w-[500px]"
+        className="reveal-load reveal-scale mx-auto w-full max-w-[340px] touch-none select-none lg:max-w-[500px]"
+        style={revealOrder(2)}
       >
         <svg
           ref={svgRef}

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useRevealOnce } from "@/hooks/useRevealOnce";
+import { revealOrder } from "@/lib/reveal";
 import { formatKoreanDay, type StepWeek } from "@/lib/steps";
 
 type Open = { index: number; x: number; y: number };
@@ -19,6 +21,8 @@ export default function StepsRuler({ weeks }: { weeks: StepWeek[] }) {
   const rootRef = useRef<HTMLElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const total = weeks.reduce((n, w) => n + w.posts.length, 0);
+  // 스크롤해서 이 구역이 처음 보이면 제목 → 눈금자 순서로 떠오른다
+  const [, shown] = useRevealOnce(rootRef);
 
   // 휴대폰처럼 눈금자가 화면보다 넓으면, 최근 주와 "오늘"이 보이도록 처음에 맨 오른쪽으로 밀어 둔다
   useEffect(() => {
@@ -52,8 +56,16 @@ export default function StepsRuler({ weeks }: { weeks: StepWeek[] }) {
   const openWeek = open ? weeks[open.index] : null;
 
   return (
-    <section ref={rootRef} className="flex flex-col gap-4 lg:gap-5">
-      <div className="flex items-baseline justify-between gap-4">
+    <section
+      ref={rootRef}
+      data-reveal=""
+      data-shown={shown ? "" : undefined}
+      className="flex flex-col gap-4 lg:gap-5"
+    >
+      <div
+        className="reveal flex items-baseline justify-between gap-4"
+        style={revealOrder(0)}
+      >
         <h2 className="text-[26px] font-bold tracking-[-0.02em] lg:text-[34px]">
           지난 1년의 걸음
         </h2>
@@ -64,7 +76,8 @@ export default function StepsRuler({ weeks }: { weeks: StepWeek[] }) {
 
       <div
         ref={scrollerRef}
-        className="-mx-4 overflow-x-auto overscroll-x-contain px-4 py-1 [scrollbar-width:none] sm:mx-0 sm:px-1 [&::-webkit-scrollbar]:hidden"
+        style={revealOrder(1)}
+        className="reveal -mx-4 overflow-x-auto overscroll-x-contain px-4 py-1 [scrollbar-width:none] sm:mx-0 sm:px-1 [&::-webkit-scrollbar]:hidden"
       >
         <ol
           aria-label="주별 글 기록"

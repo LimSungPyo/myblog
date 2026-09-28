@@ -2,10 +2,12 @@ import Link from "next/link";
 import CompassHero from "@/components/CompassHero";
 import CompassDial from "@/components/CompassDial";
 import PostCard from "@/components/PostCard";
+import Reveal from "@/components/Reveal";
 import StepsRuler from "@/components/StepsRuler";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { getPosts } from "@/lib/api";
 import { buildWeeks } from "@/lib/steps";
+import { revealOrder } from "@/lib/reveal";
 
 /** 홈에 보이는 최근 글 수 */
 const RECENT = 3;
@@ -31,8 +33,12 @@ export default async function Home() {
 
       <CompassDial />
 
-      <section className="flex flex-col gap-5 lg:gap-7">
-        <div className="flex items-baseline justify-between">
+      {/* 스크롤해서 처음 보이면 제목 → 카드 순서로 떠오른다 */}
+      <Reveal className="flex flex-col gap-5 lg:gap-7">
+        <div
+          className="reveal flex items-baseline justify-between"
+          style={revealOrder(0)}
+        >
           <h2 className="text-[26px] font-bold tracking-[-0.02em] lg:text-[34px]">
             최근 기록
           </h2>
@@ -46,16 +52,25 @@ export default async function Home() {
         </div>
 
         {recent.length === 0 ? (
-          <p className="text-muted">아직 발행된 글이 없습니다.</p>
+          <p className="reveal text-muted" style={revealOrder(1)}>
+            아직 발행된 글이 없습니다.
+          </p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
             {recent.map((post, i) => (
+              // 카드에는 누름 반응(scale 전환)이 있어, 떠오르기는 감싸는 칸이 맡는다.
               // 목록은 최신 글부터라, 발행 순서 번호는 전체 글 수에서 거꾸로 센다
-              <PostCard key={post.id} post={post} no={total - i} />
+              <div
+                key={post.id}
+                className="reveal h-full"
+                style={revealOrder(1 + i)}
+              >
+                <PostCard post={post} no={total - i} />
+              </div>
             ))}
           </div>
         )}
-      </section>
+      </Reveal>
     </div>
   );
 }

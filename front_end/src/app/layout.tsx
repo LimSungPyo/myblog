@@ -62,10 +62,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col overflow-x-hidden">
         {/* 페인트 전에 테마 적용 → 새로고침 시 라이트/다크 깜빡임(FOUC) 방지.
-            사용자가 테마를 직접 골라 둔 경우 상태 표시줄 색도 그 테마에 맞춘다 */}
+            사용자가 테마를 직접 골라 둔 경우 상태 표시줄 색도 그 테마에 맞춘다.
+            html.js: 스크립트가 돈다는 표시. 스크롤 등장(.reveal)은 이때만 처음에 숨긴다 */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');if(t){var c=d?'${THEME_COLOR.dark}':'${THEME_COLOR.light}';document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}}catch(e){}})();`,
+            __html: `(function(){document.documentElement.classList.add('js');try{var t=localStorage.getItem('theme');var d=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');if(t){var c=d?'${THEME_COLOR.dark}':'${THEME_COLOR.light}';document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}}catch(e){}})();`,
           }}
         />
         {/* relative: 휴대폰 펼침 메뉴가 헤더 바로 아래에 붙는 기준. z-40: 펼친 메뉴가 본문 위에 뜬다.

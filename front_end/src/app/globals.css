@@ -256,6 +256,63 @@ summary,
   mask: url("/images/logo-mark.png") center / contain no-repeat;
 }
 
+/* ---- 스크롤 등장 (홈) ----
+   .reveal: data-reveal 구역이 화면에 들어오면(data-shown) 흐릿하게 아래에서 떠올라 또렷해진다.
+     --i 순서대로 80ms씩 늦게 나타난다(lib/reveal.ts의 revealOrder).
+     숨기는 건 스크립트가 도는 경우(html.js)에만 한다 → 스크립트가 없으면 처음부터 다 보인다.
+   .reveal-load: 첫 화면처럼 열자마자 보이는 곳. 스크립트를 기다리지 않고 CSS 애니메이션으로 바로 떠오른다.
+   자주 드나드는 조작 화면이 아니라 가끔 보는 첫 인상이라 UI 기준(300ms)보다 길게 700ms를 쓴다.
+   동작 줄이기: 움직임과 흐림 없이 옅게만 나타난다. */
+.reveal {
+  transition:
+    opacity 700ms var(--ease-out-strong),
+    translate 700ms var(--ease-out-strong),
+    filter 700ms var(--ease-out-strong);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+.js [data-reveal]:not([data-shown]) .reveal {
+  opacity: 0;
+  translate: 0 24px;
+  filter: blur(6px);
+}
+/* backwards: 지연 동안만 시작 모습을 유지하고, 끝나면 애니메이션이 남긴 값(blur(0) 등) 없이 원래 스타일로 돌아간다 */
+.reveal-load {
+  animation: reveal-in 700ms var(--ease-out-strong) backwards;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+    filter: blur(6px);
+  }
+}
+/* 그림(첫 화면 컴퍼스)은 글줄과 달리 흐리지 않고 살짝 커지며 나타난다 */
+.reveal-load.reveal-scale {
+  animation-name: reveal-in-scale;
+}
+@keyframes reveal-in-scale {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal]:not([data-shown]) .reveal {
+    translate: none;
+    filter: none;
+  }
+  .reveal-load,
+  .reveal-load.reveal-scale {
+    animation-name: reveal-fade;
+  }
+}
+
 /* View Transitions — 페이지 전체(root)를 한 장으로 크로스페이드한다.
    페이지 이동: 제목이 날아가는 동안 나머지는 짧게 바뀐다(자주 쓰는 동작이라 빠르게).
    테마 전환: ThemeToggle이 전환 동안 html에 data-theme-switching을 달아, 요소별 속도 차 없이 천천히 균일하게. */

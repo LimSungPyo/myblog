@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useRevealOnce } from "@/hooks/useRevealOnce";
+import { revealOrder } from "@/lib/reveal";
 import { nav } from "@/config/site";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -34,6 +36,8 @@ export default function CompassDial() {
   const [needle, setNeedle] = useState(0);
   const sim = useRef({ angle: 0, velocity: 0, target: 0, frame: 0 });
   const reduceRef = useRef(reduce);
+  // 스크롤해서 이 구역이 처음 보이면 다이얼 → 설명 순서로 떠오른다
+  const [sectionRef, shown] = useRevealOnce<HTMLElement>();
 
   useEffect(() => {
     reduceRef.current = reduce;
@@ -72,14 +76,25 @@ export default function CompassDial() {
   const current = items[selected];
 
   return (
-    <section className="flex flex-col gap-5">
-      <h2 className="text-[26px] font-bold tracking-[-0.02em] lg:hidden">
+    <section
+      ref={sectionRef}
+      data-reveal=""
+      data-shown={shown ? "" : undefined}
+      className="flex flex-col gap-5"
+    >
+      <h2
+        className="reveal text-[26px] font-bold tracking-[-0.02em] lg:hidden"
+        style={revealOrder(0)}
+      >
         어디로 갈까요?
       </h2>
 
       {/* 넓은 화면: 다이얼 */}
       <div className="hidden grid-cols-[460px_minmax(0,1fr)] items-center gap-16 lg:grid">
-        <div className="relative h-[460px] w-[460px]">
+        <div
+          className="reveal relative h-[460px] w-[460px]"
+          style={revealOrder(0)}
+        >
           <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             aria-hidden
@@ -163,29 +178,41 @@ export default function CompassDial() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <p className="font-mono text-[13px] text-muted">
+          <p
+            className="reveal font-mono text-[13px] text-muted"
+            style={revealOrder(1)}
+          >
             어디로 갈까요? · 방위 {bearingLabel(current.bearing)}°
           </p>
-          <p className="text-[52px] leading-tight font-extrabold tracking-[-0.03em]">
+          <p
+            className="reveal text-[52px] leading-tight font-extrabold tracking-[-0.03em]"
+            style={revealOrder(2)}
+          >
             {current.label}
           </p>
-          <p className="max-w-md text-lg leading-relaxed text-muted">
+          <p
+            className="reveal max-w-md text-lg leading-relaxed text-muted"
+            style={revealOrder(3)}
+          >
             {current.desc}
           </p>
-          <Link
-            href={current.href}
-            className="press mt-2 flex h-12 items-center gap-2 self-start rounded-xl bg-surface px-5 text-[15px] font-semibold shadow-card hover:shadow-card-hover"
-          >
-            {current.label} 바로 가기
-            <ArrowRightIcon className="h-4 w-4" />
-          </Link>
+          {/* 바로 가기 버튼은 누름 반응(scale 전환)이 있어, 떠오르기는 감싸는 칸이 맡는다 */}
+          <div className="reveal mt-2 self-start" style={revealOrder(4)}>
+            <Link
+              href={current.href}
+              className="press flex h-12 items-center gap-2 rounded-xl bg-surface px-5 text-[15px] font-semibold shadow-card hover:shadow-card-hover"
+            >
+              {current.label} 바로 가기
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* 휴대폰: 목록. 줄마다 작은 바늘이 그 메뉴의 방위를 가리킨다 */}
       <ul className="flex flex-col gap-2.5 lg:hidden">
-        {items.map((item) => (
-          <li key={item.href}>
+        {items.map((item, i) => (
+          <li key={item.href} className="reveal" style={revealOrder(1 + i)}>
             <Link
               href={item.href}
               className="press grid min-h-[60px] grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-[4px] bg-surface px-3.5 py-2.5 shadow-card"
