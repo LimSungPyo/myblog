@@ -51,4 +51,11 @@ describe("PostCard", () => {
     expect(toPost).toHaveLength(1);
     expect(toPost[0]).toHaveAccessibleName("안녕 세계");
   });
+
+  it("번호를 주면 도면 번호처럼 N°를 붙이고, 안 주면 붙이지 않는다", () => {
+    const { rerender } = render(<PostCard post={post} no={3} />);
+    expect(screen.getByText("N°03")).toBeInTheDocument();
+    rerender(<PostCard post={post} />);
+    expect(screen.queryByText(/N°/)).toBeNull();
+  });
 });

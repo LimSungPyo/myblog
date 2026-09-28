@@ -18,6 +18,25 @@ export const COMPASS = {
   knob: 42,
 } as const;
 
+/**
+ * 삼각함수 결과를 소수 둘째 자리에서 끊는다.
+ * 서버(Node)와 브라우저가 Math.cos·sin의 마지막 소수 자리를 다르게 내놓는 일이 있어서
+ * (124.28586684958104 vs …101), 그대로 SVG 속성에 넣으면 하이드레이션 불일치 경고가 난다.
+ * 화면에서는 0.01px 차이라 보이지 않는다.
+ */
+export function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+/** 원 위의 점. 각도는 SVG 기준 도(0°가 오른쪽) */
+export function onCircle(cx: number, cy: number, r: number, deg: number) {
+  const rad = (deg * Math.PI) / 180;
+  return {
+    x: round2(cx + r * Math.cos(rad)),
+    y: round2(cy + r * Math.sin(rad)),
+  };
+}
+
 /** 처음 연필 다리가 있는 곳(위쪽) */
 export const START_ANGLE = -90;
 
@@ -60,14 +79,12 @@ export function isFullCircle(min: number, max: number): boolean {
 
 /** 연필 끝, 경첩, 손잡이 끝의 좌표 */
 export function legs(angle: number) {
-  const rad = (angle * Math.PI) / 180;
-  const px = COMPASS.cx + COMPASS.r * Math.cos(rad);
-  const py = COMPASS.cy + COMPASS.r * Math.sin(rad);
+  const { x: px, y: py } = onCircle(COMPASS.cx, COMPASS.cy, COMPASS.r, angle);
   // 경첩은 두 다리 끝의 가운데에서 늘 화면 위쪽으로 같은 높이만큼 떠 있다.
   // 실제 컴퍼스를 비스듬히 내려다본 모습처럼 보이고, 어느 방향에서도 뒤집히지 않는다
-  const hx = (COMPASS.cx + px) / 2;
-  const hy = (COMPASS.cy + py) / 2 - COMPASS.hinge;
-  return { px, py, hx, hy, ky: hy - COMPASS.knob };
+  const hx = round2((COMPASS.cx + px) / 2);
+  const hy = round2((COMPASS.cy + py) / 2 - COMPASS.hinge);
+  return { px, py, hx, hy, ky: round2(hy - COMPASS.knob) };
 }
 
 /** 그린 호를 SVG polyline 점 목록으로. 3°마다 한 점 */

@@ -4,6 +4,7 @@ import {
   arcPoints,
   isFullCircle,
   legs,
+  onCircle,
   pointerAngle,
   shortestDelta,
   springStep,
@@ -84,5 +85,16 @@ describe("스프링", () => {
     // 살짝 지나쳤다가 돌아온다(통통 튀는 정도는 작다)
     expect(overshoot).toBeGreaterThan(100);
     expect(overshoot).toBeLessThan(115);
+  });
+});
+
+describe("좌표 반올림", () => {
+  it("삼각함수 좌표는 소수 둘째 자리까지만 쓴다(서버·브라우저 계산 차이로 속성이 어긋나지 않게)", () => {
+    const { x, y } = onCircle(230, 230, 138, -85);
+    expect(x).toBe(242.03);
+    expect(y).toBe(92.53);
+    const { px, hy } = legs(33);
+    expect(Number.isInteger(px * 100)).toBe(true);
+    expect(Number.isInteger(Math.round(hy * 100))).toBe(true);
   });
 });

@@ -16,7 +16,7 @@ export default async function PostsPage({
   const { page: pageParam } = await searchParams;
   const page = Number(pageParam) || 1;
 
-  const { items, totalPages } = await getPosts({ page });
+  const { items, total, totalPages, pageSize } = await getPosts({ page });
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -28,8 +28,13 @@ export default async function PostsPage({
         <p className="text-muted">아직 발행된 글이 없습니다.</p>
       ) : (
         <div className="flex flex-col gap-3.5 sm:gap-4">
-          {items.map((post) => (
-            <PostCard key={post.id} post={post} />
+          {items.map((post, i) => (
+            // 최신 글부터라 발행 순서 번호(N°)는 전체 글 수에서 거꾸로 센다
+            <PostCard
+              key={post.id}
+              post={post}
+              no={total - ((page - 1) * pageSize + i)}
+            />
           ))}
         </div>
       )}

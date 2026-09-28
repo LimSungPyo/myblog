@@ -207,6 +207,26 @@ summary,
   }
 }
 
+/* 걸음 눈금자의 작은 창. 누른 눈금이 있는 아래 가운데에서 커지며 나타난다.
+   위치는 Tailwind translate가 맡고, 등장은 scale·opacity로만 해서 서로 덮어쓰지 않는다 */
+.steps-pop {
+  transform-origin: bottom center;
+  transition:
+    opacity 150ms var(--ease-out-strong),
+    scale 150ms var(--ease-out-strong);
+  @starting-style {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .steps-pop {
+    @starting-style {
+      scale: none;
+    }
+  }
+}
+
 /* 로고를 모양 틀(mask)로 쓰고 글자색(bg-current)으로 칠한다 → 라이트·다크 어디서나 글자와 같은 색 */
 .logo-mark {
   -webkit-mask: url("/images/logo-mark.png") center / contain no-repeat;

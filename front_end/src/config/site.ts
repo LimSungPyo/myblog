@@ -19,14 +19,35 @@ export const hero = {
 /**
  * 상단 주 내비게이션.
  * 소개=페이지, 개발/일상=카테고리, 공부 기록/미니게임=준비 중 페이지, 방명록=페이지
+ * desc는 홈의 "어디로 갈까요?" 다이얼에서 보여주는 한 줄 설명(소개 페이지의 목록과 같은 말)이다.
  */
 export const nav = [
-  { href: "/about", label: "소개" },
-  { href: "/categories/dev", label: "개발" },
-  { href: "/categories/study", label: "공부 기록" },
-  { href: "/categories/life", label: "일상" },
-  { href: "/minigame", label: "미니게임" },
-  { href: "/guestbook", label: "방명록" },
+  { href: "/about", label: "소개", desc: "블로그와 저를 소개합니다." },
+  {
+    href: "/categories/dev",
+    label: "개발",
+    desc: "공부한 것, 만든 것, 그리고 삽질한 것.",
+  },
+  {
+    href: "/categories/study",
+    label: "공부 기록",
+    desc: "배우면서 정리한 노트와 회고.",
+  },
+  {
+    href: "/categories/life",
+    label: "일상",
+    desc: "개발 말고 그냥 사는 이야기.",
+  },
+  {
+    href: "/minigame",
+    label: "미니게임",
+    desc: "심심할 때 잠깐 하고 가는 곳.",
+  },
+  {
+    href: "/guestbook",
+    label: "방명록",
+    desc: "놀러 오셨다면 한마디 남겨주세요.",
+  },
 ];
 
 /** 푸터 소셜 링크 — 실제 주소로 교체하세요. (# 은 아직 미설정) */
