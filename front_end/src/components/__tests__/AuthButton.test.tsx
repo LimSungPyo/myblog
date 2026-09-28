@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import type { AuthUser } from "@/types";
 
@@ -85,5 +85,90 @@ describe("AuthButton", () => {
     expect(
       await screen.findByTitle("새이름님의 마이페이지"),
     ).toBeInTheDocument();
+  });
+
+  describe("탭으로 돌아오면 로그인이 살아 있는지 다시 확인한다", () => {
+    let visibility: DocumentVisibilityState = "visible";
+    let now = 1_000_000;
+
+    beforeEach(() => {
+      visibility = "visible";
+      Object.defineProperty(document, "visibilityState", {
+        configurable: true,
+        get: () => visibility,
+      });
+      vi.spyOn(Date, "now").mockImplementation(() => now);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    async function renderLoggedIn() {
+      fetchMe.mockResolvedValue(user);
+      const view = render(<AuthButton />);
+      await screen.findByRole("link", { name: "마이페이지" });
+      fetchMe.mockClear();
+      return view;
+    }
+
+    it("다른 탭에 갔다가 돌아오면 확인하고, 밀려났으면 로그아웃 상태가 된다", async () => {
+      await renderLoggedIn();
+      // 밀려났으면 fetchMe가 알림창을 띄우고 null을 돌려준다
+      fetchMe.mockResolvedValue(null);
+      now += 60_000;
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      expect(fetchMe).toHaveBeenCalledTimes(1);
+      expect(
+        await screen.findByRole("link", { name: "로그인" }),
+      ).toBeInTheDocument();
+    });
+
+    it("다른 창이나 앱에서 돌아와도(focus) 확인한다", async () => {
+      await renderLoggedIn();
+      now += 60_000;
+      act(() => {
+        window.dispatchEvent(new Event("focus"));
+      });
+      expect(fetchMe).toHaveBeenCalledTimes(1);
+    });
+
+    it("탭이 가려질 때는 확인하지 않는다", async () => {
+      await renderLoggedIn();
+      visibility = "hidden";
+      now += 60_000;
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      expect(fetchMe).not.toHaveBeenCalled();
+    });
+
+    it("탭 전환으로 두 신호가 한꺼번에 와도 한 번만 확인한다", async () => {
+      await renderLoggedIn();
+      now += 60_000;
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"));
+        window.dispatchEvent(new Event("focus"));
+      });
+      expect(fetchMe).toHaveBeenCalledTimes(1);
+
+      // 잠시 뒤 다시 돌아오면 또 확인한다
+      now += 60_000;
+      act(() => {
+        window.dispatchEvent(new Event("focus"));
+      });
+      expect(fetchMe).toHaveBeenCalledTimes(2);
+    });
+
+    it("헤더가 사라지면 더 이상 확인하지 않는다", async () => {
+      const { unmount } = await renderLoggedIn();
+      unmount();
+      now += 60_000;
+      document.dispatchEvent(new Event("visibilitychange"));
+      window.dispatchEvent(new Event("focus"));
+      expect(fetchMe).not.toHaveBeenCalled();
+    });
   });
 });

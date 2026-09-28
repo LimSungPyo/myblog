@@ -6,6 +6,9 @@ import type { AuthUser } from "@/types";
 import { AUTH_CHANGED_EVENT, fetchMe } from "@/lib/authApi";
 import { UserIcon } from "@/components/ui/icons";
 
+// 탭을 바꾸면 visibilitychange와 focus가 거의 동시에 온다. 이 간격 안의 두 번째는 건너뛴다.
+const RETURN_CHECK_GAP_MS = 2000;
+
 /**
  * 헤더의 계정 버튼 — 비로그인: /login, 로그인: /mypage, 관리자: /admin.
  *
@@ -29,11 +32,27 @@ export default function AuthButton() {
         if (alive && id === seq) setUser(me);
       });
     };
+    // 다른 곳에서 로그인해서 밀려났는지는 서버에 물어봐야 알 수 있는데, 가만히 있는
+    // 탭은 아무것도 묻지 않는다. 그래서 사용자가 이 탭으로 돌아오는 순간 한 번 확인한다.
+    // 밀려났으면 fetchMe가 알림창을 띄우고 로그아웃 상태로 바꾼다.
+    // 탭 전환은 visibilitychange, 다른 창이나 앱에서 돌아오는 건 focus로 잡는다.
+    let lastReturnCheck = 0;
+    const onReturn = () => {
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastReturnCheck < RETURN_CHECK_GAP_MS) return;
+      lastReturnCheck = now;
+      sync();
+    };
     sync();
     window.addEventListener(AUTH_CHANGED_EVENT, sync);
+    window.addEventListener("focus", onReturn);
+    document.addEventListener("visibilitychange", onReturn);
     return () => {
       alive = false;
       window.removeEventListener(AUTH_CHANGED_EVENT, sync);
+      window.removeEventListener("focus", onReturn);
+      document.removeEventListener("visibilitychange", onReturn);
     };
   }, []);
 
