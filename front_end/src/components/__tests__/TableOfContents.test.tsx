@@ -88,6 +88,44 @@ describe("글 목차", () => {
     expect(activeLink(nav)).toHaveTextContent("예제");
   });
 
+  it("본문 끝이 화면에 들어오면 페이지 끝이 아니어도 마지막 절을 강조한다(아래에 댓글이 길 때)", () => {
+    const body = document.createElement("div");
+    body.id = "post-body";
+    let bodyBottom = 1500;
+    body.getBoundingClientRect = () => ({ bottom: bodyBottom }) as DOMRect;
+    document.body.appendChild(body);
+
+    render(
+      <TableOfContents items={ITEMS} variant="sidebar" endId="post-body" />,
+    );
+    const nav = screen.getByRole("navigation", { name: "목차" });
+
+    // 마지막 제목은 아직 선(96px) 아래, 본문 끝도 화면 밖
+    scrollTo({ 설치: -900, 예제: -300, 마무리: 300 }, 1200);
+    expect(activeLink(nav)).toHaveTextContent("예제");
+
+    // 본문 끝이 화면 안(800px 안쪽)으로 들어왔다. 페이지는 아직 한참 남았다
+    bodyBottom = 700;
+    scrollTo({ 설치: -1000, 예제: -400, 마무리: 200 }, 1300);
+    expect(activeLink(nav)).toHaveTextContent("마무리");
+
+    body.remove();
+  });
+
+  it("넓은 화면 목차는 이미 지나온 절에 읽음 표시를 한다", () => {
+    render(<TableOfContents items={ITEMS} variant="sidebar" />);
+    const nav = screen.getByRole("navigation", { name: "목차" });
+    const read = () =>
+      within(nav)
+        .getAllByRole("link")
+        .filter((a) => a.hasAttribute("data-read"))
+        .map((a) => a.textContent);
+
+    scrollTo({ 설치: -600, 예제: -100, 마무리: 60 });
+    expect(activeLink(nav)).toHaveTextContent("마무리");
+    expect(read()).toEqual(["설치", "예제"]);
+  });
+
   it("맨 아래까지 내리면 짧은 마지막 절도 강조한다", () => {
     render(<TableOfContents items={ITEMS} variant="sidebar" />);
     const nav = screen.getByRole("navigation", { name: "목차" });
