@@ -1,5 +1,5 @@
 import type { GameScore } from "@/types";
-import { getToken } from "@/lib/authApi";
+import { endSession, getToken } from "@/lib/authApi";
 
 /**
  * 미니게임 순위 클라이언트 API.
@@ -35,7 +35,8 @@ export async function submitScore(
     },
     body: JSON.stringify({ score }),
   });
-  if (res.status === 401) throw new Error("로그인이 필요합니다.");
+  if (res.status === 401)
+    throw new Error(endSession(res, "로그인이 필요합니다."));
   if (!res.ok) throw new Error("점수 등록에 실패했습니다.");
   return res.json() as Promise<GameScore>;
 }

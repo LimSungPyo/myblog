@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Comment } from "@/types";
 import { formatDate } from "@/lib/format";
-import { getToken } from "@/lib/authApi";
+import { endSession, getToken } from "@/lib/authApi";
 import { ApiError, ensureOk } from "@/lib/apiError";
 import { deadlineFrom, useCountdown } from "@/hooks/useCountdown";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -43,7 +43,8 @@ export default function CommentSection({
           },
           body: JSON.stringify({ content }),
         });
-        if (res.status === 401) throw new Error("로그인이 필요합니다.");
+        if (res.status === 401)
+          throw new Error(endSession(res, "로그인이 필요합니다."));
         await ensureOk(res, "댓글 등록에 실패했습니다.");
         const created: Comment = await res.json();
         setComments((prev) => [...prev, created]);

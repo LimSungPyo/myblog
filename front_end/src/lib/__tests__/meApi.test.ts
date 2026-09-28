@@ -62,6 +62,17 @@ describe("meApi", () => {
     expect(getToken()).toBeNull();
   });
 
+  it("다른 곳에서 로그인해서 튕긴 401이면 그 이유를 알린다", async () => {
+    stubFetch(
+      new Response("", {
+        status: 401,
+        headers: { "X-Auth-Reason": "session_replaced" },
+      }),
+    );
+    await expect(meApi.activity()).rejects.toThrow("다른 곳에서 로그인해서");
+    expect(getToken()).toBeNull();
+  });
+
   it("본문 없는 요청에는 Content-Type을 붙이지 않는다", async () => {
     const fetchMock = stubFetch(new Response(null, { status: 204 }));
     await meApi.deleteComment(3);

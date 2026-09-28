@@ -10,9 +10,10 @@ const authState: { user: AuthUser | null; loading: boolean } = {
 vi.mock("@/hooks/useAuthUser", () => ({
   useAuthUser: () => authState,
 }));
-vi.mock("@/lib/authApi", () => ({
-  getToken: () => "test-token",
-}));
+vi.mock("@/lib/authApi", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("@/lib/authApi")>();
+  return { ...mod, getToken: () => "test-token" };
+});
 
 import CommentSection from "@/components/CommentSection";
 
@@ -87,7 +88,7 @@ describe("CommentSection", () => {
     expect(screen.getByText("좋은 글이네요")).toBeInTheDocument();
   });
 
-  describe("도배 제한(429)", () => {
+  describe("등록 실패 안내 (429·401)", () => {
     afterEach(() => {
       vi.unstubAllGlobals();
     });
@@ -112,6 +113,26 @@ describe("CommentSection", () => {
       await userEvent.type(input, "도배");
       await userEvent.click(screen.getByRole("button", { name: /댓글 등록/ }));
     }
+
+    it("다른 곳에서 로그인해서 튕겼으면 그 이유를 보여준다", async () => {
+      authState.user = user;
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(
+          async () =>
+            new Response(JSON.stringify({ detail: "서버 문구" }), {
+              status: 401,
+              headers: { "X-Auth-Reason": "session_replaced" },
+            }),
+        ),
+      );
+      render(<CommentSection slug="hello" initial={[]} />);
+      await submitComment();
+
+      expect(
+        await screen.findByText(/다른 곳에서 로그인해서 로그아웃됐어요/),
+      ).toBeInTheDocument();
+    });
 
     it("429면 남은 대기 시간을 안내하고 등록 버튼을 잠근다", async () => {
       authState.user = user;

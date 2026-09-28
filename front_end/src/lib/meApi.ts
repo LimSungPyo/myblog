@@ -2,7 +2,7 @@
 
 import type { AuthUser } from "@/types";
 import { ensureOk } from "./apiError";
-import { clearToken, getToken, notifyAuthChanged } from "./authApi";
+import { clearToken, endSession, getToken, notifyAuthChanged } from "./authApi";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 
@@ -58,8 +58,9 @@ async function request(
     },
   });
   if (res.status === 401) {
-    clearToken();
-    throw new Error("로그인이 만료됐어요. 다시 로그인해주세요.");
+    throw new Error(
+      endSession(res, "로그인이 만료됐어요. 다시 로그인해주세요."),
+    );
   }
   await ensureOk(res, fallback);
   return res;

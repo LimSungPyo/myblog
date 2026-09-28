@@ -1,7 +1,7 @@
 "use client";
 
 import type { GameScore, GuestbookEntry, Post } from "@/types";
-import { clearToken, getToken } from "@/lib/authApi";
+import { endSession, getToken } from "@/lib/authApi";
 import { ensureOk } from "@/lib/apiError";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
@@ -30,8 +30,9 @@ async function authed<T>(path: string, init: RequestInit = {}): Promise<T> {
     },
   });
   if (res.status === 401) {
-    clearToken();
-    throw new Error("인증이 만료되었습니다. 다시 로그인하세요.");
+    throw new Error(
+      endSession(res, "인증이 만료되었습니다. 다시 로그인하세요."),
+    );
   }
   if (!res.ok) throw new Error(`요청 실패: ${res.status}`);
   return res.status === 204 ? (undefined as T) : (res.json() as Promise<T>);
@@ -83,8 +84,9 @@ async function uploadImage(file: File): Promise<UploadedImage> {
     body: form,
   });
   if (res.status === 401) {
-    clearToken();
-    throw new Error("인증이 만료되었습니다. 다시 로그인하세요.");
+    throw new Error(
+      endSession(res, "인증이 만료되었습니다. 다시 로그인하세요."),
+    );
   }
   // 서버가 "10MB 이하만", "JPG, PNG, WebP만" 같은 이유를 보내주므로 그대로 보여준다
   await ensureOk(res, "이미지를 올리지 못했어요.");
