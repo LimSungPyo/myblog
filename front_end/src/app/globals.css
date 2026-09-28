@@ -98,6 +98,38 @@ body {
   overflow-x: auto;
   font-size: 0.9rem;
 }
+/* 코드 블록 + 복사 버튼. 버튼은 코드 위에 겹쳐 오른쪽 위에 둔다.
+   바깥 여백은 감싸는 상자가 갖는다. <pre>에 여백이 남아 있으면 버튼이 코드 위쪽 빈 곳에 뜬다.
+   코드 배경은 언어 표시 여부에 따라 어둡기도 하고 없기도 해서, 버튼은 어디서든 보이는
+   어두운 칩(밝은 글자)으로 고정한다. 페이지 글자색을 따라가면 밝은 테마에서 어두운 코드 위에 묻힌다. */
+.prose-blog .code-block {
+  position: relative;
+  margin: 1.25rem 0;
+}
+.prose-blog .code-block pre {
+  margin: 0;
+}
+.prose-blog .code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(23, 23, 23, 0.7);
+  color: #f5f5f5;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  opacity: 0.75;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+.prose-blog .code-copy:hover,
+.prose-blog .code-copy:focus-visible {
+  opacity: 1;
+  background: rgba(23, 23, 23, 0.9);
+}
 .prose-blog img {
   max-width: 100%;
   border-radius: 0.6rem;

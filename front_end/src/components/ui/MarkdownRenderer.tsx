@@ -4,6 +4,7 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+import CodeBlock from "./CodeBlock";
 
 const components: Components = {
   // 화면에 가까워질 때 불러온다. 글을 끝까지 안 읽고 나가는 방문자 몫의 이미지는 아예
@@ -14,6 +15,9 @@ const components: Components = {
     // eslint-disable-next-line @next/next/no-img-element -- 글쓴이가 넣은 임의 주소라 next/image 도메인 설정을 쓸 수 없다
     <img {...props} alt={alt ?? ""} loading="lazy" decoding="async" />
   ),
+  // 코드 블록에 복사 버튼을 붙인다. 문장 속 `인라인 코드`는 <pre>가 아니라 해당 없다.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 버리려고 꺼내는 값
+  pre: ({ node, ...props }) => <CodeBlock {...props} />,
 };
 
 export default function MarkdownRenderer({ content }: { content: string }) {
