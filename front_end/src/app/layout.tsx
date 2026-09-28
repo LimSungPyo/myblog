@@ -69,7 +69,7 @@ export default function RootLayout({
           }}
         />
         {/* relative: 휴대폰 펼침 메뉴가 헤더 바로 아래에 붙는 기준. z-40: 펼친 메뉴가 본문 위에 뜬다.
-            바탕을 칠하지 않아 모눈이 헤더까지 이어진다 */}
+            바탕을 따로 칠하지 않아 페이지 바탕색이 헤더까지 이어진다 */}
         <header className="relative z-40">
           <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-4 py-2 pr-1.5 pl-4 lg:px-4 lg:py-4">
             <Link
