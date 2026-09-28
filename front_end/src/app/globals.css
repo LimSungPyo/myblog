@@ -23,7 +23,6 @@
   --accent-soft: rgba(47, 91, 211, 0.1);
   --hover: rgba(22, 24, 29, 0.05);
   --scrim: rgba(22, 24, 29, 0.25);
-  --compass: rgba(22, 24, 29, 0.08);
   --card-shadow:
     0 0 0 1px rgba(22, 24, 29, 0.09), 0 1px 2px rgba(22, 24, 29, 0.05);
   --card-shadow-hover:
@@ -48,7 +47,6 @@
   --accent-soft: rgba(122, 162, 255, 0.14);
   --hover: rgba(233, 237, 246, 0.07);
   --scrim: rgba(0, 0, 0, 0.5);
-  --compass: rgba(233, 237, 246, 0.08);
   --card-shadow: 0 0 0 1px rgba(233, 237, 246, 0.1);
   --card-shadow-hover: 0 0 0 1px rgba(122, 162, 255, 0.45);
   color-scheme: dark;
@@ -68,7 +66,6 @@
   --color-accent-soft: var(--accent-soft);
   --color-hover: var(--hover);
   --color-scrim: var(--scrim);
-  --color-compass: var(--compass);
   --shadow-card: var(--card-shadow);
   --shadow-card-hover: var(--card-shadow-hover);
   --ease-out-strong: var(--ease-out-strong);
@@ -191,6 +188,25 @@ summary,
   }
 }
 
+/* 첫 화면 컴퍼스로 원을 한 바퀴 다 그렸을 때의 인사. 드물게 보는 장면이라 조금 느긋하게 떠오른다 */
+.compass-hello {
+  transition:
+    opacity 400ms ease,
+    transform 400ms var(--ease-out-strong);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .compass-hello {
+    transition: opacity 200ms ease;
+    @starting-style {
+      transform: none;
+    }
+  }
+}
+
 /* 로고를 모양 틀(mask)로 쓰고 글자색(bg-current)으로 칠한다 → 라이트·다크 어디서나 글자와 같은 색 */
 .logo-mark {
   -webkit-mask: url("/images/logo-mark.png") center / contain no-repeat;
@@ -210,9 +226,8 @@ summary,
   }
 }
 
-/* 푸터 로고·첫 화면 컴퍼스: ∞ 없는 컴퍼스를 마스크로 → 칠한 배경색(bg-*)으로 틴트 */
-.footer-logo-mark,
-.hero-compass {
+/* 푸터 로고: ∞ 없는 컴퍼스를 마스크로 → 칠한 배경색(bg-*)으로 틴트 */
+.footer-logo-mark {
   -webkit-mask: url("/images/logo-hero.png") center / contain no-repeat;
   mask: url("/images/logo-hero.png") center / contain no-repeat;
 }

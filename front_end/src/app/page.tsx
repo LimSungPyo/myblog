@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Hero from "@/components/Hero";
+import CompassHero from "@/components/CompassHero";
 import PostCard from "@/components/PostCard";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { getPosts } from "@/lib/api";
@@ -9,7 +9,7 @@ export default async function Home() {
 
   return (
     <div>
-      <Hero />
+      <CompassHero />
 
       <section className="flex flex-col gap-4 border-t border-line pt-7 lg:gap-6 lg:pt-10">
         <div className="flex items-baseline justify-between">
