@@ -15,8 +15,13 @@ const DONE = 0.995;
  * 본문이 화면보다 짧으면 다 보이는 순간 1이다.
  * 스크롤은 아주 자주 와서, 한 화면 그릴 때(프레임) 한 번만 계산한다.
  */
-export function useReadingProgress(targetId = POST_BODY_ID): number {
+export function useReadingProgress(targetId = POST_BODY_ID): {
+  progress: number;
+  /** 한 번이라도 스크롤했는지. 짧은 글은 열자마자 100%라, 인사는 실제로 읽은 뒤에만 띄우려고 쓴다 */
+  scrolled: boolean;
+} {
   const [progress, setProgress] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     let frame = 0;
@@ -34,6 +39,7 @@ export function useReadingProgress(targetId = POST_BODY_ID): number {
             : 0;
       // 천분의 일 단위로 끊어, 눈에 안 보이는 차이로 다시 그리는 일을 줄인다
       setProgress(Math.round(next * 1000) / 1000);
+      if (window.scrollY > 0) setScrolled(true);
     };
     const schedule = () => {
       if (!frame) frame = window.requestAnimationFrame(update);
@@ -48,7 +54,7 @@ export function useReadingProgress(targetId = POST_BODY_ID): number {
     };
   }, [targetId]);
 
-  return progress;
+  return { progress, scrolled };
 }
 
 /** 작은 컴퍼스 그림의 치수(viewBox 0 0 140 140) */
@@ -142,9 +148,10 @@ export default function ReadingCompass({
 }: {
   variant: "rail" | "float";
 }) {
-  const progress = useReadingProgress();
+  const { progress, scrolled } = useReadingProgress();
   const percent = Math.round(progress * 100);
-  const done = progress >= DONE;
+  // 짧은 글은 본문이 한 화면에 다 들어가 열자마자 100%다. 끝까지 읽었다는 인사는 스크롤해서 읽은 뒤에만 한다
+  const done = progress >= DONE && scrolled;
 
   if (variant === "float") {
     return (
