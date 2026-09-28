@@ -12,7 +12,7 @@ import { ArrowRightIcon } from "@/components/ui/icons";
 export default function PostCard({ post }: { post: Post }) {
   return (
     <article className="group relative flex h-full flex-col gap-2.5 rounded-[14px] bg-surface p-[18px] shadow-card transition-[box-shadow,scale] duration-[160ms] ease-out-strong hover:shadow-card-hover active:scale-[0.99] sm:px-[22px] sm:pt-[22px] sm:pb-5 motion-reduce:active:scale-100">
-      <div className="flex items-center gap-2 text-[13px] text-muted">
+      <div className="flex items-center gap-2 font-mono text-xs text-muted">
         {post.category && (
           <>
             <Link

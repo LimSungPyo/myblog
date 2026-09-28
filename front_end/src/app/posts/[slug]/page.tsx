@@ -62,7 +62,7 @@ export default async function PostPage({
     >
       <article className="min-w-0 lg:pt-6">
         <header className="mb-7 flex flex-col gap-3 border-b border-line pb-6 lg:mb-9 lg:gap-3.5 lg:pb-9">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted lg:text-sm">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-muted lg:text-[13px]">
             {post.category && (
               <>
                 <Link
@@ -80,7 +80,7 @@ export default async function PostPage({
             <span aria-hidden>·</span>
             <ViewCounter slug={post.slug} initial={post.viewCount} />
           </div>
-          <h1 className="text-[28px] leading-[1.3] font-extrabold tracking-[-0.03em] text-balance lg:text-[40px] lg:leading-[1.25]">
+          <h1 className="font-serif text-[32px] leading-[1.25] font-bold tracking-[-0.03em] text-balance lg:text-[48px] lg:leading-[1.2]">
             {post.title}
           </h1>
           {post.tags.length > 0 && (

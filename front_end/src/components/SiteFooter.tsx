@@ -19,7 +19,7 @@ export default function SiteFooter() {
           <span className="font-semibold">{site.name}</span>
         </div>
 
-        <p>{site.tagline}</p>
+        <p className="font-mono text-xs">{site.tagline}</p>
 
         <div className="flex items-center gap-1">
           {links.map(({ key, href, label, Icon }) => (

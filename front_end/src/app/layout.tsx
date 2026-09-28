@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Gowun_Batang } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 // 한글 글꼴. 글자 묶음별로 나뉜 파일이라 화면에 나온 글자가 든 묶음만 받는다
@@ -22,6 +22,15 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// 제목용 한글 세리프. 한글은 글자 묶음별 파일로 나뉘어 있어서, 미리 받기(preload) 대신
+// 화면에 나온 글자의 묶음만 그때그때 받는다
+const gowunBatang = Gowun_Batang({
+  variable: "--font-gowun-batang",
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -58,7 +67,7 @@ export default function RootLayout({
     <html
       lang="ko"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${gowunBatang.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden">
         {/* 페인트 전에 테마 적용 → 새로고침 시 라이트/다크 깜빡임(FOUC) 방지.
@@ -68,8 +77,9 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');if(t){var c=d?'${THEME_COLOR.dark}':'${THEME_COLOR.light}';document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}}catch(e){}})();`,
           }}
         />
-        {/* relative: 휴대폰 펼침 메뉴가 헤더 바로 아래에 붙는 기준. z-40: 펼친 메뉴가 본문 위에 뜬다 */}
-        <header className="relative z-40 bg-background">
+        {/* relative: 휴대폰 펼침 메뉴가 헤더 바로 아래에 붙는 기준. z-40: 펼친 메뉴가 본문 위에 뜬다.
+            바탕을 칠하지 않아 모눈이 헤더까지 이어진다 */}
+        <header className="relative z-40">
           <div className="mx-auto grid max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-4 py-2 pr-1.5 pl-4 lg:px-4 lg:py-4">
             <Link
               href="/"

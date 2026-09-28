@@ -28,7 +28,7 @@ export default async function GuestbookPage({
       <div>
         <div className="grid gap-6 md:grid-cols-[minmax(0,220px)_1fr] md:gap-12">
           <aside className="flex flex-col gap-3 md:gap-3.5">
-            <h1 className="text-4xl font-extrabold tracking-[-0.035em] lg:text-[44px] lg:leading-[1.15]">
+            <h1 className="font-serif text-4xl font-bold tracking-[-0.02em] lg:text-[46px] lg:leading-[1.15]">
               방명록
             </h1>
             <p className="text-sm leading-relaxed text-muted">

@@ -20,7 +20,7 @@ const games = [
 export default function MinigamePage() {
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-2 text-[28px] font-extrabold tracking-[-0.03em] lg:pt-6 lg:text-[32px]">
+      <h1 className="mb-2 font-serif text-[30px] font-bold tracking-[-0.02em] lg:pt-6 lg:text-[36px]">
         미니게임
       </h1>
       <p className="mb-6 text-muted lg:mb-8">잠깐 머리좀 식히고 가세요!!</p>

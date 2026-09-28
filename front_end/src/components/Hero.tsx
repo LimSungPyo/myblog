@@ -4,11 +4,11 @@ export default function Hero() {
   return (
     <section className="flex items-center justify-between pt-8 pb-10 lg:pt-16 lg:pb-[72px]">
       <div className="flex max-w-xl flex-col gap-3.5 lg:gap-5">
-        <p className="text-sm font-semibold text-muted lg:text-[15px]">
+        <p className="font-mono text-xs tracking-[0.04em] text-muted lg:text-[13px]">
           {hero.eyebrow}
         </p>
 
-        <h1 className="text-4xl leading-[1.2] font-extrabold tracking-[-0.035em] lg:text-[56px] lg:leading-[1.16]">
+        <h1 className="font-serif text-[44px] leading-[1.15] font-bold tracking-[-0.03em] lg:text-[72px] lg:leading-[1.12]">
           {hero.headline.map((line) => (
             <span key={line} className="block">
               {line}

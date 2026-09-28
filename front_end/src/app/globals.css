@@ -3,46 +3,54 @@
 /* dark: 변형을 .dark 클래스 기반으로 (기본 media 기반 대신) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ---- 색 체계 ----
-   아주 살짝 따뜻한 흰색·검은색을 바탕으로, 파란색(accent)은 링크와 "지금 위치" 표시에만 쓴다.
-   테두리는 진한 선 대신 반투명 선·그림자(card-shadow)로 그어 배경에 자연스럽게 섞이게 한다. */
+/* ---- 색 체계: 제도판 ----
+   로고가 제도용 컴퍼스라서, 사이트 전체를 제도판 위의 도면처럼 만든다.
+   라이트는 "제도지"(옅은 모눈이 깔린 종이색), 다크는 "청사진"(짙은 남색에 파란 선).
+   강조색은 청사진 파랑 하나. 링크, "지금 위치", 컴퍼스가 그린 선에만 쓴다.
+   --faint·--construct는 글자가 아니라 눈금·보조선 같은 장식에만 쓴다(글자에 쓰기엔 대비가 낮다). */
 :root {
-  --background: #fdfdfc;
-  --foreground: #1a1a19;
-  --muted: #6b6b66;
-  --line: rgba(20, 20, 15, 0.09);
-  --surface: #ffffff;
-  --chip: #f2f2ef;
-  --chip-foreground: #55554f;
-  --accent: #2457d6;
-  --accent-soft: rgba(36, 87, 214, 0.1);
-  --hover: rgba(20, 20, 15, 0.05);
-  --scrim: rgba(20, 20, 15, 0.22);
-  --compass: rgba(20, 20, 15, 0.075);
+  --background: #f4f1ea;
+  --foreground: #16181d;
+  --muted: #5d6068;
+  --faint: #8b8e96;
+  --line: rgba(22, 24, 29, 0.12);
+  --grid: rgba(40, 52, 90, 0.055);
+  --construct: rgba(22, 24, 29, 0.18);
+  --surface: #fbfaf6;
+  --chip: #ebe7dd;
+  --chip-foreground: #4a4d55;
+  --accent: #2f5bd3;
+  --accent-soft: rgba(47, 91, 211, 0.1);
+  --hover: rgba(22, 24, 29, 0.05);
+  --scrim: rgba(22, 24, 29, 0.25);
+  --compass: rgba(22, 24, 29, 0.08);
   --card-shadow:
-    0 0 0 1px rgba(20, 20, 15, 0.08), 0 1px 2px rgba(20, 20, 15, 0.04);
+    0 0 0 1px rgba(22, 24, 29, 0.09), 0 1px 2px rgba(22, 24, 29, 0.05);
   --card-shadow-hover:
-    0 0 0 1px rgba(20, 20, 15, 0.11), 0 8px 20px -8px rgba(20, 20, 15, 0.14);
+    0 0 0 1px rgba(22, 24, 29, 0.14), 0 14px 30px -14px rgba(22, 24, 29, 0.25);
   /* 들어오는 움직임용 곡선. 처음이 빨라서 누르자마자 반응하는 느낌을 준다 */
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
   color-scheme: light;
 }
 
 .dark {
-  --background: #0d0d0e;
-  --foreground: #ececea;
-  --muted: #a3a39d;
-  --line: rgba(255, 255, 250, 0.1);
-  --surface: #151517;
-  --chip: rgba(255, 255, 250, 0.07);
-  --chip-foreground: #c9c9c3;
+  --background: #0b1322;
+  --foreground: #e9edf6;
+  --muted: #a3adc2;
+  --faint: #707b93;
+  --line: rgba(233, 237, 246, 0.12);
+  --grid: rgba(122, 162, 255, 0.075);
+  --construct: rgba(233, 237, 246, 0.22);
+  --surface: #101a2d;
+  --chip: rgba(233, 237, 246, 0.07);
+  --chip-foreground: #c3cad8;
   --accent: #7aa2ff;
   --accent-soft: rgba(122, 162, 255, 0.14);
-  --hover: rgba(255, 255, 250, 0.07);
+  --hover: rgba(233, 237, 246, 0.07);
   --scrim: rgba(0, 0, 0, 0.5);
-  --compass: rgba(255, 255, 250, 0.07);
-  --card-shadow: 0 0 0 1px rgba(255, 255, 250, 0.09);
-  --card-shadow-hover: 0 0 0 1px rgba(255, 255, 250, 0.17);
+  --compass: rgba(233, 237, 246, 0.08);
+  --card-shadow: 0 0 0 1px rgba(233, 237, 246, 0.1);
+  --card-shadow-hover: 0 0 0 1px rgba(122, 162, 255, 0.45);
   color-scheme: dark;
 }
 
@@ -50,6 +58,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-construct: var(--construct);
   --color-line: var(--line);
   --color-surface: var(--surface);
   --color-chip: var(--chip);
@@ -66,7 +76,12 @@
   --font-sans:
     var(--font-geist-sans), "Pretendard Variable", -apple-system,
     "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-mono: var(--font-geist-mono);
+  /* 날짜·번호 같은 주석용 고정폭 글꼴. Geist Mono에 한글이 없어서, 한글은 기기의 고정폭 글꼴 대신 Pretendard로 넘긴다 */
+  --font-mono:
+    var(--font-geist-mono), "Pretendard Variable", ui-monospace, monospace;
+  /* 제목용 세리프. 도면의 표제처럼 큰 제목에만 쓴다 */
+  --font-serif:
+    var(--font-gowun-batang), "Nanum Myeongjo", "AppleMyungjo", serif;
 }
 
 html {
@@ -76,8 +91,14 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* 바탕에 32px 모눈을 깐다. 선은 아주 옅어서 글을 읽는 데 방해되지 않는다 */
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
   color: var(--foreground);
   font-family: var(--font-sans);
 }
@@ -213,7 +234,8 @@ summary,
   margin-bottom: 0;
 }
 .prose-blog h2 {
-  font-size: 1.375rem;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
   line-height: 1.4;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -228,7 +250,7 @@ summary,
 }
 @media (min-width: 1024px) {
   .prose-blog h2 {
-    font-size: 1.625rem;
+    font-size: 1.875rem;
     margin-top: 3rem;
   }
   .prose-blog h3 {

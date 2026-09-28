@@ -32,7 +32,7 @@ export default async function CategoryPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-6 text-[28px] font-extrabold tracking-[-0.03em] lg:mb-8 lg:pt-6 lg:text-[32px]">
+      <h1 className="mb-6 font-serif text-[30px] font-bold tracking-[-0.02em] lg:mb-8 lg:pt-6 lg:text-[36px]">
         <span className="text-muted">카테고리 · </span>
         {category.name}
       </h1>
