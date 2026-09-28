@@ -48,7 +48,8 @@ describe("ThemeToggle", () => {
   it("전환하는 동안만 <html>에 data-theme-switching을 달아 천천히 바뀌는 속도를 쓴다", async () => {
     let finish!: () => void;
     const finished = new Promise<void>((r) => (finish = r));
-    const doc = document as Document & { startViewTransition?: unknown };
+    // jsdom에는 없는 API라 테스트 동안만 붙였다 뗀다(DOM 타입에는 있어서 그냥은 지울 수 없다)
+    const doc = document as unknown as Record<string, unknown>;
     doc.startViewTransition = vi.fn((cb: () => void) => {
       // 브라우저처럼 옛 화면을 찍을 때 표시가 이미 달려 있어야 한다
       expect(document.documentElement.dataset.themeSwitching).toBe("");
