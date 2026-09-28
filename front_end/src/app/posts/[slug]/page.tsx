@@ -65,13 +65,14 @@ export default async function PostPage({
   const publishedAt = post.publishedAt ?? post.createdAt;
 
   // 칸들은 main(992px) 안에 딱 맞춰 헤더의 로고~아이콘 끝과 좌우를 맞춘다.
-  // 넓은 화면(lg): 왼쪽 칸(읽기 진행 컴퍼스와 목차)이 남는 폭을 갖고, 본문은 680px.
+  // 넓은 화면(lg 이상): 왼쪽 칸(읽기 진행 컴퍼스 → 목차 → 도면 정보)이 남는 폭을 갖고, 본문은 680px.
   //   17px 글자로 한글이 한 줄에 40자 안팎 들어가 읽기 편한 폭이다.
-  // 더 넓은 화면(xl): 오른쪽에 "도면 정보" 칸을 더 둔다. 양옆 칸을 줄이고 본문이 남는 폭(약 550px)을 갖는다.
   return (
-    <div className="mx-auto w-full max-w-[680px] lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1fr)_minmax(0,680px)] lg:gap-12 xl:grid-cols-[180px_minmax(0,1fr)_200px] xl:gap-8">
+    <div className="mx-auto w-full max-w-[680px] lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1fr)_minmax(0,680px)] lg:gap-12">
       <aside className="hidden lg:block lg:pt-6">
-        <div className="sticky top-6 flex flex-col gap-6">
+        {/* 읽는 동안 자주 보는 것(읽은 거리·목차)을 위에, 한 번 보면 되는 도면 정보를 아래에 둔다.
+            칸 전체가 화면 높이를 넘지 않게 막고, 넘치면 목차만 줄어들어 안에서 스크롤된다 */}
+        <div className="sticky top-6 flex max-h-[calc(100vh-3rem)] flex-col gap-6">
           <ReadingCompass variant="rail" />
           {showToc && (
             <TableOfContents
@@ -80,6 +81,36 @@ export default async function PostPage({
               endId={POST_BODY_ID}
             />
           )}
+          <div className="flex shrink-0 flex-col gap-4 rounded-[4px] bg-surface p-5 shadow-card">
+            <p className="font-mono text-xs text-muted">도면 정보</p>
+            <dl className="grid grid-cols-[48px_minmax(0,1fr)] gap-y-2 font-mono text-[13px]">
+              {post.category && (
+                <>
+                  <dt className="text-faint">분류</dt>
+                  <dd>{post.category.name}</dd>
+                </>
+              )}
+              <dt className="text-faint">작성</dt>
+              <dd>{formatShortDate(publishedAt)}</dd>
+              <dt className="text-faint">조회</dt>
+              <dd>{post.viewCount}</dd>
+              <dt className="text-faint">분량</dt>
+              <dd>{readingMinutes(post.content)}분</dd>
+            </dl>
+            {post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-x-2.5 gap-y-1 border-t border-dashed border-line pt-3">
+                {post.tags.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/tags/${t.slug}`}
+                    className="font-mono text-xs text-accent hover:underline hover:underline-offset-2"
+                  >
+                    #{t.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </aside>
 
@@ -118,8 +149,8 @@ export default async function PostPage({
             </p>
           )}
           {post.tags.length > 0 && (
-            // 가장 넓은 화면에서는 태그가 오른쪽 도면 정보 칸에 있다
-            <div className="flex flex-wrap gap-1.5 xl:hidden">
+            // 넓은 화면에서는 태그가 왼쪽 칸의 도면 정보에 있다
+            <div className="flex flex-wrap gap-1.5 lg:hidden">
               {post.tags.map((t) => (
                 <Link
                   key={t.id}
@@ -160,39 +191,6 @@ export default async function PostPage({
           </Link>
         </div>
       </article>
-
-      <aside className="hidden xl:block xl:pt-6">
-        <div className="sticky top-6 flex flex-col gap-4 rounded-[4px] bg-surface p-5 shadow-card">
-          <p className="font-mono text-xs text-muted">도면 정보</p>
-          <dl className="grid grid-cols-[48px_minmax(0,1fr)] gap-y-2 font-mono text-[13px]">
-            {post.category && (
-              <>
-                <dt className="text-faint">분류</dt>
-                <dd>{post.category.name}</dd>
-              </>
-            )}
-            <dt className="text-faint">작성</dt>
-            <dd>{formatShortDate(publishedAt)}</dd>
-            <dt className="text-faint">조회</dt>
-            <dd>{post.viewCount}</dd>
-            <dt className="text-faint">분량</dt>
-            <dd>{readingMinutes(post.content)}분</dd>
-          </dl>
-          {post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-x-2.5 gap-y-1 border-t border-dashed border-line pt-3">
-              {post.tags.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/tags/${t.slug}`}
-                  className="font-mono text-xs text-accent hover:underline hover:underline-offset-2"
-                >
-                  #{t.name}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </aside>
 
       <ReadingCompass variant="float" />
     </div>

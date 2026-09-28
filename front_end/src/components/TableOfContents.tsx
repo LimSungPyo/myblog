@@ -159,12 +159,10 @@ export default function TableOfContents({
     );
   }
 
-  // 넓은 화면: 왼쪽 칸에서 읽기 진행 컴퍼스 아래에 놓인다. 따라 내려오는 건(sticky) 그 칸이 맡는다
+  // 넓은 화면: 왼쪽 칸에서 읽기 진행 컴퍼스와 도면 정보 사이에 놓인다.
+  // 따라 내려오는 것과 높이 제한은 그 칸이 맡고, 목차는 남는 높이만큼 줄어들어 안에서 스크롤된다
   return (
-    <nav
-      aria-label="목차"
-      className="max-h-[calc(100vh-12rem)] overflow-y-auto"
-    >
+    <nav aria-label="목차" className="min-h-0 overflow-y-auto">
       <p className="mb-2 font-mono text-xs text-muted">목차</p>
       <TocList items={items} active={active} rail />
     </nav>

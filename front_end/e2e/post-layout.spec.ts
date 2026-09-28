@@ -37,9 +37,21 @@ for (const width of [1024, 1280, 1440, 1920]) {
     expect(grid.left).toBe(header.left + 16);
     expect(grid.right).toBe(header.right - 16);
 
-    // 칸은 그 안에서만: 본문 칸은 읽기 편한 폭(최대 680px)을 넘지 않는다
+    // 본문 칸은 읽기 편한 폭 680px을 그대로 갖는다(옆 칸 때문에 줄어들지 않는다)
     const body = await edges(page, "main > div > article");
-    expect(body.right - body.left).toBeLessThanOrEqual(680);
+    expect(body.right - body.left).toBe(680);
     expect(body.left).toBeGreaterThan(grid.left);
+
+    // 도면 정보는 왼쪽 칸의 목차 아래에 있고, 왼쪽 칸 전체가 화면 높이 안에 들어온다
+    const spec = page.locator("aside").getByText("도면 정보", { exact: true });
+    await expect(spec).toBeVisible();
+    const specBox = (await spec.boundingBox())!;
+    expect(specBox.x + specBox.width).toBeLessThan(body.left);
+    const toc = (await page
+      .locator("aside nav[aria-label='목차']")
+      .boundingBox())!;
+    expect(specBox.y).toBeGreaterThan(toc.y + toc.height);
+    const rail = (await page.locator("aside > div.sticky").boundingBox())!;
+    expect(rail.y + rail.height).toBeLessThanOrEqual(900);
   });
 }
